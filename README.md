@@ -1,1033 +1,328 @@
-﻿# TrueLab â€” Sports Data Analytics & Prediction
+# ⚽ TrueLab — Sports Data Analytics & Prediction
 
-**Version:** 1.0  
-**Platform:** Android  
-**Application:** TrueLab  
-**Repository:** `truelab-android`  
-**Package:** `dev.anhquocs.truelab`  
-**Project type:** Academic Project  
-**Subject:** Thuáº­t toÃ¡n á»©ng dá»¥ng  
-**Project title:** *á»¨ng dá»¥ng thuáº­t toÃ¡n trong phÃ¢n tÃ­ch dá»¯ liá»‡u thá»ƒ thao Ä‘a nguá»“n*
+<div align="center">
 
----
+![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Language](https://img.shields.io/badge/Kotlin-2.0+-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
+![UI](https://img.shields.io/badge/Jetpack%20Compose-Material3-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
+![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2B%20MVVM-FF6F00?style=for-the-badge)
+![Database](https://img.shields.io/badge/Storage-Room%20DB-00599C?style=for-the-badge&logo=sqlite&logoColor=white)
 
-# 1. Introduction
+<br/>
 
-## 1.1. Purpose
+**Đồ án môn học:** Thuật toán ứng dụng  
+**Tên đề tài:** *Ứng dụng thuật toán trong phân tích dữ liệu thể thao đa nguồn*  
+**Repository:** `truelab-android` • **Package:** `dev.anhquocs.truelab` • **Version:** `1.0`
 
-TrueLab lÃ  á»©ng dá»¥ng Android phá»¥c vá»¥ viá»‡c **thu tháº­p, lÆ°u trá»¯, phÃ¢n tÃ­ch vÃ  trá»±c quan hÃ³a dá»¯ liá»‡u thá»ƒ thao Ä‘a nguá»“n**, Ä‘á»“ng thá»i Ã¡p dá»¥ng cÃ¡c thuáº­t toÃ¡n Ä‘á»ƒ phÃ¢n tÃ­ch phong Ä‘á»™ Ä‘á»™i bÃ³ng vÃ  thá»­ nghiá»‡m dá»± Ä‘oÃ¡n káº¿t quáº£ tráº­n Ä‘áº¥u.
-
-á»¨ng dá»¥ng Ä‘Æ°á»£c phÃ¡t triá»ƒn nháº±m minh há»a viá»‡c Ã¡p dá»¥ng cÃ¡c thuáº­t toÃ¡n vÃ o má»™t bÃ i toÃ¡n dá»¯ liá»‡u thá»±c táº¿, táº­p trung vÃ o:
-
-- xá»­ lÃ½ vÃ  há»£p nháº¥t dá»¯ liá»‡u;
-- tÃ¬m kiáº¿m;
-- sáº¯p xáº¿p;
-- thá»‘ng kÃª;
-- phÃ¢n tÃ­ch phong Ä‘á»™;
-- Ä‘Ã¡nh giÃ¡ sá»©c máº¡nh Ä‘á»™i bÃ³ng;
-- phÃ¢n tÃ­ch biáº¿n Ä‘á»™ng odds;
-- dá»± Ä‘oÃ¡n káº¿t quáº£ tráº­n Ä‘áº¥u;
-- Ä‘Ã¡nh giÃ¡ hiá»‡u quáº£ cá»§a cÃ¡c thuáº­t toÃ¡n.
+</div>
 
 ---
 
-## 1.2. Scope
+## 📋 Thông tin tổng quan dự án
 
-TrueLab táº­p trung vÃ o dá»¯ liá»‡u bÃ³ng Ä‘Ã¡, bao gá»“m:
-
-- thÃ´ng tin tráº­n Ä‘áº¥u;
-- thÃ´ng tin Ä‘á»™i bÃ³ng;
-- káº¿t quáº£ tráº­n Ä‘áº¥u;
-- dá»¯ liá»‡u odds;
-- nguá»“n/provider cá»§a odds;
-- lá»‹ch sá»­ dá»¯ liá»‡u;
-- káº¿t quáº£ dá»± Ä‘oÃ¡n.
-
-Dá»¯ liá»‡u cÃ³ thá»ƒ Ä‘Æ°á»£c thu tháº­p tá»« cÃ¡c nguá»“n Ä‘Æ°á»£c cáº¥p phÃ©p, sau Ä‘Ã³ Ä‘Æ°á»£c chuáº©n hÃ³a vÃ  lÆ°u trá»¯ cá»¥c bá»™ Ä‘á»ƒ á»©ng dá»¥ng phÃ¢n tÃ­ch.
-
-### KhÃ´ng náº±m trong scope
-
-TrueLab **khÃ´ng pháº£i á»©ng dá»¥ng cÃ¡ cÆ°á»£c**.
-
-á»¨ng dá»¥ng khÃ´ng há»— trá»£:
-
-- Ä‘áº·t cÆ°á»£c;
-- náº¡p tiá»n;
-- rÃºt tiá»n;
-- chuyá»ƒn hÆ°á»›ng tá»›i nhÃ  cÃ¡i;
-- giao dá»‹ch tÃ i chÃ­nh;
-- tÃ i khoáº£n nhÃ  cÃ¡i.
-
-Odds chá»‰ Ä‘Æ°á»£c sá»­ dá»¥ng nhÆ° **má»™t loáº¡i dá»¯ liá»‡u thá»ƒ thao phá»¥c vá»¥ nghiÃªn cá»©u vÃ  phÃ¢n tÃ­ch thuáº­t toÃ¡n**.
+| Thuộc tính | Chi tiết |
+| :--- | :--- |
+| **Ứng dụng** | **TrueLab** (Sports Data Analytics & Prediction) |
+| **Loại đồ án** | Academic Project (Đồ án học thuật môn *Thuật toán ứng dụng*) |
+| **Nền tảng** | Android Native (Kotlin + Jetpack Compose) |
+| **Kiến trúc** | Clean Architecture (Presentation, Domain, Data) + MVVM |
+| **Lưu trữ dữ liệu** | Room Database (Offline-first architecture) |
+| **Mục tiêu cốt lõi** | Phân tích phong độ, thống kê dữ liệu đa nguồn, đánh giá Elo, thử nghiệm dự đoán kết quả và benchmark thuật toán |
 
 ---
 
-# 2. Product Overview
+# 📖 1. Giới thiệu (Introduction)
 
-## 2.1. High-level architecture
+## 1.1. Mục tiêu (Purpose)
+**TrueLab** là ứng dụng Android phục vụ việc **thu thập, lưu trữ, phân tích và trực quan hóa dữ liệu thể thao đa nguồn**, đồng thời áp dụng các thuật toán kinh điển và hiện đại để phân tích phong độ đội bóng và thử nghiệm mô hình dự đoán kết quả trận đấu.
+
+Ứng dụng được xây dựng nhằm minh họa trực quan việc áp dụng các thuật toán vào bài toán dữ liệu thực tế:
+* 🔄 **Xử lý & hợp nhất dữ liệu:** Data cleaning, normalization, deduplication từ nhiều nguồn.
+* 🔍 **Tìm kiếm & Sắp xếp:** Áp dụng và benchmark các thuật toán tìm kiếm (*Linear Search, Binary Search*) và sắp xếp (*Quick Sort, Merge Sort*).
+* 📈 **Thống kê chuyên sâu:** Tính toán các chỉ số thống kê mô tả (*Mean, Median, Min/Max, Variance, Standard Deviation*).
+* ⚡ **Đánh giá sức mạnh & phong độ:** Xây dựng Form Score, phân tích Home/Away, phân tích đối đầu trực tiếp (H2H) và hệ thống xếp hạng **Elo Rating**.
+* 📊 **Phân tích biến động Odds:** Theo dõi độ biến động (*Volatility*), chênh lệch nhà cái, xu hướng (*Moving Average*).
+* 🎯 **Mô hình dự đoán (Prediction):** Áp dụng mô hình tính điểm trọng số (*Weighted Scoring*) và mở rộng mô hình máy học (*Logistic Regression, Decision Tree*).
+* ⏱️ **Benchmark hiệu năng:** Đo lường thời gian thực thi, mức tiêu thụ bộ nhớ và độ chính xác theo quy mô dữ liệu.
+
+---
+
+## 1.2. Phạm vi (Scope)
+Dữ liệu tập trung vào môn bóng đá, bao gồm:
+- 📌 Thông tin đội bóng & giải đấu.
+- 📅 Lịch thi đấu & kết quả trận đấu theo thời gian thực / lịch sử.
+- 💰 Dữ liệu Odds từ nhiều nhà cung cấp (Providers / Companies).
+- 🕒 Lịch sử biến động tỷ lệ kèo (Odds movement snapshots).
+- 🔮 Kết quả dự đoán & ma trận đánh giá thuật toán.
+
+> [!CAUTION]
+> ### ⚠️ Tuyên bố miễn trừ trách nhiệm (Non-scope)
+> **TrueLab KHÔNG PHẢI là ứng dụng cá cược.**  
+> Ứng dụng **hoàn toàn không hỗ trợ**:
+> - ❌ Đặt cược, nạp tiền, rút tiền hoặc giao dịch tài chính.
+> - ❌ Chuyển hướng liên kết đến các trang cá cược/nhà cái.
+> - ❌ Quản lý tài khoản nhà cái.
+> 
+> *Dữ liệu Odds được sử dụng thuần túy như một nguồn dữ liệu xác suất thị trường phục vụ nghiên cứu khoa học và thuật toán.*
+
+---
+
+# 🏛️ 2. Kiến trúc hệ thống (Product Overview)
+
+## 2.1. Sơ đồ kiến trúc tổng quan (High-level Architecture)
 
 ```text
                   DATA SOURCES
-                       â”‚
-             â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-             â”‚                   â”‚
-        REST API             Other Data
-             â”‚                   â”‚
-             â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                       â–¼
+                       │
+             ┌─────────┴─────────┐
+             │                   │
+          REST API           Other Data
+             │                   │
+             └─────────┬─────────┘
+                       ▼
                 Data Collector
-                       â”‚
-                       â–¼
-                Raw Dataset
-                       â”‚
+                       │
+                       ▼
+                  Raw Dataset
+                       │
                  Preprocessing
-                       â”‚
-                       â–¼
+                       │
+                       ▼
                  Local Storage
                     (Room)
-                       â”‚
-                       â–¼
+                       │
+                       ▼
                     TrueLab
-                       â”‚
-        â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-        â–¼              â–¼              â–¼
+                       │
+        ┌──────────────┼──────────────┐
+        ▼              ▼              ▼
      Analysis       Algorithms     Prediction
-        â”‚              â”‚              â”‚
-        â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                       â–¼
+        │              │              │
+        └──────────────┼──────────────┘
+                       ▼
                  Visualization
 ```
 
-MQTT **khÃ´ng náº±m trong core scope cá»§a Android application**.
-
-Náº¿u Ä‘Æ°á»£c cáº¥p phÃ©p, MQTT cÃ³ thá»ƒ Ä‘Æ°á»£c sá»­ dá»¥ng á»Ÿ **data collection layer** Ä‘á»ƒ thu tháº­p dá»¯ liá»‡u odds realtime vÃ  chuyá»ƒn thÃ nh historical dataset.
-
----
-
-# 3. Users
-
-## 3.1. Student / Researcher
-
-CÃ³ thá»ƒ:
-
-* xem dá»¯ liá»‡u tráº­n Ä‘áº¥u;
-* tÃ¬m kiáº¿m Ä‘á»™i bÃ³ng;
-* phÃ¢n tÃ­ch thá»‘ng kÃª;
-* xem phong Ä‘á»™;
-* xem odds;
-* cháº¡y prediction;
-* so sÃ¡nh thuáº­t toÃ¡n.
-
-## 3.2. Developer / Evaluator
-
-CÃ³ thá»ƒ sá»­ dá»¥ng á»©ng dá»¥ng Ä‘á»ƒ:
-
-* kiá»ƒm tra thuáº­t toÃ¡n;
-* benchmark;
-* Ä‘Ã¡nh giÃ¡ prediction;
-* kiá»ƒm tra dá»¯ liá»‡u.
+* **Data Collection Layer:** Thu thập dữ liệu từ các REST API hợp lệ, lưu vào Raw Dataset.
+* **Offline-First:** Room Database đóng vai trò là single-source-of-truth cho toàn bộ ứng dụng.
+* **MQTT:** Không nằm trong core scope của Android app, có thể hỗ trợ ở data collection layer nếu cần streaming.
 
 ---
 
-# 4. Functional Requirements
-
-## FR-01 â€” Data Management
-
-á»¨ng dá»¥ng pháº£i cÃ³ kháº£ nÄƒng quáº£n lÃ½ dataset thá»ƒ thao.
-
-Dataset tá»‘i thiá»ƒu gá»“m:
-
-### Team
+# 👥 3. Đối tượng sử dụng (Users)
 
 ```text
-teamId
-teamName
-leagueId
-leagueName
-country
-```
-
-### Match
-
-```text
-matchId
-homeTeamId
-awayTeamId
-matchTime
-homeScore
-awayScore
-status
-```
-
-### Odds
-
-```text
-matchId
-companyId
-oddsType
-changeTime
-homeWin
-draw
-awayWin
-over
-under
-handicap
-```
-
-### Provider
-
-```text
-companyId
-name
-shortName
+┌────────────────────────────────────────────────────────┐
+│                        TRUELAB                         │
+├───────────────────────────┬────────────────────────────┤
+│   🎓 Student / Researcher │   💻 Developer / Evaluator │
+├───────────────────────────┼────────────────────────────┤
+│ • Xem dữ liệu & phân tích │ • Kiểm tra thuật toán      │
+│ • Tìm kiếm đội / trận đấu │ • Chạy Benchmark hiệu năng │
+│ • Phân tích biến động Odds│ • Đánh giá mô hình dự đoán │
+│ • So sánh thuật toán      │ • Kiểm thử tính toàn vẹn   │
+└───────────────────────────┴────────────────────────────┘
 ```
 
 ---
 
-## FR-02 â€” Data Synchronization
+# ⚙️ 4. Yêu cầu chức năng (Functional Requirements)
 
-á»¨ng dá»¥ng/data pipeline pháº£i há»— trá»£ cáº­p nháº­t dataset tá»« nguá»“n dá»¯ liá»‡u Ä‘Æ°á»£c cáº¥p phÃ©p.
-
-Quy trÃ¬nh:
-
-```text
-Remote API
-    â†“
-Fetch new data
-    â†“
-Validate
-    â†“
-Normalize
-    â†“
-Deduplicate
-    â†“
-Local Database
-```
-
-Há»‡ thá»‘ng khÃ´ng Ä‘Æ°á»£c yÃªu cáº§u gá»i API má»—i láº§n ngÆ°á»i dÃ¹ng sá»­ dá»¥ng chá»©c nÄƒng phÃ¢n tÃ­ch.
-
-Dataset local Ä‘Æ°á»£c sá»­ dá»¥ng lÃ m nguá»“n dá»¯ liá»‡u chÃ­nh cho á»©ng dá»¥ng.
+| Mã YC | Chức năng | Chi tiết kỹ thuật |
+| :--- | :--- | :--- |
+| **FR-01** | **Quản lý Dataset** | Quản lý đầy đủ các thực thể: `Team`, `Match`, `Odds`, `Provider`, `Prediction`. |
+| **FR-02** | **Đồng bộ dữ liệu** | Quy trình: `Fetch -> Validate -> Normalize -> Deduplicate -> Local DB`. Chạy offline sau khi đồng bộ. |
+| **FR-03** | **Lưu trữ cục bộ** | Sử dụng **Room Database** lưu trữ quan hệ và phục vụ truy vấn thuật toán tốc độ cao. |
+| **FR-04** | **Tìm kiếm** | Hỗ trợ tìm kiếm Đội, Trận, Giải đấu bằng **Linear Search** & **Binary Search** kèm benchmark. |
+| **FR-05** | **Sắp xếp** | Hỗ trợ sắp xếp đa tiêu chí với **Quick Sort** & **Merge Sort**, đo lường thời gian thực thi. |
+| **FR-06** | **Thống kê mô tả** | Tính *Mean, Median, Min, Max, Variance, Standard Deviation* cho bàn thắng, tỷ lệ thắng, odds. |
+| **FR-07** | **Phân tích phong độ** | Tính toán chuỗi trận gần nhất, bàn thắng/thua, hiệu số và **Form Score** (Thắng=3, Hòa=1, Thua=0). |
+| **FR-08** | **Sân nhà / Sân khách** | Đánh giá hiệu suất riêng biệt: Tỷ lệ thắng sân nhà/khách, số bàn thắng trung bình, điểm số/trận. |
+| **FR-09** | **Lịch sử đối đầu (H2H)** | Thống kê lịch sử chạm trán giữa 2 đội (Số trận, Thắng - Hòa - Thua, tổng bàn thắng). |
+| **FR-10** | **Xếp hạng Elo** | Thuật toán **Elo Rating** cập nhật động sau mỗi trận đấu để phản ánh sức mạnh thực tế của đội bóng. |
+| **FR-11** | **Phân tích Odds đa nguồn** | So sánh tỷ lệ kèo giữa các Provider (Odds trung bình, cao nhất, thấp nhất, độ lệch chuẩn). |
+| **FR-12** | **Xu hướng Odds** | Phân tích biến động kèo theo chuỗi thời gian: *Opening vs Current, Moving Average, Volatility*. |
+| **FR-13** | **Dự đoán kết quả** | Tính toán xác suất: **Home Win (%) / Draw (%) / Away Win (%)** dựa trên tổ hợp đặc trưng. |
+| **FR-14** | **Thuật toán Weighted Scoring** | Mô hình trọng số kết hợp: *Form (25%), Elo (20%), Goals (15%), Odds (20%), H2H (10%), Home Advantage (10%)*. |
+| **FR-15** | **Mở rộng Machine Learning** | Thử nghiệm mô hình **Logistic Regression** và **Decision Tree** để so sánh với Weighted Scoring. |
+| **FR-16** | **Benchmark thuật toán** | Đo đạc và đối chiếu: *Execution Time (ms), Memory Usage (MB), Input Size (N), Accuracy (%)*. |
+| **FR-17** | **Trực quan hóa (Charts)** | Vẽ biểu đồ trực quan: *Line Chart, Bar Chart, Donut Chart* cho phong độ, Elo, Odds và xác suất. |
 
 ---
 
-## FR-03 â€” Local Storage
-
-á»¨ng dá»¥ng pháº£i lÆ°u dá»¯ liá»‡u thá»ƒ thao báº±ng **Room Database**.
-
-CÃ¡c entity dá»± kiáº¿n:
+# 🛡️ 5. Yêu cầu phi chức năng (Non-functional Requirements)
 
 ```text
-TeamEntity
-MatchEntity
-OddsEntity
-ProviderEntity
-PredictionEntity
-```
-
-Room pháº£i há»— trá»£ truy váº¥n dá»¯ liá»‡u lá»‹ch sá»­ phá»¥c vá»¥ thuáº­t toÃ¡n.
-
----
-
-## FR-04 â€” Search
-
-NgÆ°á»i dÃ¹ng cÃ³ thá»ƒ tÃ¬m kiáº¿m:
-
-* Ä‘á»™i bÃ³ng;
-* tráº­n Ä‘áº¥u;
-* provider;
-* giáº£i Ä‘áº¥u.
-
-á»¨ng dá»¥ng pháº£i há»— trá»£ Ã­t nháº¥t má»™t phÆ°Æ¡ng phÃ¡p tÃ¬m kiáº¿m cÃ³ thá»ƒ Ä‘Ã¡nh giÃ¡ vá» Ä‘á»™ phá»©c táº¡p.
-
-VÃ­ dá»¥:
-
-```text
-Linear Search
-Binary Search
-```
-
-CÃ³ thá»ƒ benchmark:
-
-```text
-Input size
-Execution time
-Memory usage
+  [NFR-01] Hiệu năng (Performance)      ──► Xử lý mượt mà dataset quy mô 10,000+ matches
+  [NFR-02] Hoạt động ngoại tuyến (Offline) ──► Tìm kiếm, sắp xếp, thống kê, dự đoán không cần mạng
+  [NFR-03] Độ tin cậy (Reliability)      ──► Không crash khi mất mạng, tự động fallback về Room DB
+  [NFR-04] Cấu trúc chuẩn (Clean Arch)   ──► Presentation (Compose) -> Domain -> Data (Room/Retrofit)
+  [NFR-05] Toàn vẹn dữ liệu (Integrity)  ──► Kiểm tra ràng buộc khóa ngoại (Foreign Keys) trước khi lưu
 ```
 
 ---
 
-## FR-05 â€” Sorting
-
-NgÆ°á»i dÃ¹ng cÃ³ thá»ƒ sáº¯p xáº¿p dá»¯ liá»‡u theo:
-
-* tÃªn Ä‘á»™i;
-* thá»i gian tráº­n Ä‘áº¥u;
-* sá»‘ bÃ n tháº¯ng;
-* tá»· lá»‡ tháº¯ng;
-* odds;
-* rating.
-
-CÃ¡c thuáº­t toÃ¡n cÃ³ thá»ƒ Ä‘Æ°á»£c triá»ƒn khai:
+# 🗄️ 6. Thiết kế cơ sở dữ liệu (Database Schema)
 
 ```text
-Quick Sort
-Merge Sort
-```
-
-á»¨ng dá»¥ng pháº£i cho phÃ©p Ä‘Ã¡nh giÃ¡ hiá»‡u nÄƒng giá»¯a cÃ¡c thuáº­t toÃ¡n.
-
----
-
-## FR-06 â€” Statistical Analysis
-
-TrueLab pháº£i cung cáº¥p cÃ¡c thá»‘ng kÃª cÆ¡ báº£n:
-
-* Mean;
-* Median;
-* Minimum;
-* Maximum;
-* Variance;
-* Standard Deviation.
-
-VÃ­ dá»¥:
-
-```text
-Average Goals
-Average Odds
-Win Rate
-Draw Rate
-Loss Rate
-```
-
----
-
-## FR-07 â€” Team Performance Analysis
-
-á»¨ng dá»¥ng pháº£i phÃ¢n tÃ­ch phong Ä‘á»™ Ä‘á»™i bÃ³ng dá»±a trÃªn lá»‹ch sá»­.
-
-CÃ¡c chá»‰ sá»‘:
-
-```text
-Recent matches
-Wins
-Draws
-Losses
-Goals scored
-Goals conceded
-Win rate
-Average goals
-```
-
-### Form Score
-
-CÃ³ thá»ƒ Ã¡p dá»¥ng:
-
-```text
-Win  = 3
-Draw = 1
-Loss = 0
-```
-
-VÃ­ dá»¥:
-
-```text
-W W D L W
-
-3 + 3 + 1 + 0 + 3 = 10
-
-Form Score = 10 / 15
+┌──────────────────────┐              ┌──────────────────────┐
+│     TeamEntity       │              │    ProviderEntity    │
+├──────────────────────┤              ├──────────────────────┤
+│ PK  teamId: String   │              │ PK  companyId: String│
+│     name: String     │              │     name: String     │
+│     leagueId: String │              │     shortName: String│
+│     leagueName: String              └──────────┬───────────┘
+│     country: String  │                         │
+└──────────┬───────────┘                         │
+           │                                     │
+           ▼                                     ▼
+┌────────────────────────────────────────────────────────────┐
+│                        MatchEntity                         │
+├────────────────────────────────────────────────────────────┤
+│ PK  matchId: String                                        │
+│ FK  homeTeamId: String ──► TeamEntity.teamId               │
+│ FK  awayTeamId: String ──► TeamEntity.teamId               │
+│     matchTime: Long                                        │
+│     homeScore: Int?                                        │
+│     awayScore: Int?                                        │
+│     status: String                                         │
+└──────────┬─────────────────────────────────────────────────┘
+           │
+           ├─────────────────────────────────────┐
+           ▼                                     ▼
+┌──────────────────────────────────────┐  ┌──────────────────────────────────────┐
+│             OddsEntity               │  │           PredictionEntity           │
+├──────────────────────────────────────┤  ├──────────────────────────────────────┤
+│ PK  id: Long (Auto)                  │  │ PK  id: Long (Auto)                  │
+│ FK  matchId: String ──► MatchEntity  │  │ FK  matchId: String ──► MatchEntity  │
+│ FK  companyId: String ──► Provider   │  │     algorithm: String                │
+│     oddsType: String                 │  │     homeProb: Double                 │
+│     changeTime: Long                 │  │     drawProb: Double                 │
+│     homeWin: Double                  │  │     awayProb: Double                 │
+│     draw: Double                     │  │     actualResult: String?            │
+│     awayWin: Double                  │  │     createdAt: Long                  │
+│     over / under / handicap: Double? │  └──────────────────────────────────────┘
+└──────────────────────────────────────┘
 ```
 
 ---
 
-## FR-08 â€” Home/Away Analysis
+# 📱 7. Cấu trúc màn hình ứng dụng (Application Screens)
 
-Há»‡ thá»‘ng pháº£i phÃ¢n biá»‡t:
-
-```text
-Home performance
-Away performance
-```
-
-CÃ¡c chá»‰ sá»‘ cÃ³ thá»ƒ bao gá»“m:
-
-* home win rate;
-* away win rate;
-* average goals;
-* average conceded goals;
-* points per match.
-
----
-
-## FR-09 â€” Head-to-Head Analysis
-
-á»¨ng dá»¥ng pháº£i cho phÃ©p phÃ¢n tÃ­ch lá»‹ch sá»­ Ä‘á»‘i Ä‘áº§u giá»¯a hai Ä‘á»™i.
-
-VÃ­ dá»¥:
+Ứng dụng gồm **6 màn hình chính** với thanh điều hướng hiện đại:
 
 ```text
-Team A vs Team B
-
-Matches: 10
-
-Team A wins: 6
-Draws:       2
-Team B wins: 2
+TrueLab Application
+│
+├── 🏠 Home Screen           ── Thống kê tổng quan dataset (số đội, số trận, provider, lần cập nhật cuối)
+│
+├── ⚽ Matches Screen        ── Danh sách trận đấu, bộ lọc, tìm kiếm, sắp xếp đa tiêu chí & Match Detail
+│
+├── 🛡️ Teams Screen          ── Thông tin đội bóng, Form Score, thống kê sân nhà/khách, H2H & Elo Rating
+│
+├── 📈 Analytics Screen      ── Thống kê mô tả toàn diện, so sánh Odds đa nguồn & biểu đồ xu hướng
+│
+├── 🔮 Prediction Screen     ── Chọn trận đấu -> Trích xuất đặc trưng -> Chạy thuật toán -> Hiển thị xác suất
+│
+└── ⏱️ Benchmark Screen      ── So sánh trực tiếp hiệu năng các thuật toán (Search, Sort, Prediction Accuracy)
 ```
 
 ---
 
-## FR-10 â€” Elo Rating
-
-TrueLab cÃ³ thá»ƒ sá»­ dá»¥ng **Elo Rating** Ä‘á»ƒ Æ°á»›c lÆ°á»£ng sá»©c máº¡nh tÆ°Æ¡ng Ä‘á»‘i cá»§a cÃ¡c Ä‘á»™i bÃ³ng.
-
-Má»—i Ä‘á»™i Ä‘Æ°á»£c gÃ¡n má»™t rating:
+# 🔄 8. Pipeline dữ liệu (Data Pipeline) & Cập nhật Dataset
 
 ```text
-Team A = 1642
-Team B = 1587
+    [Remote Sources: REST API / Optional MQTT]
+                       │
+                       ▼
+                 [Raw Dataset]
+                       │
+                       ▼
+          [Data Cleaning & Validation]
+                       │
+                       ▼
+           [Normalization & Mapping]
+                       │
+                       ▼
+         [Deduplication & Conflict Res]
+                       │
+                       ▼
+          [Local Storage: Room Database]
+                       │
+      ┌────────────────┼────────────────┐
+      ▼                ▼                ▼
+[Search / Sort]  [Data Analytics]  [Match Prediction]
+      │                │                │
+      └────────────────┼────────────────┘
+                       ▼
+         [Jetpack Compose Visualization]
 ```
 
-Sau má»—i tráº­n Ä‘áº¥u, rating Ä‘Æ°á»£c cáº­p nháº­t dá»±a trÃªn káº¿t quáº£.
-
-Elo Rating cÃ³ thá»ƒ Ä‘Æ°á»£c sá»­ dá»¥ng nhÆ° má»™t feature cho prediction.
+### Chiến lược Versioning Dataset
+Dataset được quản lý theo từng phiên bản để phục vụ việc kiểm thử và báo cáo học thuật:
+* `Dataset v1` (01/09/2026): 50,000 matches — Dữ liệu baseline.
+* `Dataset v2` (15/09/2026): 62,000 matches — Mở rộng tập dữ liệu.
+* `Dataset v3` (01/10/2026): 75,000 matches — Tập dữ liệu chính thức phục vụ báo cáo.
 
 ---
 
-## FR-11 â€” Multi-source Odds Analysis
+# 🧮 9. Danh mục thuật toán (Algorithm Portfolio)
 
-á»¨ng dá»¥ng pháº£i há»— trá»£ phÃ¢n tÃ­ch odds tá»« nhiá»u nguá»“n/provider.
-
-VÃ­ dá»¥:
-
-```text
-Match A
-
-Provider A
-Home = 1.69
-
-Provider B
-Home = 1.72
-
-Provider C
-Home = 1.67
-```
-
-CÃ³ thá»ƒ tÃ­nh:
-
-* average odds;
-* minimum odds;
-* maximum odds;
-* odds deviation;
-* provider comparison.
+| Phân nhóm | Thuật toán | Mục đích ứng dụng | Độ phức tạp lý thuyết |
+| :--- | :--- | :--- | :---: |
+| **Searching** | **Linear Search** | Tìm kiếm tuần tự trong danh sách chưa sắp xếp | $\mathcal{O}(n)$ |
+| **Searching** | **Binary Search** | Tìm kiếm nhị phân trên danh sách đã sắp xếp | $\mathcal{O}(\log n)$ |
+| **Sorting** | **Quick Sort** | Sắp xếp dữ liệu đa chỉ số phân chia theo Pivot | $\mathcal{O}(n \log n)$ |
+| **Sorting** | **Merge Sort** | Sắp xếp chia để trị ổn định (Stable Sort) | $\mathcal{O}(n \log n)$ |
+| **Statistics** | **Descriptive Stats** | Tính Mean, Median, Variance, Standard Deviation | $\mathcal{O}(n)$ |
+| **Trend** | **Moving Average** | Làm mịn chuỗi biến động Odds theo thời gian | $\mathcal{O}(n)$ |
+| **Evaluation** | **Form Score** | Đánh giá phong độ $k$ trận gần nhất | $\mathcal{O}(k)$ |
+| **Rating** | **Elo Rating System** | Cập nhật hệ số sức mạnh tương đối sau mỗi trận đấu | $\mathcal{O}(1)$ / trận |
+| **Prediction** | **Weighted Scoring** | Dự đoán kết quả theo trọng số đặc trưng | $\mathcal{O}(1)$ / trận |
+| **ML Extension**| **Logistic Regression** | Phân loại đa lớp dự đoán kết quả trận đấu | Dự đoán: $\mathcal{O}(d)$ |
+| **ML Extension**| **Decision Tree** | Cây quyết định phân loại kết quả | Dự đoán: $\mathcal{O}(h)$ |
 
 ---
 
-## FR-12 â€” Odds Trend Analysis
+# 📊 10. Đánh giá & Benchmark (Evaluation)
 
-Náº¿u dataset chá»©a nhiá»u snapshot theo thá»i gian, á»©ng dá»¥ng cÃ³ thá»ƒ phÃ¢n tÃ­ch:
+### 10.1. Benchmark hiệu năng thuật toán
+* So sánh thời gian thực thi giữa **Linear Search vs. Binary Search** trên các kích thước dữ liệu khác nhau ($N = 1.000, 10.000, 50.000, 100.000$).
+* So sánh **Quick Sort vs. Merge Sort** về thời gian thực thi (ms) và mức chiếm dụng bộ nhớ (MB).
 
-```text
-Opening odds
-Current odds
-Odds change
-Moving average
-Volatility
-Number of changes
-```
-
-VÃ­ dá»¥:
-
-```text
-10:00 â†’ 1.72
-10:05 â†’ 1.70
-10:10 â†’ 1.68
-10:20 â†’ 1.69
-```
-
-Tá»« Ä‘Ã³ xÃ¢y dá»±ng biá»ƒu Ä‘á»“ biáº¿n Ä‘á»™ng odds.
-
-**Chá»©c nÄƒng nÃ y phá»¥ thuá»™c vÃ o viá»‡c cÃ³ historical odds data.**
+### 10.2. Đánh giá độ chính xác mô hình dự đoán
+* Sử dụng tập dữ liệu lịch sử để backtest và tính toán các chỉ số:
+  $$	ext{Accuracy} = rac{	ext{Số trận dự đoán đúng}}{	ext{Tổng số trận}}$$
+* Đánh giá ma trận nhầm lẫn (**Confusion Matrix**), **Precision**, **Recall**, **F1-Score**.
 
 ---
 
-## FR-13 â€” Prediction
-
-TrueLab pháº£i há»— trá»£ thá»­ nghiá»‡m dá»± Ä‘oÃ¡n káº¿t quáº£ tráº­n Ä‘áº¥u.
-
-Output:
+# 📅 11. Kế hoạch triển khai (Timeline - 6 Tuần)
 
 ```text
-Home Win: 61%
-Draw:      23%
-Away Win:  16%
-```
-
-Prediction cÃ³ thá»ƒ sá»­ dá»¥ng cÃ¡c feature:
-
-```text
-Home Form
-Away Form
-Home/Away Performance
-H2H
-Elo Rating
-Goals Statistics
-Historical Odds
-Odds Movement
-Multi-source Odds
+Tuần 1 ──► Thu thập Dataset + Xây dựng API Client & Schema Room Database
+Tuần 2 ──► Triển khai thuật toán Tìm kiếm (Linear/Binary), Sắp xếp (Quick/Merge) & Thống kê
+Tuần 3 ──► Xây dựng thuật toán phân tích phong độ, Home/Away, H2H & Hệ thống Elo Rating
+Tuần 4 ──► Phân tích Odds đa nguồn, xu hướng Odds & Mô hình dự đoán Weighted Scoring
+Tuần 5 ──► Thiết kế giao diện Jetpack Compose, Trực quan hóa dữ liệu & Màn hình Benchmark
+Tuần 6 ──► Kiểm thử toàn diện, đánh giá hiệu năng, hoàn thiện báo cáo & Slide thuyết trình
 ```
 
 ---
 
-## FR-14 â€” Prediction Algorithm
+# 🛠️ 12. Công nghệ sử dụng (Tech Stack)
 
-PhiÃªn báº£n Ä‘áº§u tiÃªn sá»­ dá»¥ng **Weighted Scoring**.
-
-VÃ­ dá»¥:
-
-```text
-Form              25%
-Elo               20%
-Goals             15%
-H2H               10%
-Home Advantage    10%
-Odds              20%
-```
-
-Há»‡ thá»‘ng tÃ­nh Ä‘iá»ƒm cho:
-
-```text
-Home
-Draw
-Away
-```
-
-sau Ä‘Ã³ chuáº©n hÃ³a thÃ nh xÃ¡c suáº¥t tÆ°Æ¡ng Ä‘á»‘i.
+* **Language:** [Kotlin 2.0+](https://kotlinlang.org/)
+* **UI Framework:** [Jetpack Compose](https://developer.android.com/jetpack/compose) (Material 3)
+* **Architecture:** Clean Architecture + MVVM + Android Architecture Components
+* **Local Database:** [Room Database](https://developer.android.com/training/data-storage/room)
+* **Dependency Injection:** [Hilt](https://developer.android.com/training/dependency-injection/hilt-android)
+* **Networking & JSON:** [Retrofit 2](https://square.github.io/retrofit/) + [Kotlinx Serialization](https://github.com/Kotlin/kotlinx.serialization)
+* **Asynchronous:** Kotlin Coroutines & Flow
+* **Visualization:** Compose Canvas Charts / Vico / MPAndroidChart
 
 ---
 
-## FR-15 â€” Machine Learning Extension
-
-Machine Learning **khÃ´ng báº¯t buá»™c trong phiÃªn báº£n core**.
-
-Náº¿u dataset Ä‘á»§ lá»›n, há»‡ thá»‘ng cÃ³ thá»ƒ má»Ÿ rá»™ng vá»›i:
-
-```text
-Logistic Regression
-Decision Tree
-```
-
-Má»¥c Ä‘Ã­ch chÃ­nh lÃ  **so sÃ¡nh vá»›i Weighted Scoring**, khÃ´ng pháº£i biáº¿n TrueLab thÃ nh má»™t ML production system.
-
----
-
-## FR-16 â€” Algorithm Benchmark
-
-á»¨ng dá»¥ng pháº£i há»— trá»£ Ä‘Ã¡nh giÃ¡ hiá»‡u nÄƒng thuáº­t toÃ¡n.
-
-CÃ¡c metric:
-
-```text
-Execution Time
-Memory Usage
-Input Size
-Accuracy
-```
-
-VÃ­ dá»¥:
-
-```text
-Quick Sort
-10,000 items â†’ 12 ms
-
-Merge Sort
-10,000 items â†’ 15 ms
-```
-
-Prediction:
-
-```text
-Algorithm             Accuracy
-
-Weighted Scoring      61.3%
-Logistic Regression   64.1%
-```
-
----
-
-## FR-17 â€” Visualization
-
-á»¨ng dá»¥ng pháº£i trá»±c quan hÃ³a káº¿t quáº£ phÃ¢n tÃ­ch.
-
-CÃ³ thá»ƒ bao gá»“m:
-
-* Line Chart;
-* Bar Chart;
-* Pie/Donut Chart;
-* Odds trend;
-* Team form;
-* Elo progression;
-* Prediction probability.
-
----
-
-# 5. Non-functional Requirements
-
-## NFR-01 â€” Performance
-
-CÃ¡c thuáº­t toÃ¡n pháº£i cÃ³ kháº£ nÄƒng xá»­ lÃ½ dataset cÃ³ quy mÃ´ tá»‘i thiá»ƒu:
-
-```text
-10,000+ matches
-```
-
-vÃ  cÃ³ thá»ƒ benchmark vá»›i dataset lá»›n hÆ¡n.
-
----
-
-## NFR-02 â€” Offline-first
-
-Sau khi dataset Ä‘Æ°á»£c Ä‘á»“ng bá»™, cÃ¡c chá»©c nÄƒng:
-
-* search;
-* sort;
-* statistics;
-* team analysis;
-* Elo;
-* prediction;
-
-pháº£i cÃ³ kháº£ nÄƒng hoáº¡t Ä‘á»™ng mÃ  khÃ´ng cáº§n network.
-
----
-
-## NFR-03 â€” Reliability
-
-Náº¿u API khÃ´ng kháº£ dá»¥ng:
-
-```text
-Network unavailable
-        â†“
-Use local Room data
-```
-
-á»¨ng dá»¥ng khÃ´ng Ä‘Æ°á»£c crash chá»‰ vÃ¬ remote API unavailable.
-
----
-
-## NFR-04 â€” Maintainability
-
-Project sá»­ dá»¥ng:
-
-```text
-Kotlin
-Jetpack Compose
-MVVM
-Clean Architecture
-Hilt
-Room
-Retrofit
-```
-
-CÃ¡c layer Ä‘Æ°á»£c tÃ¡ch biá»‡t:
-
-```text
-Presentation
-Domain
-Data
-```
-
----
-
-## NFR-05 â€” Data Integrity
-
-Dataset pháº£i Ä‘Æ°á»£c:
-
-* validate;
-* deduplicate;
-* normalize;
-* kiá»ƒm tra foreign key relationship.
-
-VÃ­ dá»¥:
-
-```text
-Odds.matchId
-        â†“
-Match.matchId
-```
-
-pháº£i tá»“n táº¡i trÆ°á»›c khi lÆ°u odds.
-
----
-
-# 6. Suggested Database
-
-```text
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚    Team      â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ teamId       â”‚
-â”‚ name         â”‚
-â”‚ leagueId     â”‚
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚    Match     â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ matchId      â”‚
-â”‚ homeTeamId   â”‚
-â”‚ awayTeamId   â”‚
-â”‚ homeScore    â”‚
-â”‚ awayScore    â”‚
-â”‚ matchTime    â”‚
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚     Odds     â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ matchId      â”‚
-â”‚ companyId    â”‚
-â”‚ oddsType     â”‚
-â”‚ changeTime   â”‚
-â”‚ homeWin      â”‚
-â”‚ draw         â”‚
-â”‚ awayWin      â”‚
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚  Prediction  â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ matchId      â”‚
-â”‚ algorithm    â”‚
-â”‚ homeProb     â”‚
-â”‚ drawProb     â”‚
-â”‚ awayProb     â”‚
-â”‚ actualResult â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
-
----
-
-# 7. Application Screens
-
-TrueLab gá»“m **6 mÃ n hÃ¬nh chÃ­nh**:
-
-```text
-TrueLab
-â”‚
-â”œâ”€â”€ Home
-â”‚
-â”œâ”€â”€ Matches
-â”‚
-â”œâ”€â”€ Teams
-â”‚
-â”œâ”€â”€ Analytics
-â”‚
-â”œâ”€â”€ Prediction
-â”‚
-â””â”€â”€ Benchmark
-```
-
-### Home
-
-Hiá»ƒn thá»‹:
-
-* dataset size;
-* sá»‘ Ä‘á»™i;
-* sá»‘ tráº­n;
-* sá»‘ provider;
-* last data update.
-
-### Matches
-
-```text
-Search
-Filter
-Sort
-Match list
-Match detail
-```
-
-### Teams
-
-```text
-Team information
-Recent form
-Statistics
-H2H
-Elo
-```
-
-### Analytics
-
-```text
-Statistics
-Odds comparison
-Odds trends
-Team performance
-```
-
-### Prediction
-
-```text
-Select match
-       â†“
-Calculate features
-       â†“
-Run algorithm
-       â†“
-Prediction result
-```
-
-### Benchmark
-
-```text
-Algorithm comparison
-Execution time
-Input size
-Accuracy
-```
-
----
-
-# 8. Data Pipeline
-
-```text
-             Remote Sources
-                   â”‚
-          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”
-          â–¼                 â–¼
-      REST API        Optional MQTT
-          â”‚                 â”‚
-          â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                   â–¼
-              Raw Dataset
-                   â”‚
-                   â–¼
-            Data Cleaning
-                   â”‚
-                   â–¼
-             Normalization
-                   â”‚
-                   â–¼
-              Deduplication
-                   â”‚
-                   â–¼
-               Room DB
-                   â”‚
-        â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-        â–¼          â–¼          â–¼
-      Search     Analysis  Prediction
-        â”‚          â”‚          â”‚
-        â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                   â–¼
-              Visualization
-```
-
-**REST API:** nguá»“n chÃ­nh.
-
-**MQTT:** optional data collection mechanism, khÃ´ng pháº£i dependency cá»§a app.
-
----
-
-# 9. Dataset Update Strategy
-
-Äá»ƒ giáº£i quyáº¿t váº¥n Ä‘á» dataset cÅ©, dataset sáº½ cÃ³ version.
-
-VÃ­ dá»¥:
-
-```text
-Dataset v1
-01/09/2026
-50,000 matches
-
-Dataset v2
-15/09/2026
-62,000 matches
-
-Dataset v3
-01/10/2026
-75,000 matches â† dÃ¹ng Ä‘á»ƒ bÃ¡o cÃ¡o
-```
-
-Má»—i láº§n cáº­p nháº­t:
-
-```text
-Fetch new data
-      â†“
-Validate
-      â†“
-Deduplicate
-      â†“
-Merge
-      â†“
-Update Room
-```
-
-KhÃ´ng cáº§n Ä‘á»ƒ Android app liÃªn tá»¥c polling API.
-
----
-
-# 10. Algorithm List
-
-## Core
-
-| NhÃ³m       | Thuáº­t toÃ¡n                    |
-| ---------- | ----------------------------- |
-| Searching  | Linear Search                 |
-| Searching  | Binary Search                 |
-| Sorting    | Quick Sort                    |
-| Sorting    | Merge Sort                    |
-| Statistics | Mean / Median / Variance / SD |
-| Trend      | Moving Average                |
-| Team       | Form Score                    |
-| Team       | H2H                           |
-| Rating     | Elo                           |
-| Prediction | Weighted Scoring              |
-
-## Extension
-
-| NhÃ³m | Thuáº­t toÃ¡n          |
-| ---- | ------------------- |
-| ML   | Logistic Regression |
-| ML   | Decision Tree       |
-
-NhÆ° váº­y **ML khÃ´ng pháº£i Ä‘iá»u kiá»‡n Ä‘á»ƒ project hoÃ n thÃ nh**.
-
----
-
-# 11. Evaluation
-
-Project pháº£i Ä‘Ã¡nh giÃ¡ hai khÃ­a cáº¡nh.
-
-## 11.1. Algorithm performance
-
-```text
-Input Size
-      â†“
-Algorithm
-      â†“
-Execution Time
-      â†“
-Memory
-```
-
-So sÃ¡nh:
-
-```text
-Linear vs Binary Search
-
-Quick Sort vs Merge Sort
-```
-
-## 11.2. Prediction performance
-
-Sá»­ dá»¥ng historical data:
-
-```text
-Historical Dataset
-        â†“
-Train / Calculate
-        â†“
-Prediction
-        â†“
-Actual Result
-        â†“
-Evaluation
-```
-
-Metrics cÃ³ thá»ƒ gá»“m:
-
-* Accuracy;
-* Precision;
-* Recall;
-* F1-score;
-* Confusion Matrix.
-
----
-
-# 12. Constraints
-
-1. Dá»¯ liá»‡u tá»« há»‡ thá»‘ng bÃªn ngoÃ i chá»‰ Ä‘Æ°á»£c sá»­ dá»¥ng trong pháº¡m vi Ä‘Æ°á»£c cáº¥p phÃ©p.
-2. KhÃ´ng lÆ°u hoáº·c cÃ´ng khai thÃ´ng tin nháº¡y cáº£m cá»§a há»‡ thá»‘ng nguá»“n.
-3. Odds chá»‰ phá»¥c vá»¥ má»¥c Ä‘Ã­ch phÃ¢n tÃ­ch dá»¯ liá»‡u thá»ƒ thao.
-4. Prediction chá»‰ mang tÃ­nh cháº¥t nghiÃªn cá»©u/thuáº­t toÃ¡n, **khÃ´ng pháº£i khuyáº¿n nghá»‹ cÃ¡ cÆ°á»£c**.
-5. Dataset pháº£i ghi rÃµ thá»i gian thu tháº­p Ä‘á»ƒ Ä‘áº£m báº£o reproducibility.
-
----
-
-# 13. Future Development
-
-Sau khi hoÃ n thÃ nh bÃ i táº­p lá»›n:
-
-```text
-TrueLab Academic Prototype
-             â”‚
-             â–¼
-      Prediction Research
-             â”‚
-      â”Œâ”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”
-      â–¼             â–¼
-Historical Odds   Team Data
-      â”‚             â”‚
-      â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜
-             â–¼
-        Feature Engineering
-             â”‚
-             â–¼
-             ML
-             â”‚
-             â–¼
-      Prediction Model
-```
-
-CÃ³ thá»ƒ nghiÃªn cá»©u thÃªm:
-
-* real-time odds stream;
-* MQTT;
-* advanced feature engineering;
-* Logistic Regression;
-* XGBoost/Gradient Boosting;
-* model calibration;
-* time-series analysis;
-* prediction API/backend.
-
----
-
-# 14. MVP Scope
-
-Äá»ƒ **2 ngÆ°á»i khÃ´ng bá»‹ scope creep**, MVP gá»“m:
-
-> **Dataset â†’ Room â†’ Search/Sort â†’ Statistics â†’ Team Form â†’ H2H â†’ Elo â†’ Odds Analysis â†’ Weighted Prediction â†’ Benchmark â†’ Visualization**
-
-### ChÆ°a báº¯t buá»™c
-
-* MQTT trá»±c tiáº¿p trong Android;
-* Firebase;
-* authentication;
-* backend riÃªng;
-* ML.
-
-### Náº¿u cÃ²n thá»i gian
-
-* Logistic Regression;
-* Decision Tree;
-* historical odds movement.
-
----
-
-# 15. Timeline
-
-| Tuáº§n   | CÃ´ng viá»‡c                                    |
-| ------ | -------------------------------------------- |
-| Tuáº§n 1 | Dataset + API + Database                     |
-| Tuáº§n 2 | Search + Sort + Statistics                   |
-| Tuáº§n 3 | Team Analysis + H2H + Elo                    |
-| Tuáº§n 4 | Odds Analysis + Prediction                   |
-| Tuáº§n 5 | UI + Visualization + Benchmark               |
-| Tuáº§n 6 | Testing + Evaluation + Report + Presentation |
-
-**Thá»i gian dá»± kiáº¿n:** 6 tuáº§n cho nhÃ³m 2 ngÆ°á»i.
+<div align="center">
+<b>TrueLab © 2026 — Đồ án Thuật toán ứng dụng</b>
+</div>
