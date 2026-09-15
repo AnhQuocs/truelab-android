@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+local_api_spec.md
+*.local.md
+local_*.md
+DATA_API_INTERNAL.md
