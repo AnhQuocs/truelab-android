@@ -24,4 +24,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "TrueLab"
 include(":app")
- 
+include(":core:algorithm")
+include(":core:domain")
+include(":core:data")
+include(":core:ui")
