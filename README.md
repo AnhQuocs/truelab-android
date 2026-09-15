@@ -27,6 +27,8 @@
 | **Nền tảng** | Android Native (Kotlin + Jetpack Compose) |
 | **Kiến trúc** | Clean Architecture (Presentation, Domain, Data) + MVVM |
 | **Lưu trữ dữ liệu** | Room Database (Offline-first architecture) |
+| **Nhóm sinh viên thực hiện** | • **Bùi Anh Quốc** — *System Architect & Mobile Lead*<br/>• **Hà Mạnh Long** — *Algorithm Analyst & QA Engineer* |
+| **Phân công nhiệm vụ** | Xem chi tiết tại [docs/PHAN_CONG_CONG_VIEC.md](docs/PHAN_CONG_CONG_VIEC.md) |
 | **Mục tiêu cốt lõi** | Phân tích phong độ, thống kê dữ liệu đa nguồn, đánh giá Elo, thử nghiệm dự đoán kết quả và benchmark thuật toán |
 
 ---
