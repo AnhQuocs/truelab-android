@@ -1,0 +1,66 @@
+<resources>
+    <string name="app_name">TrueLab</string>
+    <string name="language_vietnamese">Tiếng Việt</string>
+    <string name="language_english">English</string>
+    <string name="change_language_title">Đổi ngôn ngữ</string>
+    <string name="select_language">Chọn ngôn ngữ</string>
+    <string name="apply">Áp dụng</string>
+    <string name="common_close">Đóng</string>
+
+    <!-- Navigation Labels -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_matches">Trận đấu</string>
+    <string name="nav_teams">Đội bóng</string>
+    <string name="nav_analytics">Thống kê</string>
+    <string name="nav_prediction">Dự đoán</string>
+    <string name="nav_benchmark">Benchmark</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">Bảng điều khiển TrueLab</string>
+    <string name="home_subtitle">Công cụ Phân tích Dữ liệu &amp; Dự đoán Thể thao</string>
+    <string name="home_stat_matches">Trận đấu</string>
+    <string name="home_stat_teams">Đội bóng</string>
+    <string name="home_stat_providers">Nhà cái</string>
+    <string name="home_stat_algorithms">Thuật toán</string>
+    <string name="home_dataset_card_title">Tổng quan Tập dữ liệu</string>
+    <string name="home_quick_actions">Tính năng cốt lõi</string>
+
+    <!-- Matches Screen -->
+    <string name="matches_title">Lịch thi đấu &amp; Kết quả</string>
+    <string name="matches_search_hint">Tìm kiếm đội bóng hoặc giải đấu...</string>
+    <string name="matches_filter_all">Tất cả</string>
+    <string name="matches_filter_live">Trực tiếp</string>
+    <string name="matches_filter_finished">Đã kết thúc</string>
+    <string name="matches_filter_upcoming">Sắp diễn ra</string>
+
+    <!-- Teams Screen -->
+    <string name="teams_title">Đội bóng &amp; Bảng xếp hạng Elo</string>
+    <string name="teams_search_hint">Tìm tên đội bóng...</string>
+    <string name="teams_elo_label">Elo</string>
+    <string name="teams_form_label">Phong độ</string>
+
+    <!-- Analytics Screen -->
+    <string name="analytics_title">Thống kê Mô tả &amp; Tỷ lệ Kèo</string>
+    <string name="analytics_mean_goals">Bàn thắng TB</string>
+    <string name="analytics_median_goals">Trung vị</string>
+    <string name="analytics_std_dev">Độ lệch chuẩn</string>
+    <string name="analytics_odds_variance">Phương sai Kèo</string>
+    <string name="analytics_odds_comparison">So sánh Kèo Đa Nhà cái</string>
+
+    <!-- Prediction Screen -->
+    <string name="prediction_title">Dự đoán Kết quả Trận đấu</string>
+    <string name="prediction_select_match">Trận đấu được chọn</string>
+    <string name="prediction_weighted_model">Mô hình Điểm số Trọng số</string>
+    <string name="prediction_home_win">Chủ nhà Thắng</string>
+    <string name="prediction_draw">Hòa</string>
+    <string name="prediction_away_win">Đội khách Thắng</string>
+    <string name="prediction_calculate_btn">Chạy Mô hình Dự đoán</string>
+
+    <!-- Benchmark Screen -->
+    <string name="benchmark_title">Hiệu năng Thuật toán</string>
+    <string name="benchmark_search_title">Tìm kiếm (Tuyến tính vs Nhị phân)</string>
+    <string name="benchmark_sort_title">Sắp xếp (QuickSort vs MergeSort)</string>
+    <string name="benchmark_run_btn">Chạy Bộ đo Hiệu năng</string>
+    <string name="benchmark_dataset_size">Kích thước tập dữ liệu: %1$d mục</string>
+    <string name="benchmark_exec_time">Thời gian thực thi: %1$.3f ms</string>
+</resources>
