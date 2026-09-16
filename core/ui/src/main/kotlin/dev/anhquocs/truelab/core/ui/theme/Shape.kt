@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.dp
 val RadiusSmall   = 8.dp
 val RadiusMedium  = 12.dp
 val RadiusLarge   = 16.dp
-val RadiusPill    = 999.dp
+val RadiusPill    = 100.dp
 
 val TrueLabShapes = Shapes(
     small = RoundedCornerShape(RadiusSmall),
