@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -65,8 +66,10 @@ private fun ProgressItem(label: String, progress: Float, color: Color) {
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f) // Cấp không gian cho Label
             )
+            Spacer(modifier = Modifier.width(SpacingS)) // Tạo khoảng cách an toàn
             Text(
                 text = "${(progress * 100).toInt()}%",
                 style = MaterialTheme.typography.labelSmall,

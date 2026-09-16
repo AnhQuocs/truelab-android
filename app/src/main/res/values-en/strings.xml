@@ -22,7 +22,9 @@
     <string name="home_stat_teams">Teams</string>
     <string name="home_stat_providers">Providers</string>
     <string name="home_stat_algorithms">Algorithms</string>
-    <string name="home_dataset_card_title">Dataset Overview</string>
+    <string name="home_dataset_card_title">Dataset Overview (v3.0)</string>
+    <string name="home_dataset_last_updated">Last Sync: %1$s</string>
+    <string name="home_dataset_offline_ready">Room DB Offline Ready</string>
     <string name="home_quick_actions">Core Features</string>
     <string name="home_algo_progress_title">Algorithm Implementation Progress</string>
     <string name="home_algo_search_sort">Search &amp; Sort (Linear, Binary, Quick, Merge)</string>
@@ -35,27 +37,50 @@
     <string name="home_pred_hit">✓ Hit</string>
     <string name="home_pred_miss">✗ Miss</string>
 
-    <!-- Matches Screen -->
-    <string name="matches_title">Matches &amp; Fixtures</string>
-    <string name="matches_search_hint">Search teams or leagues...</string>
-    <string name="matches_filter_all">All</string>
-    <string name="matches_filter_live">Live</string>
-    <string name="matches_filter_finished">Finished</string>
-    <string name="matches_filter_upcoming">Upcoming</string>
+    <!-- Matches Dataset Explorer Screen -->
+    <string name="matches_title">Match Dataset Explorer</string>
+    <string name="matches_subtitle">380 Records • Multi-provider Odds • Extracted Features</string>
+    <string name="matches_search_hint">Search Team, Match ID (#M-xxx) or League...</string>
+    <string name="matches_filter_all">All (380)</string>
+    <string name="matches_filter_with_odds">With Odds</string>
+    <string name="matches_filter_cleaned">Normalized</string>
+    <string name="matches_filter_backtested">Backtested</string>
+    <string name="matches_sort_label">Sort By:</string>
+    <string name="matches_sort_date">Date (QuickSort)</string>
+    <string name="matches_sort_goals">Goals (MergeSort)</string>
+    <string name="matches_sort_id">ID (BinarySearch)</string>
+    <string name="matches_odds_label">Avg Odds:</string>
+    <string name="matches_features_label">Features:</string>
 
     <!-- Teams Screen -->
-    <string name="teams_title">Teams &amp; Elo Leaderboard</string>
-    <string name="teams_search_hint">Search team name...</string>
-    <string name="teams_elo_label">Elo</string>
-    <string name="teams_form_label">Form</string>
+    <string name="teams_title">Teams, Elo &amp; Form Analysis</string>
+    <string name="teams_subtitle">Form Score • Home/Away Splits • H2H Matrix • Elo Rating</string>
+    <string name="teams_search_hint">Search team name or league...</string>
+    <string name="teams_elo_label">Elo Rating</string>
+    <string name="teams_form_score_label">Form Score (5 Matches)</string>
+    <string name="teams_home_away_label">Home / Away Splits</string>
+    <string name="teams_h2h_label">H2H Performance</string>
+    <string name="teams_home_stats">Home</string>
+    <string name="teams_away_stats">Away</string>
+    <string name="teams_h2h_highlight">H2H Highlight</string>
 
     <!-- Analytics Screen -->
-    <string name="analytics_title">Descriptive Stats &amp; Odds</string>
+    <string name="analytics_title">Analytics Dashboard</string>
+    <string name="analytics_subtitle">Comprehensive Stats • Multi-Provider Odds • Trend</string>
+    <string name="analytics_descriptive_stats">Comprehensive Descriptive Statistics</string>
     <string name="analytics_mean_goals">Mean Goals</string>
-    <string name="analytics_median_goals">Median</string>
+    <string name="analytics_median_goals">Median Goals</string>
     <string name="analytics_std_dev">Std Dev</string>
-    <string name="analytics_odds_variance">Odds Variance</string>
-    <string name="analytics_odds_comparison">Multi-Provider Odds Comparison</string>
+    <string name="analytics_variance">Variance</string>
+    <string name="analytics_min_max_goals">Min/Max Range</string>
+    <string name="analytics_skewness">Distribution Skew</string>
+    <string name="analytics_odds_variance">Odds Volatility</string>
+    <string name="analytics_odds_comparison">Multi-Provider Odds Matrix</string>
+    <string name="analytics_trend_title">Odds Moving Average &amp; Volatility Trend</string>
+    <string name="analytics_goals_match">Goals/match</string>
+    <string name="analytics_goal_median_desc">Goal median</string>
+    <string name="analytics_variance_val">Variance: %1$s</string>
+    <string name="analytics_spread_index">Spread index</string>
 
     <!-- Prediction Screen -->
     <string name="prediction_title">Match Outcome Prediction</string>

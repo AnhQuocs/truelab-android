@@ -22,7 +22,9 @@
     <string name="home_stat_teams">Đội bóng</string>
     <string name="home_stat_providers">Nhà cung cấp</string>
     <string name="home_stat_algorithms">Thuật toán</string>
-    <string name="home_dataset_card_title">Tổng quan Tập dữ liệu</string>
+    <string name="home_dataset_card_title">Tổng quan Tập dữ liệu (v3.0)</string>
+    <string name="home_dataset_last_updated">Đồng bộ cuối: %1$s</string>
+    <string name="home_dataset_offline_ready">Room DB Sẵn sàng Ngoại tuyến</string>
     <string name="home_quick_actions">Tính năng cốt lõi</string>
     <string name="home_algo_progress_title">Tiến độ Thuật toán</string>
     <string name="home_algo_search_sort">Tìm kiếm &amp; Sắp xếp (Tuyến tính, Nhị phân, Quick, Merge)</string>
@@ -35,27 +37,50 @@
     <string name="home_pred_hit">✓ Chính xác</string>
     <string name="home_pred_miss">✗ Sai lệch</string>
 
-    <!-- Matches Screen -->
-    <string name="matches_title">Lịch thi đấu &amp; Kết quả</string>
-    <string name="matches_search_hint">Tìm kiếm đội bóng hoặc giải đấu...</string>
-    <string name="matches_filter_all">Tất cả</string>
-    <string name="matches_filter_live">Trực tiếp</string>
-    <string name="matches_filter_finished">Đã kết thúc</string>
-    <string name="matches_filter_upcoming">Sắp diễn ra</string>
+    <!-- Matches Dataset Explorer Screen -->
+    <string name="matches_title">Tập dữ liệu Trận đấu</string>
+    <string name="matches_subtitle">380 Mẫu dữ liệu • Odds Đa nguồn • Đặc trưng Thuật toán</string>
+    <string name="matches_search_hint">Tìm Đội bóng, Mã trận (#M-xxx) hoặc Giải đấu...</string>
+    <string name="matches_filter_all">Tất cả (380)</string>
+    <string name="matches_filter_with_odds">Có dữ liệu Odds</string>
+    <string name="matches_filter_cleaned">Đã chuẩn hóa</string>
+    <string name="matches_filter_backtested">Đã kiểm thử</string>
+    <string name="matches_sort_label">Sắp xếp theo:</string>
+    <string name="matches_sort_date">Ngày (QuickSort)</string>
+    <string name="matches_sort_goals">Bàn thắng (MergeSort)</string>
+    <string name="matches_sort_id">Mã trận (BinarySearch)</string>
+    <string name="matches_odds_label">Odds TB:</string>
+    <string name="matches_features_label">Đặc trưng:</string>
 
     <!-- Teams Screen -->
-    <string name="teams_title">Đội bóng &amp; Bảng xếp hạng Elo</string>
-    <string name="teams_search_hint">Tìm tên đội bóng...</string>
-    <string name="teams_elo_label">Elo</string>
-    <string name="teams_form_label">Phong độ</string>
+    <string name="teams_title">Phân tích Đội bóng, Elo &amp; Phong độ</string>
+    <string name="teams_subtitle">Điểm Phong độ • Sân Nhà/Khách • Đối đầu H2H • Elo Rating</string>
+    <string name="teams_search_hint">Tìm tên đội bóng hoặc giải đấu...</string>
+    <string name="teams_elo_label">Hệ số Elo</string>
+    <string name="teams_form_score_label">Điểm Phong độ (5 trận)</string>
+    <string name="teams_home_away_label">Thống kê Sân nhà / Sân khách</string>
+    <string name="teams_h2h_label">Lịch sử Đối đầu (H2H)</string>
+    <string name="teams_home_stats">Sân nhà</string>
+    <string name="teams_away_stats">Sân khách</string>
+    <string name="teams_h2h_highlight">Lịch sử đối đầu</string>
 
     <!-- Analytics Screen -->
-    <string name="analytics_title">Thống kê Mô tả &amp; Tỷ lệ Kèo</string>
-    <string name="analytics_mean_goals">Bàn thắng TB</string>
-    <string name="analytics_median_goals">Trung vị</string>
-    <string name="analytics_std_dev">Độ lệch chuẩn</string>
-    <string name="analytics_odds_variance">Phương sai Kèo</string>
-    <string name="analytics_odds_comparison">So sánh Kèo Đa Nhà cái</string>
+    <string name="analytics_title">Bảng phân tích (Analytics)</string>
+    <string name="analytics_subtitle">Thống kê mô tả toàn diện • So sánh kèo • Xu hướng</string>
+    <string name="analytics_descriptive_stats">Thống kê Mô tả Toàn diện</string>
+    <string name="analytics_mean_goals">Số bàn/trận (Mean)</string>
+    <string name="analytics_median_goals">Trung vị (Median)</string>
+    <string name="analytics_std_dev">Độ lệch chuẩn (Std Dev)</string>
+    <string name="analytics_variance">Phương sai</string>
+    <string name="analytics_min_max_goals">Khoảng Min/Max</string>
+    <string name="analytics_skewness">Độ xiên (Skewness)</string>
+    <string name="analytics_odds_variance">Độ biến động Kèo</string>
+    <string name="analytics_odds_comparison">Ma trận Kèo Đa nguồn (Multi-Provider Odds)</string>
+    <string name="analytics_trend_title">Trung bình trượt Kèo &amp; Biến động (Volatility)</string>
+    <string name="analytics_goals_match">Bàn/trận</string>
+    <string name="analytics_goal_median_desc">Trung vị bàn thắng</string>
+    <string name="analytics_variance_val">Phương sai: %1$s</string>
+    <string name="analytics_spread_index">Chỉ số phân tán</string>
 
     <!-- Prediction Screen -->
     <string name="prediction_title">Dự đoán Kết quả Trận đấu</string>

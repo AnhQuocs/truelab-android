@@ -43,7 +43,7 @@
 * 🔍 **Tìm kiếm & Sắp xếp:** Áp dụng và benchmark các thuật toán tìm kiếm (*Linear Search, Binary Search*) và sắp xếp (*Quick Sort, Merge Sort*).
 * 📈 **Thống kê chuyên sâu:** Tính toán các chỉ số thống kê mô tả (*Mean, Median, Min/Max, Variance, Standard Deviation*).
 * ⚡ **Đánh giá sức mạnh & phong độ:** Xây dựng Form Score, phân tích Home/Away, phân tích đối đầu trực tiếp (H2H) và hệ thống xếp hạng **Elo Rating**.
-* 📊 **Phân tích biến động Odds:** Theo dõi độ biến động (*Volatility*), chênh lệch nhà cái, xu hướng (*Moving Average*).
+* 📊 **Phân tích biến động Odds:** Theo dõi độ biến động (*Volatility*), chênh lệch giữa các nhà cung cấp, xu hướng (*Moving Average*).
 * 🎯 **Mô hình dự đoán (Prediction):** Áp dụng mô hình tính điểm trọng số (*Weighted Scoring*) và mở rộng mô hình máy học (*Logistic Regression, Decision Tree*).
 * ⏱️ **Benchmark hiệu năng:** Đo lường thời gian thực thi, mức tiêu thụ bộ nhớ và độ chính xác theo quy mô dữ liệu.
 
@@ -62,8 +62,8 @@ Dữ liệu tập trung vào môn bóng đá, bao gồm:
 > **TrueLab KHÔNG PHẢI là ứng dụng cá cược.**  
 > Ứng dụng **hoàn toàn không hỗ trợ**:
 > - ❌ Đặt cược, nạp tiền, rút tiền hoặc giao dịch tài chính.
-> - ❌ Chuyển hướng liên kết đến các trang cá cược/nhà cái.
-> - ❌ Quản lý tài khoản nhà cái.
+> - ❌ Chuyển hướng liên kết đến các trang cá cược / nhà cung cấp tỷ lệ.
+> - ❌ Quản lý tài khoản cá cược.
 > 
 > *Dữ liệu Odds được sử dụng thuần túy như một nguồn dữ liệu xác suất thị trường phục vụ nghiên cứu khoa học và thuật toán.*
 
