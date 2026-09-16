@@ -20,10 +20,20 @@
     <string name="home_subtitle">Công cụ Phân tích Dữ liệu &amp; Dự đoán Thể thao</string>
     <string name="home_stat_matches">Trận đấu</string>
     <string name="home_stat_teams">Đội bóng</string>
-    <string name="home_stat_providers">Nhà cái</string>
+    <string name="home_stat_providers">Nhà cung cấp</string>
     <string name="home_stat_algorithms">Thuật toán</string>
     <string name="home_dataset_card_title">Tổng quan Tập dữ liệu</string>
     <string name="home_quick_actions">Tính năng cốt lõi</string>
+    <string name="home_algo_progress_title">Tiến độ Thuật toán</string>
+    <string name="home_algo_search_sort">Tìm kiếm &amp; Sắp xếp (Tuyến tính, Nhị phân, Quick, Merge)</string>
+    <string name="home_algo_stats">Thống kê &amp; Xu hướng (Mô tả, TB trượt)</string>
+    <string name="home_algo_eval">Đánh giá (Điểm phong độ, Hệ số Elo)</string>
+    <string name="home_algo_predict">Dự đoán (Tính điểm trọng số, ML)</string>
+    <string name="home_recent_predictions_title">Kết quả Dự đoán Gần đây</string>
+    <string name="home_pred_predicted">Dự đoán: %1$s</string>
+    <string name="home_pred_actual">Thực tế: %1$s</string>
+    <string name="home_pred_hit">✓ Chính xác</string>
+    <string name="home_pred_miss">✗ Sai lệch</string>
 
     <!-- Matches Screen -->
     <string name="matches_title">Lịch thi đấu &amp; Kết quả</string>

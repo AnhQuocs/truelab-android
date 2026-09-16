@@ -40,6 +40,7 @@ import dev.anhquocs.truelab.core.ui.theme.SpacingM
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXL
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.navigation.TrueLabMainLayout
 
 @Composable
 fun BenchmarkScreen(
@@ -48,69 +49,74 @@ fun BenchmarkScreen(
     var selectedDatasetSizeIndex by remember { mutableIntStateOf(1) }
     val datasetSizes = listOf(1_000, 10_000, 50_000)
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = SpacingL),
-        verticalArrangement = Arrangement.spacedBy(SpacingM),
-        contentPadding = PaddingValues(bottom = SpacingXL)
-    ) {
-        item {
-            Spacer(modifier = Modifier.height(SpacingS))
-            Text(
-                text = stringResource(R.string.benchmark_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        item {
-            DatasetSizeSelector(
-                sizes = datasetSizes,
-                selectedIndex = selectedDatasetSizeIndex,
-                onSelectIndex = { selectedDatasetSizeIndex = it }
-            )
-        }
-
-        item {
-            AlgorithmBenchmarkCard(
-                title = stringResource(R.string.benchmark_search_title),
-                algo1Name = "Linear Search",
-                algo1Time = "1.420 ms",
-                algo1Complexity = "O(N)",
-                algo2Name = "Binary Search",
-                algo2Time = "0.015 ms",
-                algo2Complexity = "O(log N)"
-            )
-        }
-
-        item {
-            AlgorithmBenchmarkCard(
-                title = stringResource(R.string.benchmark_sort_title),
-                algo1Name = "QuickSort (In-Place)",
-                algo1Time = "8.350 ms",
-                algo1Complexity = "O(N log N)",
-                algo2Name = "MergeSort",
-                algo2Time = "11.210 ms",
-                algo2Complexity = "O(N log N)"
-            )
-        }
-
-        item {
-            Button(
-                onClick = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(ButtonHeightMedium),
-                shape = RoundedCornerShape(RadiusMedium)
-            ) {
-                Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null)
-                Spacer(modifier = Modifier.padding(horizontal = SpacingXS))
+    TrueLabMainLayout(
+        modifier = modifier,
+        header = {
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = SpacingL)) {
                 Text(
-                    text = stringResource(R.string.benchmark_run_btn),
-                    fontWeight = FontWeight.SemiBold
+                    text = stringResource(R.string.benchmark_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
+            }
+        }
+    ) { contentModifier ->
+        LazyColumn(
+            modifier = contentModifier
+                .fillMaxSize()
+                .padding(horizontal = SpacingL),
+            verticalArrangement = Arrangement.spacedBy(SpacingM),
+            contentPadding = PaddingValues(bottom = SpacingXL)
+        ) {
+            item {
+                Spacer(modifier = Modifier.height(SpacingS))
+                DatasetSizeSelector(
+                    sizes = datasetSizes,
+                    selectedIndex = selectedDatasetSizeIndex,
+                    onSelectIndex = { selectedDatasetSizeIndex = it }
+                )
+            }
+
+            item {
+                AlgorithmBenchmarkCard(
+                    title = stringResource(R.string.benchmark_search_title),
+                    algo1Name = "Linear Search",
+                    algo1Time = "1.420 ms",
+                    algo1Complexity = "O(N)",
+                    algo2Name = "Binary Search",
+                    algo2Time = "0.015 ms",
+                    algo2Complexity = "O(log N)"
+                )
+            }
+
+            item {
+                AlgorithmBenchmarkCard(
+                    title = stringResource(R.string.benchmark_sort_title),
+                    algo1Name = "QuickSort (In-Place)",
+                    algo1Time = "8.350 ms",
+                    algo1Complexity = "O(N log N)",
+                    algo2Name = "MergeSort",
+                    algo2Time = "11.210 ms",
+                    algo2Complexity = "O(N log N)"
+                )
+            }
+
+            item {
+                Button(
+                    onClick = {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(ButtonHeightMedium),
+                    shape = RoundedCornerShape(RadiusMedium)
+                ) {
+                    Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null)
+                    Spacer(modifier = Modifier.padding(horizontal = SpacingXS))
+                    Text(
+                        text = stringResource(R.string.benchmark_run_btn),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
     }

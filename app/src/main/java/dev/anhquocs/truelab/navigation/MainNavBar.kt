@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +45,8 @@ fun MainNavBar(
     modifier: Modifier = Modifier
 ) {
 
+    val isDark = isSystemInDarkTheme()
+
     val pillShape = remember { RoundedCornerShape(RadiusPill) }
     val activeColor = MaterialTheme.colorScheme.primary
     val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -68,11 +71,9 @@ fun MainNavBar(
                     .weight(1f)
                     .clickable(
                         indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) {
+                        interactionSource = remember { MutableInteractionSource() }) {
                         onNavigateToDestination(destination)
-                    }
-            ) {
+                    }) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -80,7 +81,9 @@ fun MainNavBar(
                         .then(
                             if (isSelected) {
                                 Modifier.paint(
-                                    painter = painterResource(R.drawable.bg_tab_selected),
+                                    painter = if (isDark) painterResource(R.drawable.bg_tab_selected_dark) else painterResource(
+                                        R.drawable.bg_tab_selected_light
+                                    ),
                                 )
                             } else {
                                 Modifier

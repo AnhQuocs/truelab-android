@@ -35,7 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.anhquocs.truelab.MainActivity
+import dev.anhquocs.truelab.presentation.MainActivity
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.language.model.AppLanguage
 import dev.anhquocs.truelab.core.ui.localization.LangUtils
