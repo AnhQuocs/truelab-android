@@ -9,19 +9,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,25 +36,40 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
+import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
-import dev.anhquocs.truelab.core.ui.theme.SpacingL
-import dev.anhquocs.truelab.core.ui.theme.SpacingM
-import dev.anhquocs.truelab.core.ui.theme.SpacingS
-import dev.anhquocs.truelab.core.ui.theme.SpacingXL
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.core.ui.utils.medium
+import dev.anhquocs.truelab.core.ui.utils.s10
+import dev.anhquocs.truelab.core.ui.utils.s12
+import dev.anhquocs.truelab.core.ui.utils.s13
+import dev.anhquocs.truelab.core.ui.utils.s14
+import dev.anhquocs.truelab.core.ui.utils.semiBold
+import dev.anhquocs.truelab.feature.match.presentation.components.MatchDataCard
 import dev.anhquocs.truelab.navigation.TrueLabMainLayout
 
-data class MatchSample(
+private val TOP_BAR_HEIGHT = 75.dp
+
+data class MatchDataRecord(
     val id: String,
+    val league: String,
+    val date: String,
     val homeTeam: String,
     val awayTeam: String,
-    val homeScore: Int?,
-    val awayScore: Int?,
-    val status: String,
-    val matchTime: String
+    val homeScore: Int,
+    val awayScore: Int,
+    val actualResult: String, // "HOME_WIN", "DRAW", "AWAY_WIN"
+    val avgHomeOdds: Double,
+    val avgDrawOdds: Double,
+    val avgAwayOdds: Double,
+    val providerCount: Int,
+    val eloDiff: Int,
+    val totalGoals: Int,
+    val isNormalized: Boolean,
+    val predictedProb: String
 )
 
 @Composable
@@ -61,79 +79,156 @@ fun MatchesScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilterIndex by remember { mutableIntStateOf(0) }
+    var selectedSortIndex by remember { mutableIntStateOf(0) }
 
     val filterLabels = listOf(
         stringResource(R.string.matches_filter_all),
-        stringResource(R.string.matches_filter_live),
-        stringResource(R.string.matches_filter_finished),
-        stringResource(R.string.matches_filter_upcoming)
+        stringResource(R.string.matches_filter_with_odds),
+        stringResource(R.string.matches_filter_cleaned),
+        stringResource(R.string.matches_filter_backtested)
     )
 
-    val sampleMatches = listOf(
-        MatchSample("1", "Arsenal", "Chelsea", 2, 1, "FT", "20:00"),
-        MatchSample("2", "Man City", "Liverpool", 1, 1, "78'", "22:30"),
-        MatchSample("3", "Real Madrid", "Barcelona", null, null, "Upcoming", "Tomorrow 02:00"),
-        MatchSample("4", "Bayern Munich", "Dortmund", 3, 2, "FT", "Yesterday"),
-        MatchSample("5", "Inter Milan", "AC Milan", null, null, "Upcoming", "Sun 01:45")
+    val sortLabels = listOf(
+        stringResource(R.string.matches_sort_date),
+        stringResource(R.string.matches_sort_goals),
+        stringResource(R.string.matches_sort_id)
     )
+
+    val sampleRecords = remember {
+        listOf(
+            MatchDataRecord(
+                id = "M-38012",
+                league = "Premier League",
+                date = "10 Th03, 2024",
+                homeTeam = "Arsenal",
+                awayTeam = "Chelsea",
+                homeScore = 2,
+                awayScore = 1,
+                actualResult = "HOME_WIN",
+                avgHomeOdds = 1.85,
+                avgDrawOdds = 3.60,
+                avgAwayOdds = 4.20,
+                providerCount = 3,
+                eloDiff = 85,
+                totalGoals = 3,
+                isNormalized = true,
+                predictedProb = "HW 54%"
+            ),
+            MatchDataRecord(
+                id = "M-38013",
+                league = "Premier League",
+                date = "11 Th03, 2024",
+                homeTeam = "Man City",
+                awayTeam = "Liverpool",
+                homeScore = 1,
+                awayScore = 1,
+                actualResult = "DRAW",
+                avgHomeOdds = 2.10,
+                avgDrawOdds = 3.45,
+                avgAwayOdds = 3.30,
+                providerCount = 3,
+                eloDiff = 60,
+                totalGoals = 2,
+                isNormalized = true,
+                predictedProb = "DR 32%"
+            ),
+            MatchDataRecord(
+                id = "M-38014",
+                league = "La Liga",
+                date = "12 Th03, 2024",
+                homeTeam = "Real Madrid",
+                awayTeam = "Barcelona",
+                homeScore = 3,
+                awayScore = 2,
+                actualResult = "HOME_WIN",
+                avgHomeOdds = 1.95,
+                avgDrawOdds = 3.50,
+                avgAwayOdds = 3.80,
+                providerCount = 3,
+                eloDiff = 40,
+                totalGoals = 5,
+                isNormalized = true,
+                predictedProb = "HW 49%"
+            ),
+            MatchDataRecord(
+                id = "M-38015",
+                league = "Bundesliga",
+                date = "13 Th03, 2024",
+                homeTeam = "Bayern Munich",
+                awayTeam = "Dortmund",
+                homeScore = 2,
+                awayScore = 2,
+                actualResult = "DRAW",
+                avgHomeOdds = 1.65,
+                avgDrawOdds = 4.10,
+                avgAwayOdds = 5.00,
+                providerCount = 3,
+                eloDiff = 120,
+                totalGoals = 4,
+                isNormalized = true,
+                predictedProb = "HW 61%"
+            ),
+            MatchDataRecord(
+                id = "M-38016",
+                league = "Serie A",
+                date = "14 Th03, 2024",
+                homeTeam = "Inter Milan",
+                awayTeam = "AC Milan",
+                homeScore = 0,
+                awayScore = 1,
+                actualResult = "AWAY_WIN",
+                avgHomeOdds = 2.05,
+                avgDrawOdds = 3.30,
+                avgAwayOdds = 3.70,
+                providerCount = 3,
+                eloDiff = 30,
+                totalGoals = 1,
+                isNormalized = true,
+                predictedProb = "HW 45%"
+            )
+        )
+    }
 
     TrueLabMainLayout(
         modifier = modifier,
-        header = {
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = SpacingL)) {
-                Text(
-                    text = stringResource(R.string.matches_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+        headerHeight = TOP_BAR_HEIGHT,
+        header = { MatchesHeader() }
     ) { contentModifier ->
         LazyColumn(
             modifier = contentModifier
                 .fillMaxSize()
-                .padding(horizontal = SpacingL),
-            verticalArrangement = Arrangement.spacedBy(SpacingM),
-            contentPadding = PaddingValues(bottom = SpacingXL)
+                .padding(horizontal = Dimen.PaddingM),
+            verticalArrangement = Arrangement.spacedBy(Dimen.PaddingM),
+            contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             item {
-                Spacer(modifier = Modifier.height(SpacingM))
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = { Text(stringResource(R.string.matches_search_hint)) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search"
-                        )
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(RadiusMedium),
-                    modifier = Modifier.fillMaxWidth()
+                Spacer(modifier = Modifier.height(Dimen.PaddingS))
+                DatasetSearchField(
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { searchQuery = it }
                 )
             }
 
             item {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(SpacingS),
-                    contentPadding = PaddingValues(vertical = SpacingXS)
-                ) {
-                    items(filterLabels.size) { index ->
-                        FilterChip(
-                            selected = selectedFilterIndex == index,
-                            onClick = { selectedFilterIndex = index },
-                            label = { Text(filterLabels[index]) }
-                        )
-                    }
-                }
+                DatasetFilterChips(
+                    filterLabels = filterLabels,
+                    selectedIndex = selectedFilterIndex,
+                    onSelectIndex = { selectedFilterIndex = it }
+                )
             }
 
-            items(sampleMatches) { match ->
-                MatchCard(
-                    match = match,
-                    onClick = { onMatchClick(match.id) }
+            item {
+                DatasetSortSection(
+                    sortLabels = sortLabels,
+                    selectedSortIndex = selectedSortIndex,
+                    onSelectSortIndex = { selectedSortIndex = it }
+                )
+            }
+
+            items(sampleRecords) { record ->
+                MatchDataCard(
+                    record = record,
+                    onClick = { onMatchClick(record.id) }
                 )
             }
         }
@@ -141,75 +236,137 @@ fun MatchesScreen(
 }
 
 @Composable
-private fun MatchCard(
-    match: MatchSample,
-    onClick: () -> Unit
-) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(RadiusLarge),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+private fun MatchesHeader() {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = Dimen.PaddingS)) {
+        Text(
+            text = stringResource(R.string.matches_title),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
         )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SpacingL),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Home Team
-            Text(
-                text = match.homeTeam,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Start
-            )
+        Spacer(modifier = Modifier.height(SpacingXS))
+        Text(
+            text = stringResource(R.string.matches_subtitle),
+            style = MaterialTheme.typography.s13.medium(),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(SpacingXS))
+    }
+}
 
-            // Score / Status Center
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = SpacingS)
-            ) {
-                if (match.homeScore != null && match.awayScore != null) {
-                    Text(
-                        text = "${match.homeScore} - ${match.awayScore}",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                } else {
-                    Text(
-                        text = "VS",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.secondary
+@Composable
+private fun DatasetSearchField(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = searchQuery,
+        onValueChange = onSearchQueryChange,
+        placeholder = {
+            Text(
+                text = stringResource(R.string.matches_search_hint),
+                style = MaterialTheme.typography.s14,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            )
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        trailingIcon = {
+            if (searchQuery.isNotEmpty()) {
+                IconButton(onClick = { onSearchQueryChange("") }) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Clear",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                SuggestionChip(
-                    onClick = {},
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(RadiusLarge),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        ),
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+private fun DatasetFilterChips(
+    filterLabels: List<String>,
+    selectedIndex: Int,
+    onSelectIndex: (Int) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingS),
+        contentPadding = PaddingValues(vertical = Dimen.PaddingXXS)
+    ) {
+        items(filterLabels.size) { index ->
+            FilterChip(
+                selected = selectedIndex == index,
+                onClick = { onSelectIndex(index) },
+                shape = RoundedCornerShape(RadiusMedium),
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                label = {
+                    Text(
+                        text = filterLabels[index],
+                        style = MaterialTheme.typography.s12.semiBold()
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun DatasetSortSection(
+    sortLabels: List<String>,
+    selectedSortIndex: Int,
+    onSelectSortIndex: (Int) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingS)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Tune,
+            contentDescription = "Sort",
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(Dimen.SizeS)
+        )
+        Text(
+            text = stringResource(R.string.matches_sort_label),
+            style = MaterialTheme.typography.s12.semiBold(),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXS)
+        ) {
+            items(sortLabels.size) { index ->
+                FilterChip(
+                    selected = selectedSortIndex == index,
+                    onClick = { onSelectSortIndex(index) },
+                    shape = RoundedCornerShape(RadiusMedium),
                     label = {
                         Text(
-                            text = match.status,
-                            style = MaterialTheme.typography.labelSmall
+                            text = sortLabels[index],
+                            style = MaterialTheme.typography.s10.medium()
                         )
                     }
                 )
             }
-
-            // Away Team
-            Text(
-                text = match.awayTeam,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.End
-            )
         }
     }
 }

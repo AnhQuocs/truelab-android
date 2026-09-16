@@ -1,6 +1,6 @@
 # Quy ước UI & Design System (UI & Design System Conventions)
 
-## 1. Hệ thống Kích thước & Khoảng cách dùng chung (Shared Dimensions)
+## 1. Hệ thống Kích thước & Khoảng cách dùng chung (Shared Dimensions & Dimen)
 
 Tất cả khoảng cách, padding, kích thước icon và thành phần UI phải được định nghĩa tập trung tại `:core:ui/theme/Dimensions.kt`.
 
@@ -29,8 +29,42 @@ val TopBarHeight    = 64.dp
 val BottomBarHeight = 72.dp
 ```
 
+### Hệ thống Token `Dimen` (Object `Dimen`)
+Để chuẩn hóa Padding và Size cho toàn bộ màn hình, ưu tiên sử dụng `Dimen.*`:
+
+```kotlin
+object Dimen {
+    // Padding Scale
+    val PaddingXXS   = 2.dp
+    val PaddingXS    = 4.dp
+    val PaddingXSPlus = 6.dp
+    val PaddingS     = 8.dp
+    val PaddingSM    = 12.dp
+    val PaddingM     = 16.dp
+    val PaddingML    = 20.dp
+    val PaddingL     = 24.dp
+    val PaddingXL    = 32.dp
+    val PaddingXXL   = 48.dp
+    val PaddingUltra = 68.dp
+
+    // Size Scale (Icon, Button, Avatar, Card Dimension...)
+    val SizeS        = 16.dp
+    val SizeS2       = 18.dp
+    val SizeSM       = 20.dp
+    val SizeM        = 24.dp
+    val SizeML       = 28.dp
+    val SizeL        = 32.dp
+    val SizeXL       = 36.dp
+    val SizeXLPlus   = 40.dp
+    val SizeXXL      = 50.dp
+    val SizeXXLPlus  = 70.dp
+    val SizeMega     = 80.dp
+    val SizeUltra    = 120.dp
+}
+```
+
 ### Điều cấm kỵ (Prohibitions):
-- **CẤM Hardcode dp tùy tiện**: Tuyệt đối không viết các giá trị tự biên tự diễn như `.padding(17.dp)`, `.padding(19.dp)`, `.padding(23.dp)`. Luôn ưu tiên dùng các hằng số `Spacing*`.
+- **CẤM Hardcode dp tùy tiện**: Tuyệt đối không viết các giá trị tự biên tự diễn như `.padding(17.dp)`, `.padding(19.dp)`, `.padding(23.dp)`. Luôn dùng các hằng số `Dimen.Padding*`, `Dimen.Size*` hoặc `Spacing*`.
 - Nếu có yêu cầu thiết kế mới, hãy khai báo bổ sung vào `Dimensions.kt` có ngữ nghĩa rõ ràng trước khi sử dụng.
 
 ---
@@ -45,16 +79,51 @@ TrueLab hỗ trợ đầy đủ cả **Light Theme** và **Dark Theme** theo chu
 
 ---
 
-## 3. Typography có ngữ nghĩa (Semantic Typography)
+## 3. Typography & Typography Extensions (`TypographyExt.kt`)
 
-- Sử dụng hệ thống Typography chuẩn của Material 3 (`MaterialTheme.typography`).
-- **Phân loại theo vai trò (Semantic Roles)**:
-  - Tiêu đề màn hình (`screenTitle`): `typography.headlineMedium` hoặc `headlineSmall`.
-  - Tiêu đề nhóm (`sectionTitle`): `typography.titleMedium` hoặc `titleSmall`.
-  - Nội dung chính (`body`): `typography.bodyMedium` hoặc `bodyLarge`.
-  - Phụ đề / Metadata (`caption`): `typography.bodySmall` kết hợp với màu `colorScheme.onSurfaceVariant`.
-  - Nhãn / Badge (`label`): `typography.labelSmall` hoặc `labelMedium`.
-- Không hardcode `fontSize = 15.sp` rải rác trong từng màn hình.
+Hệ thống Typography chuẩn định nghĩa tại `:core:ui/utils/TypographyExt.kt` kết hợp Material 3 Typography (`MaterialTheme.typography`).
+
+### Thang đo Typography Kích thước Cố định (`Typography.s*`)
+Các extension giúp gọi nhanh style theo font size (sp) và line height tương ứng:
+- `Typography.s10` (10.sp / line 14.sp)
+- `Typography.s12` (12.sp / line 16.sp)
+- `Typography.s13` (13.sp / line 18.sp)
+- `Typography.s14` (14.sp / line 20.sp)
+- `Typography.s15` (15.sp / line 22.sp)
+- `Typography.s16` (16.sp / line 24.sp)
+- `Typography.s18` (18.sp / line 26.sp)
+- `Typography.s20` (20.sp / line 28.sp)
+- `Typography.s22` (22.sp / line 30.sp)
+- `Typography.s24` (24.sp / line 32.sp)
+- `Typography.s28` (28.sp / line 36.sp)
+- `Typography.s32` (32.sp / line 40.sp)
+
+### Fluent Style Modifiers cho TextStyle
+Thay vì dùng `.copy(fontWeight = ...)`, sử dụng chuỗi hàm mở rộng ngắn gọn:
+```kotlin
+// Font Weight Extensions
+fun TextStyle.bold(): TextStyle
+fun TextStyle.semiBold(): TextStyle
+fun TextStyle.medium(): TextStyle
+fun TextStyle.normal(): TextStyle
+fun TextStyle.light(): TextStyle
+
+// Style & Decoration Extensions
+fun TextStyle.italic(): TextStyle
+fun TextStyle.underline(): TextStyle
+fun TextStyle.lineThrough(): TextStyle
+```
+
+**Ví dụ sử dụng:**
+```kotlin
+Text(
+    text = "TrueLab Engine",
+    style = MaterialTheme.typography.s16.semiBold(),
+    color = MaterialTheme.colorScheme.primary
+)
+```
+
+- **CẤM**: Không hardcode `fontSize = 15.sp` rải rác trong từng màn hình mà hãy dùng `MaterialTheme.typography.s*` hoặc Material 3 tokens.
 
 ---
 
