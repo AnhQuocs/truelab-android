@@ -41,10 +41,9 @@ import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
 import dev.anhquocs.truelab.core.ui.theme.SpacingL
 import dev.anhquocs.truelab.core.ui.theme.SpacingM
-import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXL
-import dev.anhquocs.truelab.core.ui.theme.SpacingXS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXXS
+import dev.anhquocs.truelab.navigation.TrueLabMainLayout
 
 data class TeamLeaderboardItem(
     val id: String,
@@ -74,44 +73,44 @@ fun TeamsScreen(
         TeamLeaderboardItem("7", "Inter Milan", 1890, 27, 18, 5, 4, listOf('W', 'W', 'W', 'L', 'W'))
     )
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = SpacingL)
-    ) {
-        Spacer(modifier = Modifier.height(SpacingS))
-
-        Text(
-            text = stringResource(R.string.teams_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        Spacer(modifier = Modifier.height(SpacingM))
-
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            placeholder = { Text(stringResource(R.string.teams_search_hint)) },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search"
+    TrueLabMainLayout(
+        modifier = modifier,
+        header = {
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = SpacingL)) {
+                Text(
+                    text = stringResource(R.string.teams_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
-            },
-            singleLine = true,
-            shape = RoundedCornerShape(RadiusMedium),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(SpacingM))
-
+            }
+        }
+    ) { contentModifier ->
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = contentModifier
+                .fillMaxSize()
+                .padding(horizontal = SpacingL),
             verticalArrangement = Arrangement.spacedBy(SpacingM),
             contentPadding = PaddingValues(bottom = SpacingXL)
         ) {
+            item {
+                Spacer(modifier = Modifier.height(SpacingM))
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text(stringResource(R.string.teams_search_hint)) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search"
+                        )
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(RadiusMedium),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             itemsIndexed(sampleTeams) { index, team ->
                 TeamCard(
                     rank = index + 1,

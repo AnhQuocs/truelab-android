@@ -35,57 +35,63 @@ import dev.anhquocs.truelab.core.ui.theme.SpacingM
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXL
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.navigation.TrueLabMainLayout
 
 @Composable
 fun PredictionScreen(
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = SpacingL),
-        verticalArrangement = Arrangement.spacedBy(SpacingM),
-        contentPadding = PaddingValues(bottom = SpacingXL)
-    ) {
-        item {
-            Spacer(modifier = Modifier.height(SpacingS))
-            Text(
-                text = stringResource(R.string.prediction_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        item {
-            MatchSelectionCard()
-        }
-
-        item {
-            ProbabilityResultsCard()
-        }
-
-        item {
-            ModelWeightsCard()
-        }
-
-        item {
-            Button(
-                onClick = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(dev.anhquocs.truelab.core.ui.theme.ButtonHeightMedium),
-                shape = RoundedCornerShape(RadiusMedium)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.AutoGraph,
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.padding(horizontal = SpacingXS))
+    TrueLabMainLayout(
+        modifier = modifier,
+        header = {
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = SpacingL)) {
                 Text(
-                    text = stringResource(R.string.prediction_calculate_btn),
-                    fontWeight = FontWeight.SemiBold
+                    text = stringResource(R.string.prediction_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
+            }
+        }
+    ) { contentModifier ->
+        LazyColumn(
+            modifier = contentModifier
+                .fillMaxSize()
+                .padding(horizontal = SpacingL),
+            verticalArrangement = Arrangement.spacedBy(SpacingM),
+            contentPadding = PaddingValues(bottom = SpacingXL)
+        ) {
+            item {
+                Spacer(modifier = Modifier.height(SpacingS))
+                MatchSelectionCard()
+            }
+
+            item {
+                ProbabilityResultsCard()
+            }
+
+            item {
+                ModelWeightsCard()
+            }
+
+            item {
+                Button(
+                    onClick = {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(dev.anhquocs.truelab.core.ui.theme.ButtonHeightMedium),
+                    shape = RoundedCornerShape(RadiusMedium)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoGraph,
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.padding(horizontal = SpacingXS))
+                    Text(
+                        text = stringResource(R.string.prediction_calculate_btn),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
     }

@@ -46,7 +46,10 @@ sealed class MainNavDestination(
     )
 
     companion object {
-        val bottomNavItems = listOf(Home, Matches, Teams, Analytics)
-        val all = listOf(Home, Matches, Teams, Analytics, Prediction, Benchmark)
+        val bottomNavItems: List<MainNavDestination>
+            get() = listOf(Home, Matches, Teams, Analytics)
+
+        val all: List<MainNavDestination>
+            get() = listOf(Home, Matches, Teams, Analytics, Prediction, Benchmark)
     }
 }

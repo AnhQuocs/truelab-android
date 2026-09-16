@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -43,6 +42,7 @@ import dev.anhquocs.truelab.core.ui.theme.SpacingM
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXL
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.navigation.TrueLabMainLayout
 
 data class MatchSample(
     val id: String,
@@ -77,59 +77,59 @@ fun MatchesScreen(
         MatchSample("5", "Inter Milan", "AC Milan", null, null, "Upcoming", "Sun 01:45")
     )
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = SpacingL)
-    ) {
-        Spacer(modifier = Modifier.height(SpacingS))
-
-        Text(
-            text = stringResource(R.string.matches_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        Spacer(modifier = Modifier.height(SpacingM))
-
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            placeholder = { Text(stringResource(R.string.matches_search_hint)) },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search"
-                )
-            },
-            singleLine = true,
-            shape = RoundedCornerShape(RadiusMedium),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(SpacingS))
-
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(SpacingS),
-            contentPadding = PaddingValues(vertical = SpacingXS)
-        ) {
-            items(filterLabels.size) { index ->
-                FilterChip(
-                    selected = selectedFilterIndex == index,
-                    onClick = { selectedFilterIndex = index },
-                    label = { Text(filterLabels[index]) }
+    TrueLabMainLayout(
+        modifier = modifier,
+        header = {
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = SpacingL)) {
+                Text(
+                    text = stringResource(R.string.matches_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(SpacingS))
-
+    ) { contentModifier ->
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = contentModifier
+                .fillMaxSize()
+                .padding(horizontal = SpacingL),
             verticalArrangement = Arrangement.spacedBy(SpacingM),
             contentPadding = PaddingValues(bottom = SpacingXL)
         ) {
+            item {
+                Spacer(modifier = Modifier.height(SpacingM))
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text(stringResource(R.string.matches_search_hint)) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search"
+                        )
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(RadiusMedium),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(SpacingS),
+                    contentPadding = PaddingValues(vertical = SpacingXS)
+                ) {
+                    items(filterLabels.size) { index ->
+                        FilterChip(
+                            selected = selectedFilterIndex == index,
+                            onClick = { selectedFilterIndex = index },
+                            label = { Text(filterLabels[index]) }
+                        )
+                    }
+                }
+            }
+
             items(sampleMatches) { match ->
                 MatchCard(
                     match = match,

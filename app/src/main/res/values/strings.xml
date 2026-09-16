@@ -24,6 +24,16 @@
     <string name="home_stat_algorithms">Algorithms</string>
     <string name="home_dataset_card_title">Dataset Overview</string>
     <string name="home_quick_actions">Core Features</string>
+    <string name="home_algo_progress_title">Algorithm Implementation Progress</string>
+    <string name="home_algo_search_sort">Search &amp; Sort (Linear, Binary, Quick, Merge)</string>
+    <string name="home_algo_stats">Statistics &amp; Trend (Desc Stats, Moving Avg)</string>
+    <string name="home_algo_eval">Evaluation (Form Score, Elo Rating)</string>
+    <string name="home_algo_predict">Prediction (Weighted Scoring, ML)</string>
+    <string name="home_recent_predictions_title">Recent Prediction Results</string>
+    <string name="home_pred_predicted">Predicted: %1$s</string>
+    <string name="home_pred_actual">Actual: %1$s</string>
+    <string name="home_pred_hit">✓ Hit</string>
+    <string name="home_pred_miss">✗ Miss</string>
 
     <!-- Matches Screen -->
     <string name="matches_title">Matches &amp; Fixtures</string>

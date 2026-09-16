@@ -13,11 +13,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 
-private const val SCROLL_THRESHOLD = 80f
 private const val ANIMATION_DURATION_MS = 300
 
 @Stable
-class CollapsingBarsState {
+class CollapsingBarsState(
+    private val scrollThreshold: Float
+) {
     var barsVisible by mutableStateOf(true)
         private set
 
@@ -44,10 +45,10 @@ class CollapsingBarsState {
 
             accumulatedDelta += delta
 
-            if (accumulatedDelta < -SCROLL_THRESHOLD && barsVisible) {
+            if (accumulatedDelta < -scrollThreshold && barsVisible) {
                 barsVisible = false
                 accumulatedDelta = 0f
-            } else if (accumulatedDelta > SCROLL_THRESHOLD && !barsVisible) {
+            } else if (accumulatedDelta > scrollThreshold && !barsVisible) {
                 barsVisible = true
                 accumulatedDelta = 0f
             }
@@ -58,8 +59,8 @@ class CollapsingBarsState {
 }
 
 @Composable
-fun rememberCollapsingBarsState(): CollapsingBarsState {
-    return remember { CollapsingBarsState() }
+fun rememberCollapsingBarsState(scrollThreshold: Float = 80f): CollapsingBarsState {
+    return remember(scrollThreshold) { CollapsingBarsState(scrollThreshold) }
 }
 
 @Stable
