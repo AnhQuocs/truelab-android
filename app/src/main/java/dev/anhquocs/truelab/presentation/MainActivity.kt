@@ -5,7 +5,9 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,24 +17,41 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import dev.anhquocs.truelab.base.BaseComponentActivity
+import dev.anhquocs.truelab.core.domain.theme.model.AppThemeMode
 import dev.anhquocs.truelab.feature.language.presentation.viewmodel.LanguageViewModel
+import dev.anhquocs.truelab.feature.splash.presentation.LoadingScreen
+import dev.anhquocs.truelab.feature.theme.presentation.viewmodel.ThemeViewModel
 import dev.anhquocs.truelab.ui.theme.TrueLabTheme
+import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
 class MainActivity : BaseComponentActivity() {
 
     private val languageViewModel: LanguageViewModel by viewModels()
+    private val themeViewModel: ThemeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             val currentLanguage by languageViewModel.currentLanguage.collectAsStateWithLifecycle()
-            var showLanguageBottomSheet by remember { mutableStateOf(false) }
+            val currentThemeMode by themeViewModel.currentThemeMode.collectAsStateWithLifecycle()
 
-            val isDarkMode = androidx.compose.foundation.isSystemInDarkTheme()
+            var isLoading by remember { mutableStateOf(true) }
 
-            TrueLabTheme {
+            LaunchedEffect(Unit) {
+                delay(200)
+                isLoading = false
+            }
+
+            val systemInDark = isSystemInDarkTheme()
+            val isDarkMode = when (currentThemeMode) {
+                AppThemeMode.LIGHT -> false
+                AppThemeMode.DARK -> true
+                AppThemeMode.SYSTEM -> systemInDark
+            }
+
+            TrueLabTheme(darkTheme = isDarkMode) {
                 val systemBarColorArgb = MaterialTheme.colorScheme.background.toArgb()
 
                 SideEffect {
@@ -49,7 +68,12 @@ class MainActivity : BaseComponentActivity() {
                         },
                     )
                 }
-                MainScreen()
+
+                if (isLoading) {
+                    LoadingScreen()
+                } else {
+                    MainScreen()
+                }
             }
         }
     }

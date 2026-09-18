@@ -42,29 +42,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
-import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
 import dev.anhquocs.truelab.core.ui.theme.RadiusPill
 import dev.anhquocs.truelab.core.ui.theme.RadiusSmall
+import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
 import dev.anhquocs.truelab.core.ui.utils.bold
-import dev.anhquocs.truelab.core.ui.utils.medium
 import dev.anhquocs.truelab.core.ui.utils.s10
 import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s13
 import dev.anhquocs.truelab.core.ui.utils.s14
-import dev.anhquocs.truelab.core.ui.utils.s15
 import dev.anhquocs.truelab.core.ui.utils.s16
-import dev.anhquocs.truelab.core.ui.utils.s18
+import dev.anhquocs.truelab.core.ui.utils.s20
 import dev.anhquocs.truelab.core.ui.utils.semiBold
 import dev.anhquocs.truelab.feature.team.presentation.components.TeamAnalyticsCard
 import dev.anhquocs.truelab.navigation.TrueLabMainLayout
 
-private val TOP_BAR_HEIGHT = 120.dp
+private val TOP_BAR_HEIGHT = 75.dp
 
 data class TeamAnalyticsRecord(
     val id: String,
@@ -237,19 +234,26 @@ fun TeamsScreen(
 
 @Composable
 private fun TeamsHeader() {
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = Dimen.PaddingS)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimen.PaddingM),
+        verticalArrangement = Arrangement.Center
+    ) {
         Text(
             text = stringResource(R.string.teams_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.s20.bold(),
             color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(SpacingXS))
         Text(
             text = stringResource(R.string.teams_subtitle),
-            style = MaterialTheme.typography.s13.medium(),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.s14,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
         )
+        Spacer(modifier = Modifier.height(SpacingS))
     }
 }
 

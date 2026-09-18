@@ -8,6 +8,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
 
 val Typography.s10: TextStyle get() = labelLarge.copy(fontSize = 10.sp, lineHeight = 14.sp)
+val Typography.s11: TextStyle get() = labelLarge.copy(fontSize = 11.sp, lineHeight = 15.sp)
 val Typography.s12: TextStyle get() = labelLarge.copy(fontSize = 12.sp, lineHeight = 16.sp)
 val Typography.s13: TextStyle get() = bodySmall.copy(fontSize = 13.sp, lineHeight = 18.sp)
 val Typography.s14: TextStyle get() = bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp)

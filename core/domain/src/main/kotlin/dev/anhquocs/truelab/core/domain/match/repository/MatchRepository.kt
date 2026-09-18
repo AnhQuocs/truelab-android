@@ -1,0 +1,9 @@
+package dev.anhquocs.truelab.core.domain.match.repository
+
+import dev.anhquocs.truelab.core.domain.match.model.Match
+import kotlinx.coroutines.flow.Flow
+
+interface MatchRepository {
+    fun getMatches(date: String): Flow<List<Match>>
+    fun getMatchDetail(matchId: Long): Flow<Match?>
+}

@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,20 +33,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.anhquocs.truelab.R
+import dev.anhquocs.truelab.core.domain.theme.model.AppThemeMode
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusPill
 import dev.anhquocs.truelab.core.ui.theme.SpacingXXS
 import dev.anhquocs.truelab.core.ui.utils.s10
+import dev.anhquocs.truelab.feature.theme.presentation.viewmodel.ThemeViewModel
 
 @Composable
 fun MainNavBar(
     currentRoute: String?,
     onNavigateToDestination: (MainNavDestination) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    themeViewModel: ThemeViewModel = hiltViewModel()
 ) {
-
-    val isDark = isSystemInDarkTheme()
+    val currentThemeMode by themeViewModel.currentThemeMode.collectAsStateWithLifecycle()
+    val systemInDark = isSystemInDarkTheme()
+    val isDark = when (currentThemeMode) {
+        AppThemeMode.LIGHT -> false
+        AppThemeMode.DARK -> true
+        AppThemeMode.SYSTEM -> systemInDark
+    }
 
     val pillShape = remember { RoundedCornerShape(RadiusPill) }
     val activeColor = MaterialTheme.colorScheme.primary

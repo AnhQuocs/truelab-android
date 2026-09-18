@@ -1,97 +1,115 @@
 package dev.anhquocs.truelab.feature.prediction.presentation
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoGraph
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import dev.anhquocs.truelab.R
+import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
 import dev.anhquocs.truelab.core.ui.theme.SpacingL
 import dev.anhquocs.truelab.core.ui.theme.SpacingM
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
-import dev.anhquocs.truelab.core.ui.theme.SpacingXL
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
-import dev.anhquocs.truelab.navigation.TrueLabMainLayout
+import dev.anhquocs.truelab.core.ui.utils.s18
 
 @Composable
 fun PredictionScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNavigateBack: () -> Unit = {}
 ) {
-    TrueLabMainLayout(
-        modifier = modifier,
-        header = {
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = SpacingL)) {
-                Text(
-                    text = stringResource(R.string.prediction_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-    ) { contentModifier ->
-        LazyColumn(
-            modifier = contentModifier
-                .fillMaxSize()
-                .padding(horizontal = SpacingL),
-            verticalArrangement = Arrangement.spacedBy(SpacingM),
-            contentPadding = PaddingValues(bottom = SpacingXL)
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(SpacingS))
-                MatchSelectionCard()
-            }
-
-            item {
-                ProbabilityResultsCard()
-            }
-
-            item {
-                ModelWeightsCard()
-            }
-
-            item {
-                Button(
-                    onClick = {},
+    Scaffold(
+        topBar = {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(Dimen.TopbarHeight),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(dev.anhquocs.truelab.core.ui.theme.ButtonHeightMedium),
-                    shape = RoundedCornerShape(RadiusMedium)
+                        .padding(horizontal = Dimen.PaddingS),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.AutoGraph,
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.padding(horizontal = SpacingXS))
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_back),
+                            contentDescription = "Back",
+                            modifier = Modifier.size(Dimen.SizeML),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(Dimen.PaddingS))
                     Text(
-                        text = stringResource(R.string.prediction_calculate_btn),
-                        fontWeight = FontWeight.SemiBold
+                        text = stringResource(R.string.prediction_title),
+                        style = MaterialTheme.typography.s18,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = SpacingL)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(SpacingM),
+        ) {
+            Spacer(modifier = Modifier.height(SpacingS))
+            MatchSelectionCard()
+
+            ProbabilityResultsCard()
+
+            ModelWeightsCard()
+
+            Button(
+                onClick = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(dev.anhquocs.truelab.core.ui.theme.ButtonHeightMedium),
+                shape = RoundedCornerShape(RadiusMedium)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AutoGraph,
+                    contentDescription = null
+                )
+                Spacer(modifier = Modifier.padding(horizontal = SpacingXS))
+                Text(
+                    text = stringResource(R.string.prediction_calculate_btn),
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }

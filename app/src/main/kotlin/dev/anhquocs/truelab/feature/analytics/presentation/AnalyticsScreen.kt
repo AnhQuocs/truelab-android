@@ -29,14 +29,14 @@ import dev.anhquocs.truelab.core.ui.theme.RadiusPill
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.s10
-import dev.anhquocs.truelab.core.ui.utils.s12
+import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.s20
 import dev.anhquocs.truelab.feature.analytics.presentation.components.DescriptiveStatsCard
 import dev.anhquocs.truelab.feature.analytics.presentation.components.MultiProviderOddsCard
 import dev.anhquocs.truelab.feature.analytics.presentation.components.OddsTrendCard
 import dev.anhquocs.truelab.navigation.TrueLabMainLayout
 
-private val TOP_BAR_HEIGHT = 70.dp
+private val TOP_BAR_HEIGHT = 75.dp
 
 @Composable
 fun AnalyticsScreen(
@@ -83,7 +83,7 @@ private fun AnalyticsHeader(
 ) {
     Row(
         modifier = modifier
-            .padding(horizontal = Dimen.PaddingS),
+            .padding(horizontal = Dimen.PaddingM),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -94,13 +94,14 @@ private fun AnalyticsHeader(
             Text(
                 text = stringResource(R.string.analytics_title),
                 style = MaterialTheme.typography.s20.bold(),
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.primary
             )
             Text(
                 text = stringResource(R.string.analytics_subtitle),
-                style = MaterialTheme.typography.s12,
+                style = MaterialTheme.typography.s14,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
         }
 
