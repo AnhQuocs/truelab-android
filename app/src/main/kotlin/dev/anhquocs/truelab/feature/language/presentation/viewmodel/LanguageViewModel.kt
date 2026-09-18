@@ -17,7 +17,7 @@ class LanguageViewModel @Inject constructor(
     private val languageUseCases: LanguageUseCases
 ) : ViewModel() {
 
-    private val _currentLanguage = MutableStateFlow(AppLanguage.ENGLISH)
+    private val _currentLanguage = MutableStateFlow(AppLanguage.fromCode(LangUtils.currentLang))
     val currentLanguage: StateFlow<AppLanguage> = _currentLanguage.asStateFlow()
 
     init {

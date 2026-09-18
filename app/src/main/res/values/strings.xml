@@ -98,4 +98,21 @@
     <string name="benchmark_run_btn">Run Benchmark Suite</string>
     <string name="benchmark_dataset_size">Dataset Size: %1$d items</string>
     <string name="benchmark_exec_time">Execution Time: %1$.3f ms</string>
+
+    <!-- Setting Screen -->
+    <string name="setting_title">Settings</string>
+    <string name="setting_section_preferences">Preferences</string>
+    <string name="setting_language_title">Language</string>
+    <string name="setting_theme_title">Theme &amp; Appearance</string>
+    <string name="setting_section_about">About TrueLab</string>
+    <string name="setting_app_version">Version</string>
+    <string name="setting_app_version_val">1.0.0 (Build 2026.09)</string>
+    <string name="setting_architecture">Architecture</string>
+    <string name="setting_architecture_val">Clean Architecture • Material 3</string>
+    <string name="setting_engine">Core Engine</string>
+    <string name="setting_engine_val">Pure Kotlin/JVM • Room DB Offline</string>
+    <string name="setting_select_theme">Select Theme</string>
+    <string name="setting_theme_light">Light Theme ☀️</string>
+    <string name="setting_theme_dark">Dark Theme 🌙</string>
+    <string name="setting_theme_system">Default ⚙️</string>
 </resources>

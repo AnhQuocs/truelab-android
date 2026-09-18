@@ -50,4 +50,7 @@ object Dimen {
     val SizeXXLPlus = 70.dp
     val SizeMega = 80.dp
     val SizeUltra = 120.dp
+
+    // Height
+    val TopbarHeight = 80.dp
 }

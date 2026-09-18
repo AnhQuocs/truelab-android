@@ -17,7 +17,7 @@
 
     <!-- Home Screen -->
     <string name="home_title">Bảng điều khiển TrueLab</string>
-    <string name="home_subtitle">Công cụ Phân tích Dữ liệu &amp; Dự đoán Thể thao</string>
+    <string name="home_subtitle">Phân tích Dữ liệu &amp; Dự đoán Thể thao</string>
     <string name="home_stat_matches">Trận đấu</string>
     <string name="home_stat_teams">Đội bóng</string>
     <string name="home_stat_providers">Nhà cung cấp</string>
@@ -40,7 +40,7 @@
     <!-- Matches Dataset Explorer Screen -->
     <string name="matches_title">Tập dữ liệu Trận đấu</string>
     <string name="matches_subtitle">380 Mẫu dữ liệu • Odds Đa nguồn • Đặc trưng Thuật toán</string>
-    <string name="matches_search_hint">Tìm Đội bóng, Mã trận (#M-xxx) hoặc Giải đấu...</string>
+    <string name="matches_search_hint">Tìm Đội bóng, Mã trận (#M-xxx) hoặc Giải đấu…</string>
     <string name="matches_filter_all">Tất cả (380)</string>
     <string name="matches_filter_with_odds">Có dữ liệu Odds</string>
     <string name="matches_filter_cleaned">Đã chuẩn hóa</string>
@@ -53,9 +53,9 @@
     <string name="matches_features_label">Đặc trưng:</string>
 
     <!-- Teams Screen -->
-    <string name="teams_title">Phân tích Đội bóng, Elo &amp; Phong độ</string>
+    <string name="teams_title">Đội bóng, Elo &amp; Phong độ</string>
     <string name="teams_subtitle">Điểm Phong độ • Sân Nhà/Khách • Đối đầu H2H • Elo Rating</string>
-    <string name="teams_search_hint">Tìm tên đội bóng hoặc giải đấu...</string>
+    <string name="teams_search_hint">Tìm tên đội bóng hoặc giải đấu…</string>
     <string name="teams_elo_label">Hệ số Elo</string>
     <string name="teams_form_score_label">Điểm Phong độ (5 trận)</string>
     <string name="teams_home_away_label">Thống kê Sân nhà / Sân khách</string>
@@ -65,7 +65,7 @@
     <string name="teams_h2h_highlight">Lịch sử đối đầu</string>
 
     <!-- Analytics Screen -->
-    <string name="analytics_title">Bảng phân tích (Analytics)</string>
+    <string name="analytics_title">Bảng phân tích</string>
     <string name="analytics_subtitle">Thống kê mô tả toàn diện • So sánh kèo • Xu hướng</string>
     <string name="analytics_descriptive_stats">Thống kê Mô tả Toàn diện</string>
     <string name="analytics_mean_goals">Số bàn/trận (Mean)</string>
@@ -98,4 +98,21 @@
     <string name="benchmark_run_btn">Chạy Bộ đo Hiệu năng</string>
     <string name="benchmark_dataset_size">Kích thước tập dữ liệu: %1$d mục</string>
     <string name="benchmark_exec_time">Thời gian thực thi: %1$.3f ms</string>
+
+    <!-- Setting Screen -->
+    <string name="setting_title">Cài đặt</string>
+    <string name="setting_section_preferences">Tùy chỉnh hệ thống</string>
+    <string name="setting_language_title">Ngôn ngữ</string>
+    <string name="setting_theme_title">Giao diện &amp; Chủ đề</string>
+    <string name="setting_section_about">Thông tin ứng dụng</string>
+    <string name="setting_app_version">Phiên bản</string>
+    <string name="setting_app_version_val">1.0.0 (Bản dựng 2026.09)</string>
+    <string name="setting_architecture">Kiến trúc</string>
+    <string name="setting_architecture_val">Clean Architecture • Material 3</string>
+    <string name="setting_engine">Động cơ cốt lõi</string>
+    <string name="setting_engine_val">Pure Kotlin/JVM • Room DB Offline</string>
+    <string name="setting_select_theme">Chọn giao diện</string>
+    <string name="setting_theme_light">Giao diện sáng ☀️</string>
+    <string name="setting_theme_dark">Giao diện tối 🌙</string>
+    <string name="setting_theme_system">Mặc định ⚙️</string>
 </resources>
