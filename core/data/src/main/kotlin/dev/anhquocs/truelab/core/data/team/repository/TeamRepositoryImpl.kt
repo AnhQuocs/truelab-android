@@ -1,38 +1,30 @@
 package dev.anhquocs.truelab.core.data.team.repository
 
-import dev.anhquocs.truelab.core.data.ranking.remote.api.RankingApi
+import dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.toDomain
+import dev.anhquocs.truelab.core.data.ranking.local.dao.RankingDao
+import dev.anhquocs.truelab.core.data.team.local.dao.TeamDao
 import dev.anhquocs.truelab.core.domain.team.model.SeasonRanking
 import dev.anhquocs.truelab.core.domain.team.model.TeamDetail
 import dev.anhquocs.truelab.core.domain.team.repository.TeamRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class TeamRepositoryImpl @Inject constructor(
-    private val rankingApi: RankingApi
+    private val teamDao: TeamDao,
+    private val rankingDao: RankingDao,
+    private val json: Json
 ) : TeamRepository {
 
-    override fun getTeamDetail(teamId: Int): Flow<TeamDetail?> = flow {
-        emit(TeamDetail(id = teamId, name = "Team $teamId"))
+    override fun getTeamDetail(teamId: Int): Flow<TeamDetail?> {
+        return teamDao.getTeamById(teamId).map { it?.toDomain() }
     }
 
-    override fun getSeasonRanking(matchId: Long): Flow<List<SeasonRanking>> = flow {
-        try {
-            val response = rankingApi.getSeasonRanking(matchId)
-            val rankings = response.data.map { rank ->
-                SeasonRanking(
-                    teamId = rank.teamId,
-                    position = rank.position,
-                    won = rank.won,
-                    draw = rank.draw,
-                    loss = rank.loss,
-                    goalDiff = rank.goalDiff,
-                    recently = rank.recently ?: emptyList()
-                )
-            }
-            emit(rankings)
-        } catch (e: Exception) {
-            emit(emptyList())
+    override fun getSeasonRanking(matchId: Long): Flow<List<SeasonRanking>> {
+        // Gap solved: RankingDao now queries specifically by matchId!
+        return rankingDao.getRankingsForMatch(matchId).map { list ->
+            list.map { it.toDomain(json) }
         }
     }
 }
