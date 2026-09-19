@@ -211,23 +211,45 @@ Dữ liệu tập trung vào môn bóng đá, bao gồm:
 
 # 📱 7. Cấu trúc màn hình ứng dụng (Application Screens)
 
-Ứng dụng gồm **6 màn hình chính** với thanh điều hướng hiện đại:
+Ứng dụng gồm **6 màn hình chức năng**, được phân bổ khoa học giữa thanh điều hướng đáy (**Bottom Navigation**) và các luồng điều hướng chuyên sâu (**Secondary Screens**):
 
 ```text
-TrueLab Application
+TrueLab Navigation Architecture
 │
-├── 🏠 Home Screen           ── Thống kê tổng quan dataset (số đội, số trận, provider, lần cập nhật cuối)
+├── 📱 Bottom Navigation Destinations (4 Tab chính)
+│   ├── 🏠 Home Screen           ── Màn hình mặc định, thống kê tổng quan dataset & Core Feature Cards điều hướng
+│   ├── ⚽ Matches Screen        ── Danh sách trận đấu, bộ lọc, tìm kiếm, sắp xếp đa tiêu chí & Match Detail
+│   ├── 🛡️ Teams Screen          ── Thông tin đội bóng, Form Score, thống kê sân nhà/khách, H2H & Elo Rating
+│   └── 📈 Analytics Screen      ── Thống kê mô tả toàn diện, so sánh Odds đa nguồn & biểu đồ xu hướng
 │
-├── ⚽ Matches Screen        ── Danh sách trận đấu, bộ lọc, tìm kiếm, sắp xếp đa tiêu chí & Match Detail
-│
-├── 🛡️ Teams Screen          ── Thông tin đội bóng, Form Score, thống kê sân nhà/khách, H2H & Elo Rating
-│
-├── 📈 Analytics Screen      ── Thống kê mô tả toàn diện, so sánh Odds đa nguồn & biểu đồ xu hướng
-│
-├── 🔮 Prediction Screen     ── Chọn trận đấu -> Trích xuất đặc trưng -> Chạy thuật toán -> Hiển thị xác suất
-│
-└── ⏱️ Benchmark Screen      ── So sánh trực tiếp hiệu năng các thuật toán (Search, Sort, Prediction Accuracy)
+└── 🧭 Secondary Screens (Điều hướng chuyên sâu từ Home Screen)
+    ├── 🔮 Prediction Screen     ── Flow: Chọn trận đấu ➔ Trích xuất đặc trưng ➔ Chạy thuật toán ➔ Xác suất dự đoán
+    └── ⏱️ Benchmark Screen      ── So sánh hiệu năng các thuật toán Search, Sort & Prediction Accuracy
 ```
+
+### 7.1. Bottom Navigation Destinations (4 Tab chính)
+
+1. **🏠 Home Screen (Màn hình mặc định):**
+   * Hiển thị bảng điều khiển tổng quan về Dataset: số đội bóng, số trận đấu, số nhà cung cấp dữ liệu, phiên bản Room DB và lần cập nhật cuối.
+   * Chứa các **Core Feature Cards** để điều hướng trực tiếp đến các tính năng chuyên sâu (*Prediction Screen* và *Benchmark Screen*).
+2. **⚽ Matches Screen:**
+   * Tab chính trên Bottom Navigation để duyệt toàn bộ tập dữ liệu trận đấu.
+   * Tích hợp thanh tìm kiếm (Linear/Binary Search), bộ lọc nâng cao theo giải đấu/mùa giải, sắp xếp đa tiêu chí (QuickSort/MergeSort) và xem chi tiết trận đấu (Match Detail).
+3. **🛡️ Teams Screen:**
+   * Tab chính trên Bottom Navigation hiển thị hồ sơ phân tích từng đội bóng.
+   * Đánh giá điểm phong độ (**Form Score** 5 trận gần nhất), thống kê hiệu suất sân nhà/sân khách (**Home/Away Splits**), ma trận đối đầu trực tiếp (**H2H**) và hệ số **Elo Rating**.
+4. **📈 Analytics Screen:**
+   * Tab chính trên Bottom Navigation chuyên biệt cho phân tích khám phá dữ liệu (EDA).
+   * Cung cấp thống kê mô tả toàn diện (Mean, Median, Std Dev, Variance, Skewness), ma trận so sánh Odds đa nguồn từ các nhà cung cấp và biểu đồ xu hướng đường trung bình trượt (**Moving Average**).
+
+### 7.2. Secondary Screens (Màn hình chức năng chuyên sâu)
+
+5. **🔮 Prediction Screen:**
+   * **Không nằm trên Bottom Navigation** — Được mở từ Home Screen thông qua nút/card **"Dự đoán"**.
+   * **Luồng xử lý (Flow):** Chọn trận đấu $\rightarrow$ Trích xuất đặc trưng $\rightarrow$ Chạy thuật toán dự đoán $\rightarrow$ Hiển thị xác suất và kết quả dự đoán.
+6. **⏱️ Benchmark Screen:**
+   * **Không nằm trên Bottom Navigation** — Được mở từ Home Screen thông qua nút/card **"Benchmark"**.
+   * Dùng để đo lường và so sánh trực tiếp hiệu năng các thuật toán Search (Linear vs. Binary), Sort (QuickSort vs. MergeSort) và độ chính xác mô hình dự đoán (Prediction Accuracy).
 
 ---
 
