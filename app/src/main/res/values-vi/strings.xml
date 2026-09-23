@@ -16,26 +16,24 @@
     <string name="nav_benchmark">Benchmark</string>
 
     <!-- Home Screen -->
-    <string name="home_title">Bảng điều khiển TrueLab</string>
-    <string name="home_subtitle">Phân tích Dữ liệu &amp; Dự đoán Thể thao</string>
+    <string name="home_title">TrueLab</string>
+    <string name="home_subtitle">Phân tích dữ liệu thể thao</string>
     <string name="home_stat_matches">Trận đấu</string>
     <string name="home_stat_teams">Đội bóng</string>
     <string name="home_stat_providers">Nhà cung cấp</string>
     <string name="home_stat_algorithms">Thuật toán</string>
-    <string name="home_dataset_card_title">Tổng quan Tập dữ liệu (v3.0)</string>
-    <string name="home_dataset_last_updated">Đồng bộ cuối: %1$s</string>
-    <string name="home_dataset_offline_ready">Room DB Sẵn sàng Ngoại tuyến</string>
-    <string name="home_quick_actions">Tính năng cốt lõi</string>
+    <string name="home_dataset_section_title">Tổng quan dữ liệu</string>
+    <string name="home_dataset_last_updated">Cập nhật lần cuối: %1$s</string>
+    <string name="home_analysis_tools_title">Công cụ phân tích</string>
+    <string name="home_tool_prediction_title">Dự đoán</string>
+    <string name="home_tool_prediction_desc">Phân tích và dự đoán kết quả trận đấu</string>
+    <string name="home_tool_benchmark_title">Benchmark</string>
+    <string name="home_tool_benchmark_desc">So sánh hiệu năng các thuật toán</string>
     <string name="home_algo_progress_title">Tiến độ Thuật toán</string>
-    <string name="home_algo_search_sort">Tìm kiếm &amp; Sắp xếp (Tuyến tính, Nhị phân, Quick, Merge)</string>
-    <string name="home_algo_stats">Thống kê &amp; Xu hướng (Mô tả, TB trượt)</string>
-    <string name="home_algo_eval">Đánh giá (Điểm phong độ, Hệ số Elo)</string>
-    <string name="home_algo_predict">Dự đoán (Tính điểm trọng số, ML)</string>
-    <string name="home_recent_predictions_title">Kết quả Dự đoán Gần đây</string>
-    <string name="home_pred_predicted">Dự đoán: %1$s</string>
-    <string name="home_pred_actual">Thực tế: %1$s</string>
-    <string name="home_pred_hit">✓ Chính xác</string>
-    <string name="home_pred_miss">✗ Sai lệch</string>
+    <string name="home_algo_search_sort">Tìm kiếm &amp; Sắp xếp</string>
+    <string name="home_algo_stats">Thống kê &amp; Xu hướng</string>
+    <string name="home_algo_eval">Đánh giá</string>
+    <string name="home_algo_predict">Dự đoán</string>
 
     <!-- Matches Dataset Explorer Screen -->
     <string name="matches_title">Tập dữ liệu Trận đấu</string>
