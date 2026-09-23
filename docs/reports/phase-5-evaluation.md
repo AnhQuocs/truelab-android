@@ -18,15 +18,15 @@ Triển khai thuật toán **Đánh giá phong độ thi đấu (Form Evaluation
 ## 2. Scope
 
 ### 2.1. In-Scope
-- **Enum kết quả thi đấu**: [MatchOutcome.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/MatchOutcome.kt) quy ước điểm số chuẩn bóng đá (Thắng = 3, Hòa = 1, Thua = 0).
-- **Mô hình kết quả**: [FormScore.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormScore.kt) đóng gói đầy đủ các trường thống kê và hai thang điểm phong độ.
-- **Interface Contract**: [FormEvaluator.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormEvaluator.kt) định nghĩa API chuẩn và Generic Selector overload.
-- **Lớp hiện thực cốt lõi**: [LinearDecayFormEvaluator.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/LinearDecayFormEvaluator.kt).
+- **Enum kết quả thi đấu**: [MatchOutcome.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/MatchOutcome.kt) quy ước điểm số chuẩn bóng đá (Thắng = 3, Hòa = 1, Thua = 0).
+- **Mô hình kết quả**: [FormScore.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormScore.kt) đóng gói đầy đủ các trường thống kê và hai thang điểm phong độ.
+- **Interface Contract**: [FormEvaluator.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormEvaluator.kt) định nghĩa API chuẩn và Generic Selector overload.
+- **Lớp hiện thực cốt lõi**: [LinearDecayFormEvaluator.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/LinearDecayFormEvaluator.kt).
 - **Hai mô hình phong độ**:
   - *Raw Form (`rawScore`)*: Phong độ tiêu chuẩn không trọng số (Unweighted Standard Form).
   - *Weighted Form (`score`)*: Phong độ có trọng số thời gian tuyến tính (Linear Time-Decay Weighted Form).
 - **Generic Selector API**: Cho phép tính toán trực tiếp trên danh sách đối tượng tùy biến thông qua selector lambda `(T) -> MatchOutcome` mà không tạo mảng trung gian.
-- **Bộ Unit Test toàn diện**: [FormScoreAlgorithmsTest.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormScoreAlgorithmsTest.kt) kiểm thử đầy đủ các điều kiện biên và bất biến toán học.
+- **Bộ Unit Test toàn diện**: [FormScoreAlgorithmsTest.kt](../../core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormScoreAlgorithmsTest.kt) kiểm thử đầy đủ các điều kiện biên và bất biến toán học.
 
 ### 2.2. Non-Scope
 - **Elo Rating System**: Thuộc phạm vi của Phase 6 – Rating.
@@ -276,11 +276,11 @@ BUILD SUCCESSFUL in 8s
 
 Các file mã nguồn và kiểm thử được triển khai trong Phase 5:
 
-1. [`MatchOutcome.kt`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/MatchOutcome.kt): Enum định nghĩa kết quả và điểm quy ước.
-2. [`FormScore.kt`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormScore.kt): Data class đóng gói kết quả đánh giá phong độ.
-3. [`FormEvaluator.kt`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormEvaluator.kt): Interface contract định nghĩa API đánh giá phong độ.
-4. [`LinearDecayFormEvaluator.kt`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/LinearDecayFormEvaluator.kt): Lớp triển khai thuật toán trọng số suy giảm tuyến tính $\mathcal{O}(k)$ và $\mathcal{O}(1)$ bộ nhớ.
-5. [`FormScoreAlgorithmsTest.kt`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormScoreAlgorithmsTest.kt): Bộ Unit Test gồm 15 ca kiểm thử.
+1. [MatchOutcome.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/MatchOutcome.kt): Enum định nghĩa kết quả và điểm quy ước.
+2. [FormScore.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormScore.kt): Data class đóng gói kết quả đánh giá phong độ.
+3. [FormEvaluator.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormEvaluator.kt): Interface contract định nghĩa API đánh giá phong độ.
+4. [LinearDecayFormEvaluator.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/LinearDecayFormEvaluator.kt): Lớp triển khai thuật toán trọng số suy giảm tuyến tính $\mathcal{O}(k)$ và $\mathcal{O}(1)$ bộ nhớ.
+5. [FormScoreAlgorithmsTest.kt](../../core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormScoreAlgorithmsTest.kt): Bộ Unit Test gồm 15 ca kiểm thử.
 6. `Evaluation.kt`: File placeholder rỗng đã được xóa bỏ khỏi kho mã nguồn.
 
 ---

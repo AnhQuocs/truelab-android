@@ -153,7 +153,7 @@ fun currentAverage(): Double = when {
 ## 6. Verification Sau Fix
 
 ### 6.1. Bổ sung Test Cases chuyên biệt
-Đã bổ sung 4 test cases trực tiếp kiểm định các biên số học vừa fix trong [MovingAverageAlgorithmsTest.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/trend/MovingAverageAlgorithmsTest.kt):
+Đã bổ sung 4 test cases trực tiếp kiểm định các biên số học vừa fix trong [MovingAverageAlgorithmsTest.kt](../../core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/trend/MovingAverageAlgorithmsTest.kt):
 1. `numerical - POSITIVE_INFINITY sliding out of window recovers finite average correctly`: Xác minh phục hồi chính xác khi `+Infinity` trượt ra.
 2. `numerical - NEGATIVE_INFINITY sliding out of window recovers finite average correctly`: Xác minh phục hồi chính xác khi `-Infinity` trượt ra.
 3. `numerical - window containing both positive and negative infinity yields NaN`: Xác minh chuẩn IEEE-754 khi cả $+\infty$ và $-\infty$ cùng xuất hiện trong một cửa sổ.
