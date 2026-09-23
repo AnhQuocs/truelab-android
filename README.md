@@ -306,6 +306,35 @@ Dataset được quản lý theo từng phiên bản để phục vụ việc ki
 | **ML Extension**| **Logistic Regression** | Phân loại đa lớp dự đoán kết quả trận đấu | Dự đoán: $\mathcal{O}(d)$ |
 | **ML Extension**| **Decision Tree** | Cây quyết định phân loại kết quả | Dự đoán: $\mathcal{O}(h)$ |
 
+### 9.1. Lộ trình phát triển thuật toán (Algorithm Roadmap)
+
+#### 🔹 Core Algorithm Roadmap (Cốt lõi bắt buộc)
+Lộ trình thuật toán cốt lõi của TrueLab bao gồm 7 Phase (Phase 1–7), trong đó **Phase 7 – Prediction là phase cuối cùng của Core Roadmap**:
+
+| Phase | Phân nhóm thuật toán | Thuật toán cốt lõi | Trạng thái |
+| :---: | :--- | :--- | :---: |
+| **Phase 1** | **Searching** | Linear Search, Binary Search | ✅ **Frozen** (12 tests) |
+| **Phase 2** | **Sorting** | Quick Sort, Tim Sort | ✅ **Frozen** (9 tests) |
+| **Phase 3** | **Statistics** | Descriptive Statistics (Mean, Median, Variance, StdDev, Range, Skewness) | ✅ **Frozen** (16 tests) |
+| **Phase 4** | **Trend** | Simple Moving Average (SMA Rolling Sum $\mathcal{O}(n)$) | ✅ **Frozen** (21 tests) |
+| **Phase 5** | **Evaluation** | Form Score (Linear Time-Decay Weighted & Unweighted) | ✅ **Frozen** (15 tests) |
+| **Phase 6** | **Rating** | Elo Rating System (Zero-Sum Conservation, Configurable K) | ✅ **Frozen** (22 tests) |
+| **Phase 7** | **Prediction** | Weighted Scoring Model (Tổ hợp Form, Elo, Goals, Odds, H2H) | ⏭ **Next (Final Phase of Core Roadmap)** |
+
+#### 🔸 ML Extension Roadmap (Tùy chọn – Optional)
+Phase 8 và Phase 9 là các phân hệ mở rộng tùy chọn (**không phải phần bắt buộc** của roadmap dự án). Các phân hệ này chỉ được xem xét triển khai nếu sau Phase 7 có nhu cầu thực tế về Machine Learning, có tập dataset/features phù hợp hoặc phục vụ mở rộng portfolio nghiên cứu học thuật:
+
+| Phase | Phân nhóm mở rộng | Mô hình nghiên cứu | Phạm vi |
+| :---: | :--- | :--- | :---: |
+| **Phase 8** | **ML Extension** | Logistic Regression (Phân loại xác suất kết quả) | ◇ **Optional** |
+| **Phase 9** | **ML Extension** | Decision Tree (Cây quyết định phân loại) | ◇ **Optional** |
+
+> [!NOTE]
+> **Quy ước phạm vi (Scope Conventions)**:
+> - **Phase 1–7** là toàn bộ Core Algorithm Roadmap chính thức của TrueLab.
+> - **Phase 7 – Prediction** là điểm hoàn tất của Core Roadmap hiện tại.
+> - **Phase 8 & 9** là các module mở rộng tùy chọn (Optional Extensions), không phải là phase bắt buộc của dự án và Phase 9 không phải là "final phase" của toàn bộ đồ án.
+
 ---
 
 # 📊 10. Đánh giá & Benchmark (Evaluation)

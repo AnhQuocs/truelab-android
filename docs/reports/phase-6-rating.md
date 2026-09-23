@@ -32,7 +32,7 @@ Triển khai thuật toán **Đánh giá sức mạnh tương đối (Elo Rating
 - **Rating History Persistence**: Không lưu trữ bảng xếp hạng hay snapshot lịch sử trong `:core:algorithm`.
 - **Domain Entities**: Không tham chiếu đến `Match`, `Team`, `League`.
 - **Data / Repository / API**: Không phụ thuộc Room Database hay Retrofit.
-- **Prediction / Machine Learning**: Không bao gồm mô hình hồi quy hay học máy (dành cho Phase 7, 8, 9).
+- **Prediction / Machine Learning**: Không bao gồm mô hình hồi quy hay học máy (Phase 7 Prediction là phase cuối của Core Roadmap; Phase 8, 9 là các extension tùy chọn).
 - **UI / Data Visualization**: Không kéo Compose hay Chart components vào thuật toán.
 
 ---
@@ -296,7 +296,7 @@ Các tính năng không thuộc phạm vi Phase 6 và có thể mở rộng ở 
 - Lợi thế sân nhà (Home Advantage - có thể bổ sung tại Domain UseCase).
 - Hệ số K động theo số bàn thắng cách biệt (Goal Difference Multiplier).
 - Lưu trữ bảng xếp hạng Elo vào cơ sở dữ liệu Room Database.
-- Mô hình Machine Learning hoặc dự đoán tỷ số trận đấu (thuộc Phase 7, 8, 9).
+- Mô hình Machine Learning hoặc dự đoán tỷ số trận đấu (thuộc Phase 7 Core và Phase 8, 9 Optional Extensions).
 - Giao diện biểu đồ Elo trên Jetpack Compose UI.
 
 ---
