@@ -41,7 +41,7 @@
 Ứng dụng được xây dựng nhằm minh họa trực quan việc áp dụng các thuật toán vào bài toán dữ liệu thực tế:
 * 🔄 **Xử lý & hợp nhất dữ liệu:** Data cleaning, normalization, deduplication từ nhiều nguồn.
 * 🔍 **Tìm kiếm & Sắp xếp:** Áp dụng và benchmark các thuật toán tìm kiếm (*Linear Search, Binary Search*) và sắp xếp (*Quick Sort, Merge Sort*).
-* 📈 **Thống kê chuyên sâu:** Tính toán các chỉ số thống kê mô tả (*Mean, Median, Min/Max, Variance, Standard Deviation*).
+* 📈 **Thống kê chuyên sâu:** Tính toán các chỉ số thống kê mô tả (*Count, Mean, Median, Min, Max, Range, Variance, Standard Deviation, Skewness*).
 * ⚡ **Đánh giá sức mạnh & phong độ:** Xây dựng Form Score, phân tích Home/Away, phân tích đối đầu trực tiếp (H2H) và hệ thống xếp hạng **Elo Rating**.
 * 📊 **Phân tích biến động Odds:** Theo dõi độ biến động (*Volatility*), chênh lệch giữa các nhà cung cấp, xu hướng (*Moving Average*).
 * 🎯 **Mô hình dự đoán (Prediction):** Áp dụng mô hình tính điểm trọng số (*Weighted Scoring*) và mở rộng mô hình máy học (*Logistic Regression, Decision Tree*).
@@ -137,7 +137,7 @@ Dữ liệu tập trung vào môn bóng đá, bao gồm:
 | **FR-03** | **Lưu trữ cục bộ** | Sử dụng **Room Database** lưu trữ quan hệ và phục vụ truy vấn thuật toán tốc độ cao. |
 | **FR-04** | **Tìm kiếm** | Hỗ trợ tìm kiếm Đội, Trận, Giải đấu bằng **Linear Search** & **Binary Search** kèm benchmark. |
 | **FR-05** | **Sắp xếp** | Hỗ trợ sắp xếp đa tiêu chí với **Quick Sort** & **Merge Sort**, đo lường thời gian thực thi. |
-| **FR-06** | **Thống kê mô tả** | Tính *Mean, Median, Min, Max, Variance, Standard Deviation* cho bàn thắng, tỷ lệ thắng, odds. |
+| **FR-06** | **Thống kê mô tả** | Tính *Count, Mean, Median, Min, Max, Range, Variance (Sample/Pop), StdDev (Sample/Pop), Skewness* cho bàn thắng, tỷ lệ thắng, odds. |
 | **FR-07** | **Phân tích phong độ** | Tính toán chuỗi trận gần nhất, bàn thắng/thua, hiệu số và **Form Score** (Thắng=3, Hòa=1, Thua=0). |
 | **FR-08** | **Sân nhà / Sân khách** | Đánh giá hiệu suất riêng biệt: Tỷ lệ thắng sân nhà/khách, số bàn thắng trung bình, điểm số/trận. |
 | **FR-09** | **Lịch sử đối đầu (H2H)** | Thống kê lịch sử chạm trán giữa 2 đội (Số trận, Thắng - Hòa - Thua, tổng bàn thắng). |
@@ -298,7 +298,7 @@ Dataset được quản lý theo từng phiên bản để phục vụ việc ki
 | **Searching** | **Binary Search** | Tìm kiếm nhị phân trên danh sách đã sắp xếp | $\mathcal{O}(\log n)$ |
 | **Sorting** | **Quick Sort** | Sắp xếp dữ liệu đa chỉ số phân chia theo Pivot | $\mathcal{O}(n \log n)$ |
 | **Sorting** | **Merge Sort** | Sắp xếp chia để trị ổn định (Stable Sort) | $\mathcal{O}(n \log n)$ |
-| **Statistics** | **Descriptive Stats** | Tính Mean, Median, Variance, Standard Deviation, Min, Max, Range, Skewness | $\mathcal{O}(n)$ / $\mathcal{O}(n \log n)$ |
+| **Statistics** | **Descriptive Stats** | Tính Count, Mean, Median, Min, Max, Range, Variance (Sample/Pop), StdDev (Sample/Pop), Skewness | $\mathcal{O}(n)$ / $\mathcal{O}(n \log n)$ |
 | **Trend** | **Moving Average** | Làm mịn chuỗi biến động Odds theo thời gian | $\mathcal{O}(n)$ |
 | **Evaluation** | **Form Score** | Đánh giá phong độ $k$ trận gần nhất | $\mathcal{O}(k)$ |
 | **Rating** | **Elo Rating System** | Cập nhật hệ số sức mạnh tương đối sau mỗi trận đấu | $\mathcal{O}(1)$ / trận |
@@ -309,17 +309,17 @@ Dataset được quản lý theo từng phiên bản để phục vụ việc ki
 ### 9.1. Lộ trình phát triển thuật toán (Algorithm Roadmap)
 
 #### 🔹 Core Algorithm Roadmap (Cốt lõi bắt buộc)
-Lộ trình thuật toán cốt lõi của TrueLab bao gồm 7 Phase (Phase 1–7), trong đó **Phase 7 – Prediction là phase cuối cùng của Core Roadmap**:
+Lộ trình thuật toán cốt lõi của TrueLab bao gồm 7 Phase (Phase 1–7) và hiện đã **hoàn thành 100% (Frozen toàn bộ 122/122 tests)**:
 
 | Phase | Phân nhóm thuật toán | Thuật toán cốt lõi | Trạng thái |
 | :---: | :--- | :--- | :---: |
 | **Phase 1** | **Searching** | Linear Search, Binary Search | ✅ **Frozen** (12 tests) |
-| **Phase 2** | **Sorting** | Quick Sort, Tim Sort | ✅ **Frozen** (9 tests) |
-| **Phase 3** | **Statistics** | Descriptive Statistics (Mean, Median, Variance, StdDev, Range, Skewness) | ✅ **Frozen** (16 tests) |
+| **Phase 2** | **Sorting** | Quick Sort, Merge Sort | ✅ **Frozen** (9 tests) |
+| **Phase 3** | **Statistics** | Descriptive Statistics (Count, Mean, Median, Min, Max, Range, Variance, StdDev, Skewness) | ✅ **Frozen** (16 tests) |
 | **Phase 4** | **Trend** | Simple Moving Average (SMA Rolling Sum $\mathcal{O}(n)$) | ✅ **Frozen** (21 tests) |
 | **Phase 5** | **Evaluation** | Form Score (Linear Time-Decay Weighted & Unweighted) | ✅ **Frozen** (15 tests) |
 | **Phase 6** | **Rating** | Elo Rating System (Zero-Sum Conservation, Configurable K) | ✅ **Frozen** (22 tests) |
-| **Phase 7** | **Prediction** | Weighted Scoring Model (Tổ hợp Form, Elo, Goals, Odds, H2H) | ⏭ **Next (Final Phase of Core Roadmap)** |
+| **Phase 7** | **Prediction** | Weighted Scoring Model (3-Way Probability Normalization, Linear Mixture) | ✅ **Frozen** (27 tests) |
 
 #### 🔸 ML Extension Roadmap (Tùy chọn – Optional)
 Phase 8 và Phase 9 là các phân hệ mở rộng tùy chọn (**không phải phần bắt buộc** của roadmap dự án). Các phân hệ này chỉ được xem xét triển khai nếu sau Phase 7 có nhu cầu thực tế về Machine Learning, có tập dataset/features phù hợp hoặc phục vụ mở rộng portfolio nghiên cứu học thuật:
@@ -331,8 +331,8 @@ Phase 8 và Phase 9 là các phân hệ mở rộng tùy chọn (**không phải
 
 > [!NOTE]
 > **Quy ước phạm vi (Scope Conventions)**:
-> - **Phase 1–7** là toàn bộ Core Algorithm Roadmap chính thức của TrueLab.
-> - **Phase 7 – Prediction** là điểm hoàn tất của Core Roadmap hiện tại.
+> - **Phase 1–7** là toàn bộ Core Algorithm Roadmap chính thức của TrueLab (**122/122 tests đã hoàn tất và đóng băng**).
+> - **Phase 7 – Prediction** là điểm hoàn tất của Core Roadmap hiện tại (đã nghiệm thu và đóng băng với 27 tests).
 > - **Phase 8 & 9** là các module mở rộng tùy chọn (Optional Extensions), không phải là phase bắt buộc của dự án và Phase 9 không phải là "final phase" của toàn bộ đồ án.
 
 ---
@@ -345,7 +345,7 @@ Phase 8 và Phase 9 là các phân hệ mở rộng tùy chọn (**không phải
 
 ### 10.2. Đánh giá độ chính xác mô hình dự đoán
 * Sử dụng tập dữ liệu lịch sử để backtest và tính toán các chỉ số:
-  $$	ext{Accuracy} = rac{	ext{Số trận dự đoán đúng}}{	ext{Tổng số trận}}$$
+  $$\text{Accuracy} = \frac{\text{Số trận dự đoán đúng}}{\text{Tổng số trận}}$$
 * Đánh giá ma trận nhầm lẫn (**Confusion Matrix**), **Precision**, **Recall**, **F1-Score**.
 
 ---
