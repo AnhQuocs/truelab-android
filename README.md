@@ -298,7 +298,7 @@ Dataset được quản lý theo từng phiên bản để phục vụ việc ki
 | **Searching** | **Binary Search** | Tìm kiếm nhị phân trên danh sách đã sắp xếp | $\mathcal{O}(\log n)$ |
 | **Sorting** | **Quick Sort** | Sắp xếp dữ liệu đa chỉ số phân chia theo Pivot | $\mathcal{O}(n \log n)$ |
 | **Sorting** | **Merge Sort** | Sắp xếp chia để trị ổn định (Stable Sort) | $\mathcal{O}(n \log n)$ |
-| **Statistics** | **Descriptive Stats** | Tính Mean, Median, Variance, Standard Deviation | $\mathcal{O}(n)$ |
+| **Statistics** | **Descriptive Stats** | Tính Mean, Median, Variance, Standard Deviation, Min, Max, Range, Skewness | $\mathcal{O}(n)$ / $\mathcal{O}(n \log n)$ |
 | **Trend** | **Moving Average** | Làm mịn chuỗi biến động Odds theo thời gian | $\mathcal{O}(n)$ |
 | **Evaluation** | **Form Score** | Đánh giá phong độ $k$ trận gần nhất | $\mathcal{O}(k)$ |
 | **Rating** | **Elo Rating System** | Cập nhật hệ số sức mạnh tương đối sau mỗi trận đấu | $\mathcal{O}(1)$ / trận |
