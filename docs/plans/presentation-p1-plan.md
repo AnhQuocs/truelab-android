@@ -12,22 +12,22 @@
 
 | README Screen | Phân loại | Tính năng / Yêu cầu chi tiết | Trạng thái P1 | Phân kỳ Triển khai | Ghi chú & Phụ thuộc Kỹ thuật |
 | :--- | :--- | :--- | :---: | :---: | :--- |
-| **1. 🏠 Home Screen** | Bottom Nav 1 | Thống kê Dataset (Số đội, trận, provider, DB version, last update) | **DEFERRED** | D6 (Data Pipeline / DB Sync) | Hiện chưa có DAO `COUNT(*)` và usecase tổng hợp metadata. Giữ nguyên số liệu thống kê tĩnh trên `DatasetOverviewCard`. |
+| **1. 🏠 Home Screen** | Bottom Nav 1 | Thống kê Dataset (Số đội, trận, provider, DB version, last update) | **DEFERRED** | Data D1 / Presentation P2 | Cần Data D1 (DAO `COUNT(*)` và DB metadata) và Presentation P2 (UI update). Giữ nguyên số liệu thống kê tĩnh trên `DatasetOverviewCard`. |
 | | | Core Feature Cards điều hướng (Prediction, Benchmark, Settings) | **EXISTING / PRESERVED** | P1.0 (Preserve) | Đã hoạt động mượt mà trong `HomeScreen.kt` và `MainScreen.kt`. P1 bảo toàn 100% flow điều hướng này. |
 | | | Algorithm Development Progress Card | **EXISTING / PRESERVED** | P1.0 (Preserve) | Giữ nguyên hiển thị tiến độ 11 thuật toán trong `AlgorithmProgressCard`. |
 | **2. ⚽ Matches Screen** | Bottom Nav 2 | Duyệt toàn bộ tập dữ liệu trận đấu (Dataset browser) | **IMPLEMENT IN P1** | P1.1.A | Nạp từ `MatchRepository.getMatches()`. Thay thế mock `sampleRecords` bằng real `StateFlow`. |
 | | | Tìm kiếm trận đấu (Search Matches) | **IMPLEMENT IN P1** | P1.1.A | Tích hợp `SearchMatchesUseCase` (Phase 1 Linear Search). |
 | | | Sắp xếp đa tiêu chí (Multi-criteria Sorting) | **IMPLEMENT IN P1** | P1.1.A | Tích hợp `SortMatchesUseCase` (Phase 2 MergeSort) với `MatchSortCriteria`. |
 | | | Bộ lọc theo Trạng thái / Dữ liệu (Status Filter) | **IMPLEMENT IN P1** | P1.1.A | Lọc theo `MatchStatus` (`ALL`, `ENDED`, `SCHEDULED`). |
-| | | Bộ lọc nâng cao theo Giải đấu / Mùa giải (League/Season Filter) | **DEFERRED** | D6 (Schema Expansion) | **Data Gap**: `MatchEntity` và Domain `Match` hiện chưa có cột/trường `league` hay `season`. Trì hoãn cho tới khi mở rộng schema. |
+| | | Bộ lọc nâng cao theo Giải đấu / Mùa giải (League/Season Filter) | **DEFERRED** | Data D1 / Presentation P2 | **Data Gap**: `MatchEntity` và Domain `Match` hiện chưa có cột/trường `league` hay `season`. Trì hoãn cho tới Data D1 (Schema) và Presentation P2 (UI Filter). |
 | | | Chi tiết trận đấu (Match Detail) | **IMPLEMENT IN P1** | P1.1.B | Nạp từ `MatchRepository.getMatchDetail(matchId)`. Tích hợp `MatchDetailBottomSheet` khi bấm vào thẻ trận đấu, hỗ trợ nút bấm "Dự đoán trận này". |
 | **3. 🛡️ Teams Screen** | Bottom Nav 3 | Hồ sơ đội bóng (Team Profile: Rank, Avatar, Tên, Giải đấu) | **IMPLEMENT IN P1** | P1.2 | Nguồn từ `TeamRepository.getSeasonRanking` / `TeamSummary`. |
 | | | Tìm kiếm đội bóng theo tên & ID | **IMPLEMENT IN P1** | P1.2 | Tích hợp `SearchTeamsUseCase` (Linear Search / Binary Search). |
 | | | Bảng xếp hạng & Tie-breakers đa tầng | **IMPLEMENT IN P1** | P1.2 | Tích hợp `SortSeasonRankingUseCase` (Phase 2 MergeSort) với `StandingsSortCriteria`. |
 | | | Đánh giá phong độ (Form Score 5 trận gần nhất, W-D-L badges) | **IMPLEMENT IN P1** | P1.2 | Tích hợp `CalculateTeamFormUseCase` (Phase 5 Linear Time-Decay). |
 | | | Hệ số sức mạnh Elo Rating | **IMPLEMENT IN P1** | P1.2 | Tích hợp `CalculateEloRatingUseCase` (Phase 6 Elo Rating) / `TeamDetail.eloRating`. |
-| | | Thống kê sân nhà / sân khách (Home/Away Splits) | **DEFERRED** | D5 (Domain Expansion) | **Domain Gap**: Domain hiện chưa có UseCase chuyên biệt (`CalculateHomeAwaySplitsUseCase`). Mapper không tự ý chứa business logic tính toán. Hiển thị placeholder "—" trên UI. |
-| | | Ma trận đối đầu trực tiếp (H2H Matrix) trên Teams Screen | **DEFERRED** | D5+ (Team Comparison Tool) | **Scope Gap**: Teams Screen là danh sách từng đội đơn lẻ. Ma trận đối đầu chi tiết yêu cầu công cụ chọn 2 đội đối kháng. DEFER hoàn toàn trên Teams Screen. |
+| | | Thống kê sân nhà / sân khách (Home/Away Splits) | **DEFERRED** | Domain D4 | **Domain Gap**: Domain hiện chưa có UseCase chuyên biệt (`CalculateHomeAwaySplitsUseCase`). Mapper không tự ý chứa business logic tính toán. Hiển thị placeholder "—" trên UI. |
+| | | Ma trận đối đầu trực tiếp (H2H Matrix) trên Teams Screen | **DEFERRED** | Future (Domain D4 / Presentation P2) | **Scope Gap**: Teams Screen là danh sách từng đội đơn lẻ. Ma trận đối đầu chi tiết yêu cầu công cụ chọn 2 đội đối kháng. DEFER hoàn toàn trên Teams Screen. |
 | **4. 📈 Analytics Screen** | Bottom Nav 4 | Thống kê mô tả (Count, Mean, Median, StdDev, Variance, Skewness) | **IMPLEMENT IN P1** | P1.3 | Tích hợp `GetTeamStatisticsUseCase` (Phase 3 Stats) kết nối vào `DescriptiveStatsCard`. |
 | | | So sánh tỷ lệ kèo đa nguồn (Multi-provider Odds Matrix) | **IMPLEMENT IN P1** | P1.3 | Nạp từ `OddsRepository.getMatchOdds(matchId)` và tổng hợp min, max, average odds vào `MultiProviderOddsCard`. |
 | | | Biểu đồ xu hướng kèo & Biến động (Moving Average & Volatility) | **IMPLEMENT IN P1** | P1.3 | Tích hợp `AnalyzeOddsTrendUseCase` (Phase 4 SMA & Volatility) kết nối vào `OddsTrendCard`. |
@@ -36,9 +36,9 @@
 | | | Lịch sử đối đầu 2 đội (H2H Matches for Prediction) | **IMPLEMENT IN P1** | P1.4 | Nạp trực tiếp từ `MatchRepository.getH2HMatches(homeTeamId, awayTeamId)` phục vụ dự đoán cặp trận cụ thể. |
 | | | Chạy thuật toán dự đoán (Execute Prediction Engine) | **IMPLEMENT IN P1** | P1.4 | Tích hợp `PredictMatchOutcomeUseCase` (D1 Unified Weighted Scoring). |
 | | | Hiển thị xác suất và kết quả dự đoán (Home/Draw/Away %) | **IMPLEMENT IN P1** | P1.4 | Render xác suất 3 chiều, độ tin cậy và giải thích tín hiệu vào `PredictionScreen`. |
-| **6. ⏱️ Benchmark Screen** | Secondary 2 | Benchmark Tìm kiếm (Linear Search vs Binary Search) | **DEFERRED** | D5 (Benchmark & Evaluation) | Prototype UI `BenchmarkScreen.kt` đã có. Logic đo lường thực tế (execution time runner, synthetic dataset) sẽ triển khai trong Phase D5. |
-| | | Benchmark Sắp xếp (QuickSort vs MergeSort) | **DEFERRED** | D5 (Benchmark & Evaluation) | Sẽ triển khai runner đo lường N = 1K, 10K, 50K trong Phase D5. |
-| | | Đánh giá độ chính xác mô hình (Prediction Accuracy / Backtest) | **DEFERRED** | D5 (Benchmark & Evaluation) | Cần engine backtest đối chiếu với tập trận đã kết thúc (`isEnded == true`) và xây dựng Confusion Matrix trong Phase D5. |
+| **6. ⏱️ Benchmark Screen** | Secondary 2 | Benchmark Tìm kiếm (Linear Search vs Binary Search) | **DEFERRED** | Domain D4 / Presentation P2 | Prototype UI `BenchmarkScreen.kt` đã có. Logic đo lường thực tế (runner, synthetic dataset) sẽ triển khai trong Domain D4 / Presentation P2. |
+| | | Benchmark Sắp xếp (QuickSort vs MergeSort) | **DEFERRED** | Domain D4 / Presentation P2 | Sẽ triển khai runner đo lường N = 1K, 10K, 50K trong Domain D4 / Presentation P2. |
+| | | Đánh giá độ chính xác mô hình (Prediction Accuracy / Backtest) | **DEFERRED** | Domain D4 / Presentation P2 | Cần engine backtest đối chiếu với tập trận đã kết thúc (`isEnded == true`) và xây dựng Confusion Matrix trong Domain D4 / Presentation P2. |
 
 ---
 
@@ -141,7 +141,7 @@ Giai đoạn P1.1 được phân chia thành 2 sub-phases độc lập và rõ r
   - `SortMatchesUseCase` (Phase 2 MergeSort).
 - **Data Source**: `MatchRepository.getMatches(date: String): Flow<List<Match>>`.
 - **Bộ lọc Trạng thái (Status Filter)**:
-  - Do `MatchEntity` và Domain `Match` chưa có thuộc tính `league` hay `season` (Data Gap hoãn sang D6), P1.1.A triển khai bộ lọc theo trạng thái thực tế:
+  - Do `MatchEntity` và Domain `Match` chưa có thuộc tính `league` hay `season` (Data Gap hoãn sang Data D1 / Presentation P2), P1.1.A triển khai bộ lọc theo trạng thái thực tế:
     - `ALL`: Tất cả trận đấu.
     - `ENDED`: Trận đấu đã kết thúc (`match.isEnded == true`).
     - `SCHEDULED`: Trận đấu sắp diễn ra / chưa đấu.
@@ -296,10 +296,10 @@ fun Match.toUiRecord(): MatchDataRecord = MatchDataRecord(
 - **3. Home/Away Splits**:
   - **Hiện trạng Domain**: Tầng Domain hiện **chưa có** `CalculateHomeAwaySplitsUseCase`.
   - **Quy tắc Kiến trúc**: Tuyệt đối **không** đưa logic tính toán W-D-L hay lọc trận sân nhà/sân khách vào `TeamUiMapper` hay `TeamsViewModel`.
-  - **Quyết định P1**: Đánh dấu Home/Away Splits là **DEFERRED sang Phase D5 (Domain Expansion)**. Trong P1.2, các trường `homeWinRate`, `homeRecord`, `awayWinRate`, `awayRecord` trên UI sẽ hiển thị placeholder an toàn (`0.0%`, `"0.0% (—)"` hoặc `"N/A"`).
+  - **Quyết định P1**: Đánh dấu Home/Away Splits là **DEFERRED sang Phase Domain D4 (Domain Expansion)**. Trong P1.2, các trường `homeWinRate`, `homeRecord`, `awayWinRate`, `awayRecord` trên UI sẽ hiển thị placeholder an toàn (`null` / `"0.0% (—)"` hoặc `"N/A"`).
 - **4. H2H trên Teams Screen**:
   - **Hiện trạng**: Màn hình Teams Screen là danh sách từng đội đơn lẻ; ma trận đối đầu trực tiếp (H2H Matrix) giữa các cặp đội đòi hỏi bối cảnh chọn 2 đội đối kháng (Team Comparison Tool).
-  - **Quyết định P1**: **DEFER HOÀN TOÀN** H2H trên Teams Screen sang **Phase D5+ (Team Comparison Tool)**. Không chắp vá trường `h2hHighlight` ad-hoc khi chưa có hợp đồng nghiệp vụ rõ ràng. Trường này trên UI sẽ để giá trị rỗng/mặc định (`"—"`).
+  - **Quyết định P1**: **DEFER HOÀN TOÀN** H2H trên Teams Screen sang **Future Scope (Domain D4 / Presentation P2 - Team Comparison Tool)**. Không chắp vá trường `h2hHighlight` ad-hoc khi chưa có hợp đồng nghiệp vụ rõ ràng. Trường này trên UI sẽ để giá trị rỗng/mặc định (`"—"`).
   - **Phân biệt rành mạch**: Lịch sử đối đầu 2 đội (H2H) phục vụ cho dự đoán trận đấu cụ thể trong **Prediction P1.4** vẫn được triển khai đầy đủ 100% vì đã có contract `MatchPredictionContext.h2hMatches` và `MatchRepository.getH2HMatches(teamAId, teamBId)`.
 - **5. Elo Rating**:
   - Hiển thị điểm Elo đã lưu trữ trong database (`TeamDetail.eloRating`).
@@ -669,29 +669,29 @@ Trong trường hợp app mới cài đặt, SQLite Database rỗng hoặc `Data
 
 Nhằm đảm bảo tính tập trung của Giai đoạn P1 và không gây phình to scope (over-scope), các hạng mục sau được phân kỳ rõ ràng:
 
-### 11.1. ⏱️ Benchmark Screen (Chuyển sang Phase D5):
+### 11.1. ⏱️ Benchmark Screen (Chuyển sang Phase Domain D4 & Presentation P2):
 - **Lý do**: Benchmark Screen yêu cầu các runner đo đạc thời gian thực thi (execution time in ms), mức tiêu thụ bộ nhớ (RAM in MB) với tập dữ liệu quy mô $N = 1,000; 10,000; 50,000$, cũng như engine backtest dự đoán đối chứng với kết quả thực tế để sinh Confusion Matrix.
-- **Dependencies cần xây dựng trong D5**:
+- **Dependencies cần xây dựng trong Domain D4**:
   - `SearchBenchmarkRunner`: Đo Linear Search vs. Binary Search.
   - `SortBenchmarkRunner`: Đo QuickSort vs. MergeSort.
   - `PredictionBacktestEvaluator`: Kiểm thử độ chính xác trên tập trận đã kết thúc (`isEnded == true`), tính Precision, Recall, F1-score và Confusion Matrix.
-- **Hiện trạng trong P1**: Giữ nguyên `BenchmarkScreen.kt` prototype để bảo toàn UI và luồng điều hướng, không xóa bỏ.
+- **Hiện trạng trong P1**: Giữ nguyên `BenchmarkScreen.kt` prototype để bảo toàn UI và luồng điều hướng, không xóa bỏ. Presentation P2 sẽ kết nối UI runner.
 
-### 11.2. ⚽ Bộ lọc League / Season trên Matches Screen (Chuyển sang Phase D6):
+### 11.2. ⚽ Bộ lọc League / Season trên Matches Screen (Chuyển sang Phase Data D1 & Presentation P2):
 - **Lý do**: Cả `MatchEntity` trong Room và Domain `Match` đều chưa có thuộc tính `leagueId` và `season`.
-- **Dependencies**: Cần cập nhật Room Database Schema (Migration), mở rộng model `Match` trong Domain và cập nhật `DataSyncEngine`.
+- **Dependencies**: Cần cập nhật Room Database Schema (Data D1 Migration), mở rộng model `Match` trong Domain và cập nhật `DataSyncEngine`. Presentation P2 sẽ bổ sung filter UI.
 
-### 11.3. 🛡️ Home/Away Splits trên Teams Screen (Chuyển sang Phase D5):
+### 11.3. 🛡️ Home/Away Splits trên Teams Screen (Chuyển sang Phase Domain D4 & Presentation P2):
 - **Lý do**: Tầng Domain hiện chưa có UseCase nghiệp vụ `CalculateHomeAwaySplitsUseCase`. UI Mapper tuyệt đối không tự tính toán business logic.
-- **Dependencies**: Cần định nghĩa `CalculateHomeAwaySplitsUseCase` và model `HomeAwaySplits` trong `:core:domain`.
+- **Dependencies**: Cần định nghĩa `CalculateHomeAwaySplitsUseCase` và model `HomeAwaySplits` trong `:core:domain` (Domain D4). Presentation P2 sẽ render lên giao diện.
 
-### 11.4. 🛡️ Ma trận Đối đầu H2H toàn diện trên Teams Screen (Chuyển sang Phase D5+):
-- **Lý do**: Màn hình Teams Screen hiện tại là danh sách phân tích từng đội. Tính năng tra cứu đối đầu giữa 2 đội bất kỳ đòi hỏi giao diện chọn cặp đội (Team Comparison Tool).
+### 11.4. 🛡️ Ma trận Đối đầu H2H toàn diện trên Teams Screen (Chuyển sang Future Scope):
+- **Lý do**: Màn hình Teams Screen hiện tại là danh sách phân tích từng đội. Tính năng tra cứu đối đầu giữa 2 đội bất kỳ đòi hỏi giao diện chọn cặp đội (Team Comparison Tool trong Presentation P2).
 - **Hiện trạng trong P1**: DEFER HOÀN TOÀN tính năng này trên Teams Screen; không chắp vá hiển thị ad-hoc. Lịch sử H2H cho cặp trận cụ thể vẫn được triển khai đầy đủ trong Prediction Screen (P1.4).
 
-### 11.5. 🏠 Thống kê Dataset Động trên Home Screen (Chuyển sang Phase D6):
-- **Lý do**: Cần các truy vấn `COUNT(*)` từ `MatchDao`, `TeamDao`, `OddsDao`, `ProviderDao` và metadata phiên bản Room DB.
-- **Hiện trạng trong P1**: Giữ nguyên thẻ tĩnh `DatasetOverviewCard`.
+### 11.5. 🏠 Thống kê Dataset Động trên Home Screen (Chuyển sang Phase Data D1 & Presentation P2):
+- **Lý do**: Cần các truy vấn `COUNT(*)` từ `MatchDao`, `TeamDao`, `OddsDao`, `ProviderDao` và metadata phiên bản Room DB (Data D1).
+- **Hiện trạng trong P1**: Giữ nguyên thẻ tĩnh `DatasetOverviewCard`. Presentation P2 sẽ kết nối dữ liệu động.
 
 ---
 
@@ -701,9 +701,9 @@ Nhằm đảm bảo tính tập trung của Giai đoạn P1 và không gây phì
 
 | Thành phần Legacy | Vị trí Hiện tại | Hiện trạng Sử dụng | Hành động trong P1 | Kế hoạch Xóa bỏ |
 |---|---|---|---|---|
-| `PredictionResult.Companion.computeWeightedScoring` | `core/domain/.../Prediction.kt` | 0 usages (không ai gọi) | Đánh dấu `@Deprecated("Use PredictMatchOutcomeUseCase instead")` | Giữ nguyên trong P1; xóa tại Phase D5 Cleanup. |
-| `SeasonRanking.calculateFormScore()` | `core/domain/.../Team.kt` | 0 usages (không ai gọi) | Đánh dấu `@Deprecated("Use CalculateTeamFormUseCase instead")` | Giữ nguyên trong P1; xóa tại Phase D5 Cleanup. |
-| `PredictMatchUseCase` | `core/domain/.../PredictionUseCases.kt` | Được bind trong `PredictionDataModule` | Đánh dấu `@Deprecated` | Xóa khi loại bỏ `PredictionDataModule.providePredictionUseCases`. |
+| `PredictionResult.Companion.computeWeightedScoring` | `core/domain/.../Prediction.kt` | 0 usages (không ai gọi) | Đánh dấu `@Deprecated("Use PredictMatchOutcomeUseCase instead")` | Giữ nguyên trong P1; xóa tại Phase Domain D4 Cleanup. |
+| `SeasonRanking.calculateFormScore()` | `core/domain/.../Team.kt` | 0 usages (không ai gọi) | Đánh dấu `@Deprecated("Use CalculateTeamFormUseCase instead")` | Giữ nguyên trong P1; xóa tại Phase Domain D4 Cleanup. |
+| `PredictMatchUseCase` | `core/domain/.../PredictionUseCases.kt` | Được bind trong `PredictionDataModule` | Đánh dấu `@Deprecated` | Xóa khi loại bỏ `PredictionDataModule.providePredictionUseCases` trong Domain D4 / Data D1. |
 | `PredictionRepository` | `core/domain/.../PredictionRepository.kt` | Được bind trong `PredictionDataModule` | Giữ nguyên | Giữ nguyên làm local cache reader nếu cần. |
 | `MatchUseCases` cũ | `core/domain/.../MatchUseCases.kt` | Được bind trong `MatchDataModule` | Giữ nguyên | Có thể refactor nội bộ để ủy thác cho UseCase mới. |
 | `TeamUseCases` cũ | `core/domain/.../TeamUseCases.kt` | Được bind trong `TeamDataModule` | Giữ nguyên | Giữ nguyên. |
@@ -803,13 +803,13 @@ Mỗi phân kỳ (P1.1 $\to$ P1.5) sẽ được thực hiện độc lập, ki�
 - [ ] **7. Rõ ràng Trạng thái Toàn bộ 6 Màn hình README**:
   - Home: Bảo toàn static dashboard + điều hướng.
   - Matches: Dynamic data + Search + Sort + Status Filter + Match Detail.
-  - Teams: Dynamic data + Search + Standings Sort + Form Score + Elo (Home/Away & H2H Matrix xác nhận DEFERRED sang D5).
+  - Teams: Dynamic data + Search + Standings Sort + Form Score + Elo (Home/Away & H2H Matrix xác nhận DEFERRED sang Domain D4 / Presentation P2).
   - Analytics: Dynamic data + Descriptive Stats + Multi-provider Odds Matrix + Odds Trend.
   - Prediction: Dynamic flow chọn trận + trích xuất đặc trưng (bao gồm H2H giữa 2 đội của trận đấu) + chạy dự đoán 3 chiều.
-  - Benchmark: Xác nhận DEFERRED sang Phase D5, bảo tồn prototype UI.
+  - Benchmark: Xác nhận DEFERRED sang Phase Domain D4 / Presentation P2, bảo tồn prototype UI.
 - [ ] **8. 100% Tests Vượt qua**:
   - Module `:core:algorithm:test`: **122 / 122 PASS**.
   - Module `:core:domain:test`: **$\ge 156$ PASS**.
   - Module `:app:test`: Toàn bộ các Unit Test mới của 4 ViewModels đều PASS.
 - [ ] **9. Bảo tồn Legacy An toàn**: Đánh dấu `@Deprecated` các hàm prototype cũ, không gây breaking changes.
-- [ ] **10. Báo cáo Tổng kết Hoàn chỉnh**: Hoàn thành tài liệu `docs/reports/domain-d4-presentation.md`.
+- [ ] **10. Báo cáo Tổng kết Hoàn chỉnh**: Hoàn thành tài liệu `docs/reports/presentation-p1-final.md`.

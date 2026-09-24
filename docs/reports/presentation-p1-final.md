@@ -62,9 +62,9 @@ Phase P1 gồm 5 tiểu phần tuần tự đã hoàn thành:
 
 | Legacy Component | Vị trí định nghĩa | Lý do / Hiện trạng sử dụng | Hành động P1.5 | Kế hoạch Xóa |
 | :--- | :--- | :--- | :--- | :--- |
-| `PredictionResult.computeWeightedScoring` | `core/domain/.../Prediction.kt` | Logic offset prototype cũ; 0 caller trong production | `@Deprecated("Use PredictMatchOutcomeUseCase instead")` | Defer sang Phase D5 Cleanup |
-| `SeasonRanking.calculateFormScore` | `core/domain/.../Team.kt` | Tính điểm W/D/L thô sơ không có time-decay; 0 caller | `@Deprecated("Use CalculateTeamFormUseCase instead")` | Defer sang Phase D5 Cleanup |
-| `PredictMatchUseCase` | `core/domain/.../PredictionUseCases.kt` | Legacy wrapper đọc qua repository; Presentation đã chuyển sang `PredictMatchOutcomeUseCase` | `@Deprecated("Use PredictMatchOutcomeUseCase instead")` | Defer sang Phase D5 Cleanup |
+| `PredictionResult.computeWeightedScoring` | `core/domain/.../Prediction.kt` | Logic offset prototype cũ; 0 caller trong production | `@Deprecated("Use PredictMatchOutcomeUseCase instead")` | Defer sang Phase Domain D4 Cleanup |
+| `SeasonRanking.calculateFormScore` | `core/domain/.../Team.kt` | Tính điểm W/D/L thô sơ không có time-decay; 0 caller | `@Deprecated("Use CalculateTeamFormUseCase instead")` | Defer sang Phase Domain D4 Cleanup |
+| `PredictMatchUseCase` | `core/domain/.../PredictionUseCases.kt` | Legacy wrapper đọc qua repository; Presentation đã chuyển sang `PredictMatchOutcomeUseCase` | `@Deprecated("Use PredictMatchOutcomeUseCase instead")` | Defer sang Phase Domain D4 Cleanup |
 
 ---
 
@@ -73,7 +73,7 @@ Phase P1 gồm 5 tiểu phần tuần tự đã hoàn thành:
 Các thành phần sau được giữ nguyên nhằm đảm bảo tương thích, không gây breaking change và đúng phạm vi P1:
 - `PredictionRepository` & `PredictionRepositoryImpl`: Giữ nguyên DI binding trong `PredictionDataModule`.
 - `MatchUseCases`, `TeamUseCases`, `OddsUseCases`, `PredictionUseCases`: Giữ nguyên data class bọc use cases.
-- `BenchmarkScreen`: Giữ nguyên trạng thái prototype theo đúng phân kỳ thiết kế (sẽ triển khai đo lường thuật toán tại Phase D5).
+- `BenchmarkScreen`: Giữ nguyên trạng thái prototype theo đúng phân kỳ thiết kế (sẽ triển khai đo lường thuật toán tại Phase Domain D4 & Presentation P2).
 
 ---
 
@@ -126,10 +126,10 @@ TỔNG CỘNG                    -> 324 tests PASS (0 failures, 0 errors, 0 skip
 
 ## 10. Các Hạng mục Trì hoãn (Deferred Scope)
 
-Theo đúng quy định thiết kế của dự án, các hạng mục sau được bảo lưu cho các phase tiếp theo:
-- **Phase D5**: Benchmark Screen đo đạc hiệu năng thực tế thuật toán; Home/Away Splits phân tách sân nhà/sân khách; Dọn dẹp triệt để các `@Deprecated` legacy classes.
-- **Phase D5+**: Head-to-Head Multi-Match Matrix mở rộng.
-- **Phase D6**: Bộ lọc Giải đấu / Mùa giải nâng cao; Dynamic Home Dataset Overview.
+Theo đúng quy định thiết kế của dự án và roadmap độc lập theo layer:
+- **Phase Domain D4**: Benchmark calculation & synthetic dataset generator; Prediction Backtesting & Accuracy engine (Confusion Matrix, Precision, Recall, F1); Home/Away Splits UseCase; Dọn dẹp triệt để các `@Deprecated` legacy classes.
+- **Phase Data D1**: Mở rộng Room Schema (thêm `leagueId`, `season`); DataSyncEngine updates; Tổng hợp metadata `COUNT(*)`.
+- **Phase Presentation P2**: Benchmark Screen runner UI & charts; Home/Away Splits rendering; Bộ lọc Giải đấu / Mùa giải trên `MatchesScreen`; Dynamic `DatasetOverviewCard` trên `HomeScreen`; Team Comparison Tool.
 
 ---
 
