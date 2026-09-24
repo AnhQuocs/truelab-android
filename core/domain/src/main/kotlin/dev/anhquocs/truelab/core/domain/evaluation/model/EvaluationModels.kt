@@ -85,3 +85,48 @@ data class ModelEvaluationResult(
     val confusionMatrix: ConfusionMatrix3Way,
     val totalEvaluated: Int
 )
+
+/**
+ * Bản ghi chi tiết kết quả dự đoán đối chiếu với thực tế của một trận đấu trong quy trình Backtest.
+ *
+ * @property matchId ID của trận đấu.
+ * @property matchDate Thời gian diễn ra trận đấu (ISO string).
+ * @property homeTeamName Tên đội nhà.
+ * @property awayTeamName Tên đội khách.
+ * @property predictedOutcome Kết quả mô hình dự đoán ("HOME_WIN", "DRAW", "AWAY_WIN").
+ * @property actualOutcome Kết quả thực tế của trận đấu ("HOME_WIN", "DRAW", "AWAY_WIN").
+ * @property homeWinProb Xác suất thắng của đội nhà theo mô hình [0.0, 1.0].
+ * @property drawProb Xác suất hòa theo mô hình [0.0, 1.0].
+ * @property awayWinProb Xác suất thắng của đội khách theo mô hình [0.0, 1.0].
+ * @property confidenceScore Độ tin cậy của dự đoán [0.0, 1.0].
+ * @property isCorrect Cờ đánh dấu dự đoán có trùng khớp với kết quả thực tế không.
+ */
+data class BacktestMatchRecord(
+    val matchId: Long,
+    val matchDate: String,
+    val homeTeamName: String,
+    val awayTeamName: String,
+    val predictedOutcome: String,
+    val actualOutcome: String,
+    val homeWinProb: Double,
+    val drawProb: Double,
+    val awayWinProb: Double,
+    val confidenceScore: Double,
+    val isCorrect: Boolean
+)
+
+/**
+ * Kết quả tổng thể của toàn bộ quy trình Prediction Backtest trên tập dữ liệu lịch sử.
+ *
+ * @property evaluationResult Chỉ số đánh giá ma trận nhầm lẫn, Accuracy, Precision, Recall, F1.
+ * @property records Danh sách bản ghi chi tiết từng trận đấu đã được backtest.
+ * @property totalMatches Tổng số trận đấu hợp lệ đã được đưa vào backtest.
+ * @property correctMatches Tổng số trận đấu dự đoán chính xác.
+ */
+data class PredictionBacktestResult(
+    val evaluationResult: ModelEvaluationResult,
+    val records: List<BacktestMatchRecord>,
+    val totalMatches: Int,
+    val correctMatches: Int
+)
+
