@@ -321,6 +321,13 @@ class PredictionViewModelTest {
             if (shouldThrowError) throw RuntimeException("Database match query failed")
             emit(recentMatchesMap[teamId] ?: emptyList())
         }
+
+        override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<Match>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database match query failed")
+            matchesFlow.collect { matches ->
+                emit(matches.filter { it.leagueId == leagueId && it.season == season })
+            }
+        }
     }
 
     private class FakeTeamRepository : TeamRepository {

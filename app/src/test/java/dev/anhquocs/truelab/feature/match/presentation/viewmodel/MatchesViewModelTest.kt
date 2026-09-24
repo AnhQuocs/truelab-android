@@ -351,5 +351,10 @@ class MatchesViewModelTest {
             errorToThrow?.let { throw it }
             emit(matchesFlow.value.filter { it.homeTeam.id == teamId || it.awayTeam.id == teamId }.take(limit))
         }
+
+        override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<Match>> = flow {
+            errorToThrow?.let { throw it }
+            emit(matchesFlow.value.filter { it.leagueId == leagueId && it.season == season })
+        }
     }
 }

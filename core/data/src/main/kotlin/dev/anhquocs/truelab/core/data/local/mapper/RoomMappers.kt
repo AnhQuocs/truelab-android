@@ -1,5 +1,7 @@
 package dev.anhquocs.truelab.core.data.local.mapper
 
+import dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity
+import dev.anhquocs.truelab.core.data.league.local.entity.SeasonEntity
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchEntity
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchWithTeams
 import dev.anhquocs.truelab.core.data.match.remote.dto.MatchRecord
@@ -9,6 +11,8 @@ import dev.anhquocs.truelab.core.data.prediction.local.entity.PredictionEntity
 import dev.anhquocs.truelab.core.data.ranking.local.entity.SeasonRankingEntity
 import dev.anhquocs.truelab.core.data.ranking.remote.dto.SeasonRankResponse
 import dev.anhquocs.truelab.core.data.team.local.entity.TeamEntity
+import dev.anhquocs.truelab.core.domain.league.model.League
+import dev.anhquocs.truelab.core.domain.league.model.Season
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
 import dev.anhquocs.truelab.core.domain.match.model.TeamSummary
@@ -32,6 +36,25 @@ object RoomMappers {
         confidenceScore = confidenceScore
     )
 
+    fun League.toEntity() = LeagueEntity(
+        id = id,
+        name = name,
+        shortName = shortName,
+        logo = logo,
+        country = country,
+        category = category
+    )
+
+    fun Season.toEntity() = SeasonEntity(
+        id = id,
+        leagueId = leagueId,
+        name = name,
+        year = year,
+        isCurrent = isCurrent,
+        startDate = startDate,
+        endDate = endDate
+    )
+
     // --- Entity to Domain ---
     fun PredictionEntity.toDomain() = PredictionResult(
         matchId = matchId,
@@ -41,6 +64,25 @@ object RoomMappers {
         awayWinProb = awayWinProb,
         predictedOutcome = predictedOutcome,
         confidenceScore = confidenceScore
+    )
+
+    fun LeagueEntity.toDomain() = League(
+        id = id,
+        name = name,
+        shortName = shortName,
+        logo = logo,
+        country = country,
+        category = category
+    )
+
+    fun SeasonEntity.toDomain() = Season(
+        id = id,
+        leagueId = leagueId,
+        name = name,
+        year = year,
+        isCurrent = isCurrent,
+        startDate = startDate,
+        endDate = endDate
     )
 
     fun TeamEntity.toDomain() = TeamDetail(
@@ -83,7 +125,9 @@ object RoomMappers {
         homeScore = match.homeScore,
         awayScore = match.awayScore,
         startTimeDate = match.startTimeDate,
-        status = MatchStatus.fromCode(match.status)
+        status = MatchStatus.fromCode(match.status),
+        leagueId = match.leagueId,
+        season = match.season
     )
 
     // --- DTO to Entity ---

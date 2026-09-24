@@ -27,4 +27,10 @@ class MatchRepositoryImpl @Inject constructor(
             list.map { it.toDomain() }
         }
     }
+
+    override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<Match>> {
+        return matchDao.getMatchesByLeagueAndSeason(leagueId, season).map { list ->
+            list.map { it.toDomain() }
+        }
+    }
 }

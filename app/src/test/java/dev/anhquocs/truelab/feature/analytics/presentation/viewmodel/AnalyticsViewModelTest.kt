@@ -398,6 +398,13 @@ class AnalyticsViewModelTest {
                 emit(matches.filter { it.homeTeam.id == teamId || it.awayTeam.id == teamId }.take(limit))
             }
         }
+
+        override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<Match>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database connection failed")
+            matchesFlow.collect { matches ->
+                emit(matches.filter { it.leagueId == leagueId && it.season == season })
+            }
+        }
     }
 
     private class FakeOddsRepository : OddsRepository {
