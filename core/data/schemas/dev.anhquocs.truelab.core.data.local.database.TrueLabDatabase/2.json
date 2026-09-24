@@ -1,0 +1,789 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "9dd083e47a7d9305f0d21f5dc1682349",
+    "entities": [
+      {
+        "tableName": "teams",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `logo` TEXT, `leagueName` TEXT, `eloRating` REAL NOT NULL, `formScore` REAL NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "logo",
+            "columnName": "logo",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "leagueName",
+            "columnName": "leagueName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "eloRating",
+            "columnName": "eloRating",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "formScore",
+            "columnName": "formScore",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "matches",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `homeTeamId` INTEGER NOT NULL, `awayTeamId` INTEGER NOT NULL, `homeScore` INTEGER, `awayScore` INTEGER, `startTimeDate` TEXT NOT NULL, `status` TEXT NOT NULL, `leagueId` INTEGER, `season` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`homeTeamId`) REFERENCES `teams`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`awayTeamId`) REFERENCES `teams`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`leagueId`) REFERENCES `leagues`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "homeTeamId",
+            "columnName": "homeTeamId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "awayTeamId",
+            "columnName": "awayTeamId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "homeScore",
+            "columnName": "homeScore",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "awayScore",
+            "columnName": "awayScore",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "startTimeDate",
+            "columnName": "startTimeDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "leagueId",
+            "columnName": "leagueId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "season",
+            "columnName": "season",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_matches_homeTeamId",
+            "unique": false,
+            "columnNames": [
+              "homeTeamId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_matches_homeTeamId` ON `${TABLE_NAME}` (`homeTeamId`)"
+          },
+          {
+            "name": "index_matches_awayTeamId",
+            "unique": false,
+            "columnNames": [
+              "awayTeamId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_matches_awayTeamId` ON `${TABLE_NAME}` (`awayTeamId`)"
+          },
+          {
+            "name": "index_matches_homeTeamId_awayTeamId",
+            "unique": false,
+            "columnNames": [
+              "homeTeamId",
+              "awayTeamId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_matches_homeTeamId_awayTeamId` ON `${TABLE_NAME}` (`homeTeamId`, `awayTeamId`)"
+          },
+          {
+            "name": "index_matches_startTimeDate",
+            "unique": false,
+            "columnNames": [
+              "startTimeDate"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_matches_startTimeDate` ON `${TABLE_NAME}` (`startTimeDate`)"
+          },
+          {
+            "name": "index_matches_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_matches_status` ON `${TABLE_NAME}` (`status`)"
+          },
+          {
+            "name": "index_matches_leagueId",
+            "unique": false,
+            "columnNames": [
+              "leagueId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_matches_leagueId` ON `${TABLE_NAME}` (`leagueId`)"
+          },
+          {
+            "name": "index_matches_season",
+            "unique": false,
+            "columnNames": [
+              "season"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_matches_season` ON `${TABLE_NAME}` (`season`)"
+          },
+          {
+            "name": "index_matches_leagueId_season",
+            "unique": false,
+            "columnNames": [
+              "leagueId",
+              "season"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_matches_leagueId_season` ON `${TABLE_NAME}` (`leagueId`, `season`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "teams",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "homeTeamId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "teams",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "awayTeamId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "leagues",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "leagueId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "odds",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `matchId` INTEGER NOT NULL, `companyId` INTEGER NOT NULL, `companyName` TEXT NOT NULL, `oddsType` TEXT NOT NULL, `handicap` REAL, `over` REAL, `under` REAL, `homeWin` REAL, `draw` REAL, `awayWin` REAL, `changeTime` INTEGER NOT NULL, `marketPhase` TEXT, FOREIGN KEY(`matchId`) REFERENCES `matches`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "matchId",
+            "columnName": "matchId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "companyId",
+            "columnName": "companyId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "companyName",
+            "columnName": "companyName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "oddsType",
+            "columnName": "oddsType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "handicap",
+            "columnName": "handicap",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "over",
+            "columnName": "over",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "under",
+            "columnName": "under",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "homeWin",
+            "columnName": "homeWin",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "draw",
+            "columnName": "draw",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "awayWin",
+            "columnName": "awayWin",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "changeTime",
+            "columnName": "changeTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "marketPhase",
+            "columnName": "marketPhase",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_odds_matchId",
+            "unique": false,
+            "columnNames": [
+              "matchId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_odds_matchId` ON `${TABLE_NAME}` (`matchId`)"
+          },
+          {
+            "name": "index_odds_matchId_companyId_oddsType_changeTime",
+            "unique": true,
+            "columnNames": [
+              "matchId",
+              "companyId",
+              "oddsType",
+              "changeTime"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_odds_matchId_companyId_oddsType_changeTime` ON `${TABLE_NAME}` (`matchId`, `companyId`, `oddsType`, `changeTime`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "matches",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "matchId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "season_rankings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`matchId` INTEGER NOT NULL, `teamId` INTEGER NOT NULL, `position` INTEGER NOT NULL, `won` INTEGER NOT NULL, `draw` INTEGER NOT NULL, `loss` INTEGER NOT NULL, `goalDiff` INTEGER NOT NULL, `recentlyStr` TEXT NOT NULL, PRIMARY KEY(`matchId`, `teamId`), FOREIGN KEY(`matchId`) REFERENCES `matches`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`teamId`) REFERENCES `teams`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "matchId",
+            "columnName": "matchId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "teamId",
+            "columnName": "teamId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "won",
+            "columnName": "won",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "draw",
+            "columnName": "draw",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "loss",
+            "columnName": "loss",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "goalDiff",
+            "columnName": "goalDiff",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recentlyStr",
+            "columnName": "recentlyStr",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "matchId",
+            "teamId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_season_rankings_teamId",
+            "unique": false,
+            "columnNames": [
+              "teamId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_season_rankings_teamId` ON `${TABLE_NAME}` (`teamId`)"
+          },
+          {
+            "name": "index_season_rankings_matchId",
+            "unique": false,
+            "columnNames": [
+              "matchId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_season_rankings_matchId` ON `${TABLE_NAME}` (`matchId`)"
+          },
+          {
+            "name": "index_season_rankings_position",
+            "unique": false,
+            "columnNames": [
+              "position"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_season_rankings_position` ON `${TABLE_NAME}` (`position`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "matches",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "matchId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "teams",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "teamId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "predictions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`matchId` INTEGER NOT NULL, `algorithmName` TEXT NOT NULL, `homeWinProb` REAL NOT NULL, `drawProb` REAL NOT NULL, `awayWinProb` REAL NOT NULL, `predictedOutcome` TEXT NOT NULL, `confidenceScore` REAL NOT NULL, PRIMARY KEY(`matchId`), FOREIGN KEY(`matchId`) REFERENCES `matches`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "matchId",
+            "columnName": "matchId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "algorithmName",
+            "columnName": "algorithmName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "homeWinProb",
+            "columnName": "homeWinProb",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "drawProb",
+            "columnName": "drawProb",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "awayWinProb",
+            "columnName": "awayWinProb",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "predictedOutcome",
+            "columnName": "predictedOutcome",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "confidenceScore",
+            "columnName": "confidenceScore",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "matchId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": [
+          {
+            "table": "matches",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "matchId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "leagues",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `shortName` TEXT, `logo` TEXT, `country` TEXT, `category` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shortName",
+            "columnName": "shortName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "logo",
+            "columnName": "logo",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "country",
+            "columnName": "country",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_leagues_name",
+            "unique": false,
+            "columnNames": [
+              "name"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_leagues_name` ON `${TABLE_NAME}` (`name`)"
+          },
+          {
+            "name": "index_leagues_country",
+            "unique": false,
+            "columnNames": [
+              "country"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_leagues_country` ON `${TABLE_NAME}` (`country`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "seasons",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `leagueId` INTEGER NOT NULL, `name` TEXT NOT NULL, `year` INTEGER NOT NULL, `isCurrent` INTEGER NOT NULL, `startDate` TEXT, `endDate` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`leagueId`) REFERENCES `leagues`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "leagueId",
+            "columnName": "leagueId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isCurrent",
+            "columnName": "isCurrent",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startDate",
+            "columnName": "startDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "endDate",
+            "columnName": "endDate",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_seasons_leagueId",
+            "unique": false,
+            "columnNames": [
+              "leagueId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_seasons_leagueId` ON `${TABLE_NAME}` (`leagueId`)"
+          },
+          {
+            "name": "index_seasons_year",
+            "unique": false,
+            "columnNames": [
+              "year"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_seasons_year` ON `${TABLE_NAME}` (`year`)"
+          },
+          {
+            "name": "index_seasons_leagueId_year",
+            "unique": true,
+            "columnNames": [
+              "leagueId",
+              "year"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_seasons_leagueId_year` ON `${TABLE_NAME}` (`leagueId`, `year`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "leagues",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "leagueId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "dataset_metadata",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `lastSyncTimestamp` INTEGER NOT NULL, `totalMatches` INTEGER NOT NULL, `totalTeams` INTEGER NOT NULL, `totalOddsRecords` INTEGER NOT NULL, `totalLeagues` INTEGER NOT NULL, `totalSeasons` INTEGER NOT NULL, `earliestMatchDate` TEXT, `latestMatchDate` TEXT, `schemaVersion` INTEGER NOT NULL, PRIMARY KEY(`key`))",
+        "fields": [
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSyncTimestamp",
+            "columnName": "lastSyncTimestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalMatches",
+            "columnName": "totalMatches",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalTeams",
+            "columnName": "totalTeams",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalOddsRecords",
+            "columnName": "totalOddsRecords",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalLeagues",
+            "columnName": "totalLeagues",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalSeasons",
+            "columnName": "totalSeasons",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "earliestMatchDate",
+            "columnName": "earliestMatchDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "latestMatchDate",
+            "columnName": "latestMatchDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "schemaVersion",
+            "columnName": "schemaVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "key"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9dd083e47a7d9305f0d21f5dc1682349')"
+    ]
+  }
+}

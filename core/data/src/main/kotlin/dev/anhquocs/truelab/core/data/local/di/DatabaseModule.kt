@@ -7,6 +7,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dev.anhquocs.truelab.core.data.local.database.MIGRATION_1_2
 import dev.anhquocs.truelab.core.data.local.database.TrueLabDatabase
 import dev.anhquocs.truelab.core.data.match.local.dao.MatchDao
 import dev.anhquocs.truelab.core.data.odds.local.dao.OddsDao
@@ -29,6 +30,7 @@ object DatabaseModule {
             TrueLabDatabase::class.java,
             "truelab_database.db"
         )
+        .addMigrations(MIGRATION_1_2)
         // Fallback to destructive migration is NOT used here 
         // to preserve the huge offline local dataset across versions. 
         // Proper Migrations should be provided when schema changes.
