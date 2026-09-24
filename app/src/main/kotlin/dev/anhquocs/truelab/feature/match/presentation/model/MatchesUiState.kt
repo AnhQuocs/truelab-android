@@ -1,6 +1,7 @@
 package dev.anhquocs.truelab.feature.match.presentation.model
 
 import dev.anhquocs.truelab.core.domain.match.model.MatchSortCriteria
+import dev.anhquocs.truelab.core.ui.utils.UiText
 
 /**
  * Filter by match lifecycle status.
@@ -25,7 +26,7 @@ sealed interface MatchesUiState {
         val selectedStatusFilter: MatchStatusFilter
     ) : MatchesUiState
 
-    data class Empty(val message: String) : MatchesUiState
+    data class Empty(val message: UiText) : MatchesUiState
 
-    data class Error(val message: String) : MatchesUiState
+    data class Error(val message: UiText) : MatchesUiState
 }

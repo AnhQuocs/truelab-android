@@ -1,5 +1,6 @@
 package dev.anhquocs.truelab.feature.match.presentation.viewmodel
 
+import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.match.model.MatchSortCriteria
 import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
@@ -7,6 +8,8 @@ import dev.anhquocs.truelab.core.domain.match.model.TeamSummary
 import dev.anhquocs.truelab.core.domain.match.repository.MatchRepository
 import dev.anhquocs.truelab.core.domain.match.usecase.SearchMatchesUseCase
 import dev.anhquocs.truelab.core.domain.match.usecase.SortMatchesUseCase
+import dev.anhquocs.truelab.core.ui.utils.UiText
+import dev.anhquocs.truelab.feature.match.presentation.model.MatchDetailUiState
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchStatusFilter
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchesUiState
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +25,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -118,6 +122,8 @@ class MatchesViewModelTest {
 
         val state = viewModel.uiState.value
         assertTrue("Expected Empty state, but was $state", state is MatchesUiState.Empty)
+        val empty = state as MatchesUiState.Empty
+        assertEquals(UiText.StringResource(R.string.matches_empty_no_data), empty.message)
     }
 
     @Test
@@ -203,7 +209,8 @@ class MatchesViewModelTest {
         val state = viewModel.uiState.value
         assertTrue("Expected Error state, but was $state", state is MatchesUiState.Error)
         val error = state as MatchesUiState.Error
-        assertEquals("Database query failed", error.message)
+        assertTrue(error.message is UiText.DynamicString)
+        assertEquals("Database query failed", (error.message as UiText.DynamicString).value)
     }
 
     @Test
@@ -237,6 +244,84 @@ class MatchesViewModelTest {
 
         val state = viewModel.uiState.value
         assertTrue("Expected Empty state when search matches nothing", state is MatchesUiState.Empty)
+        val empty = state as MatchesUiState.Empty
+        assertEquals(UiText.StringResource(R.string.matches_empty_search, "Real Madrid"), empty.message)
+    }
+
+    @Test
+    fun test12_onMatchClicked_loadsAndEmitsSuccessWithCorrectDetails() = runTest(testDispatcher) {
+        backgroundScope.launch { viewModel.matchDetailState.collect {} }
+
+        fakeRepository.emit(sampleMatches)
+        advanceUntilIdle()
+
+        viewModel.onMatchClicked(101L)
+        advanceUntilIdle()
+
+        val state = viewModel.matchDetailState.value
+        assertTrue("Expected Success state for match detail", state is MatchDetailUiState.Success)
+        val successState = state as MatchDetailUiState.Success
+        assertEquals(101L, successState.match.id)
+        assertEquals("Arsenal", successState.match.homeTeam.name)
+        assertEquals("Chelsea", successState.match.awayTeam.name)
+        assertEquals(2, successState.match.homeScore)
+        assertEquals(1, successState.match.awayScore)
+        assertEquals(MatchStatus.ENDED, successState.match.status)
+        assertEquals(3, successState.match.totalGoals)
+        assertTrue(successState.match.isHomeWin)
+        assertEquals(101L, fakeRepository.lastRequestedMatchId)
+    }
+
+    @Test
+    fun test13_onMatchClicked_nonExistentMatch_emitsEmpty() = runTest(testDispatcher) {
+        backgroundScope.launch { viewModel.matchDetailState.collect {} }
+
+        fakeRepository.emit(sampleMatches)
+        advanceUntilIdle()
+
+        viewModel.onMatchClicked(999L)
+        advanceUntilIdle()
+
+        val state = viewModel.matchDetailState.value
+        assertTrue("Expected Empty state when match not found", state is MatchDetailUiState.Empty)
+        assertEquals(UiText.StringResource(R.string.match_detail_empty), (state as MatchDetailUiState.Empty).message)
+        assertEquals(999L, fakeRepository.lastRequestedMatchId)
+    }
+
+    @Test
+    fun test14_onMatchClicked_repositoryError_emitsError() = runTest(testDispatcher) {
+        backgroundScope.launch { viewModel.matchDetailState.collect {} }
+
+        fakeRepository.emit(sampleMatches)
+        fakeRepository.errorToThrow = RuntimeException("Database error")
+        advanceUntilIdle()
+
+        viewModel.onMatchClicked(101L)
+        advanceUntilIdle()
+
+        val state = viewModel.matchDetailState.value
+        assertTrue("Expected Error state when repository throws", state is MatchDetailUiState.Error)
+        val error = state as MatchDetailUiState.Error
+        assertTrue(error.message is UiText.DynamicString)
+        assertEquals("Database error", (error.message as UiText.DynamicString).value)
+    }
+
+    @Test
+    fun test15_onDismissMatchDetail_resetsStateToIdle() = runTest(testDispatcher) {
+        backgroundScope.launch { viewModel.matchDetailState.collect {} }
+
+        fakeRepository.emit(sampleMatches)
+        advanceUntilIdle()
+
+        viewModel.onMatchClicked(101L)
+        advanceUntilIdle()
+        assertTrue(viewModel.matchDetailState.value is MatchDetailUiState.Success)
+
+        viewModel.onDismissMatchDetail()
+        advanceUntilIdle()
+
+        val state = viewModel.matchDetailState.value
+        assertTrue("Expected Idle state after dismiss", state is MatchDetailUiState.Idle)
     }
 
     /**
@@ -245,6 +330,7 @@ class MatchesViewModelTest {
     private class FakeMatchRepository : MatchRepository {
         private val matchesFlow = MutableStateFlow<List<Match>>(emptyList())
         var errorToThrow: Throwable? = null
+        var lastRequestedMatchId: Long? = null
 
         fun emit(matches: List<Match>) {
             matchesFlow.value = matches
@@ -256,6 +342,7 @@ class MatchesViewModelTest {
         }
 
         override fun getMatchDetail(matchId: Long): Flow<Match?> = flow {
+            lastRequestedMatchId = matchId
             errorToThrow?.let { throw it }
             emit(matchesFlow.value.find { it.id == matchId })
         }

@@ -55,6 +55,25 @@
     <string name="matches_sort_id">Mã trận (BinarySearch)</string>
     <string name="matches_odds_label">Odds TB:</string>
     <string name="matches_features_label">Đặc trưng:</string>
+    <string name="matches_empty_no_data">Không có trận đấu nào trong cơ sở dữ liệu.</string>
+    <string name="matches_empty_filter">Không tìm thấy trận đấu nào phù hợp với bộ lọc.</string>
+    <string name="matches_empty_search">Không tìm thấy trận đấu nào khớp với từ khóa \"%1$s\".</string>
+    <string name="matches_error_default">Đã xảy ra lỗi khi tải dữ liệu trận đấu.</string>
+
+    <!-- Match Detail BottomSheet -->
+    <string name="match_detail_title">Chi tiết trận đấu</string>
+    <string name="match_detail_cta_predict">Dự đoán trận này</string>
+    <string name="match_detail_status_label">Trạng thái</string>
+    <string name="match_detail_date_label">Thời gian thi đấu</string>
+    <string name="match_detail_score_label">Tỷ số</string>
+    <string name="match_detail_total_goals">Tổng bàn thắng</string>
+    <string name="match_detail_result_label">Kết quả</string>
+    <string name="match_detail_home_win">Chủ nhà thắng</string>
+    <string name="match_detail_away_win">Khách thắng</string>
+    <string name="match_detail_draw">Hòa</string>
+    <string name="match_detail_not_played">Chưa thi đấu</string>
+    <string name="match_detail_empty">Không tìm thấy thông tin chi tiết trận đấu trong cơ sở dữ liệu.</string>
+    <string name="match_detail_error_default">Đã xảy ra lỗi khi tải chi tiết trận đấu.</string>
 
     <!-- Teams Screen -->
     <string name="teams_title">Đội bóng, Elo &amp; Phong độ</string>

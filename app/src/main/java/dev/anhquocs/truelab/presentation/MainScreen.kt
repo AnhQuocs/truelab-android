@@ -84,7 +84,17 @@ fun MainScreen(
                 }
 
                 composable(MainNavDestination.Matches.route) {
-                    MatchesScreen()
+                    MatchesScreen(
+                        onNavigateToPrediction = {
+                            navController.navigate(MainNavDestination.Prediction.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
                 }
 
                 composable(MainNavDestination.Teams.route) {
