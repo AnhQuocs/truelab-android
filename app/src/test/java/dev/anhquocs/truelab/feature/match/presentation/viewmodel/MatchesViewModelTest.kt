@@ -346,5 +346,10 @@ class MatchesViewModelTest {
             errorToThrow?.let { throw it }
             emit(matchesFlow.value.find { it.id == matchId })
         }
+
+        override fun getRecentMatchesForTeam(teamId: Int, limit: Int): Flow<List<Match>> = flow {
+            errorToThrow?.let { throw it }
+            emit(matchesFlow.value.filter { it.homeTeam.id == teamId || it.awayTeam.id == teamId }.take(limit))
+        }
     }
 }

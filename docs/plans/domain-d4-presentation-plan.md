@@ -2,8 +2,7 @@
 
 > **Tài liệu tham chiếu chuẩn xác (Single Source of Truth cho Giai đoạn D4)**  
 > **Phiên bản:** 2.1 (Chuẩn hóa 9 Domain UseCases, Tách bạch Scope Home/Away & H2H, Đối chiếu toàn diện với **README Mục 7 — Cấu trúc màn hình ứng dụng**)  
-> **Trạng thái:** DRAFT FOR REVIEW (Sẵn sàng phê duyệt trước khi code)  
-> **Nguyên tắc bất biến:** KHÔNG CODE, KHÔNG SỬA THUẬT TOÁN (:core:algorithm FROZEN 122/122), KHÔNG SỬA TEST BASELINE (:core:domain 156/156), KHÔNG BREAKING CHANGES.
+> **Trạng thái:** DRAFT FOR REVIEW (Sẵn sàng phê duyệt trước khi code)
 
 ---
 
@@ -276,21 +275,35 @@ fun Match.toUiRecord(): MatchDataRecord = MatchDataRecord(
 
 ### 5.1. Trách nhiệm & UseCases Sử dụng:
 - **UseCases**: 
-  - `SearchTeamsUseCase` (Phase 1): Tìm kiếm tên đội bóng và tra cứu ID.
-  - `SortSeasonRankingUseCase` (Phase 2): Sắp xếp BXH với composite tie-breakers 4 tầng (`POINTS_DESC`, `GOAL_DIFF_DESC`, v.v.).
-  - `CalculateEloRatingUseCase` (Phase 6): Tính toán / cập nhật điểm sức mạnh đối kháng.
-  - `CalculateTeamFormUseCase` (Phase 5): Tính toán chuỗi phong độ time-decay (Linear Decayed FormScore trên thang 100).
-- **Data Source**: `TeamRepository.getSeasonRanking(matchId: Long)` và `MatchRepository.getMatches(date: String)`.
+  - `SearchTeamsUseCase` (Phase 1): Tìm kiếm tên đội bóng và tra cứu ID qua `LinearSearch` / `BinarySearch`.
+  - `SortSeasonRankingUseCase` (Phase 2): Sắp xếp BXH với composite tie-breakers 4 tầng (`POSITION_ASC`, `POINTS_DESC`, `GOAL_DIFF_DESC`, `WINS_DESC`, `LOSSES_ASC`) qua `MergeSort`.
+  - `CalculateEloRatingUseCase` (Phase 6): Sẵn sàng cho dynamic update Elo khi dự đoán; khi hiển thị profile chỉ đọc trực tiếp `TeamDetail.eloRating` đã lưu trữ trong database.
+  - `CalculateTeamFormUseCase` (Phase 5): **Nguồn tính toán Form Score duy nhất** — Tính điểm phong độ Linear Time-Decay từ chuỗi trận gần nhất (`windowSize = 5`).
+- **Data Source**: 
+  - `TeamRepository.getTeams()`: Lấy danh sách đội bóng (`TeamDetail` chứa `id`, `name`, `logo`, `leagueName`, `eloRating`).
+  - `TeamRepository.getSeasonRankings()`: Lấy danh sách BXH mùa giải (`SeasonRanking` chứa `position`, `won`, `draw`, `loss`, `goalDiff`, `recently`).
+  - `MatchRepository.getMatches("")` / `MatchRepository.getRecentMatchesForTeam(teamId, limit = 5)`: Cung cấp danh sách trận đấu thực tế cho `CalculateTeamFormUseCase`.
 
 ### 5.2. Xử lý Minh bạch Khoảng trống Kỹ thuật (Scope Gaps):
-- **1. Home/Away Splits**:
+- **1. Standings / SeasonRanking**:
+  - `TeamsViewModel` **tuyệt đối không** tự aggregate toàn bộ danh sách trận đấu để dựng `SeasonRanking`.
+  - Bảng xếp hạng mùa giải được cung cấp trực tiếp từ `TeamRepository.getSeasonRankings()` (truy vấn từ `RankingDao` trong Room).
+  - Việc sắp xếp thứ hạng được ủy thác hoàn toàn cho `SortSeasonRankingUseCase`.
+- **2. Form Score Computation (Single Source of Truth)**:
+  - **Computation Flow**: `Recent Matches` $\to$ `CalculateTeamFormUseCase(teamId, matches, windowSize = 5)` $\to$ `FormScore.score`.
+  - **Tuyệt đối không dùng** `SeasonRanking.calculateFormScore()` để tính điểm phong độ.
+  - Trường `SeasonRanking.recently` chỉ được dùng làm nguồn hiển thị các huy hiệu kết quả W/D/L (Badges) trên UI.
+- **3. Home/Away Splits**:
   - **Hiện trạng Domain**: Tầng Domain hiện **chưa có** `CalculateHomeAwaySplitsUseCase`.
-  - **Quy tắc Kiến trúc**: Tuyệt đối **không** đưa logic tính toán W-D-L hay lọc trận sân nhà/sân khách vào `TeamUiMapper` (Mapper chỉ chịu trách nhiệm biến đổi kiểu dữ liệu).
-  - **Quyết định D4**: Đánh dấu Home/Away Splits là **DEFERRED sang Phase D5 (Domain Expansion)** để xây dựng UseCase chuẩn chỉnh. Trong D4.2, các trường `homeWinRate`, `homeRecord`, `awayWinRate`, `awayRecord` trên UI sẽ hiển thị placeholder an toàn (`"—"` hoặc `"N/A"`).
-- **2. H2H trên Teams Screen**:
+  - **Quy tắc Kiến trúc**: Tuyệt đối **không** đưa logic tính toán W-D-L hay lọc trận sân nhà/sân khách vào `TeamUiMapper` hay `TeamsViewModel`.
+  - **Quyết định D4**: Đánh dấu Home/Away Splits là **DEFERRED sang Phase D5 (Domain Expansion)**. Trong D4.2, các trường `homeWinRate`, `homeRecord`, `awayWinRate`, `awayRecord` trên UI sẽ hiển thị placeholder an toàn (`0.0%`, `"0.0% (—)"` hoặc `"N/A"`).
+- **4. H2H trên Teams Screen**:
   - **Hiện trạng**: Màn hình Teams Screen là danh sách từng đội đơn lẻ; ma trận đối đầu trực tiếp (H2H Matrix) giữa các cặp đội đòi hỏi bối cảnh chọn 2 đội đối kháng (Team Comparison Tool).
-  - **Quyết định D4**: **DEFER HOÀN TOÀN** H2H trên Teams Screen sang **Phase D5+ (Team Comparison Tool)**. Không chắp vá trường `h2hHighlight` ad-hoc khi chưa có hợp đồng nghiệp vụ rõ ràng. Trường này trên UI sẽ để giá trị rỗng/mặc định.
+  - **Quyết định D4**: **DEFER HOÀN TOÀN** H2H trên Teams Screen sang **Phase D5+ (Team Comparison Tool)**. Không chắp vá trường `h2hHighlight` ad-hoc khi chưa có hợp đồng nghiệp vụ rõ ràng. Trường này trên UI sẽ để giá trị rỗng/mặc định (`"—"`).
   - **Phân biệt rành mạch**: Lịch sử đối đầu 2 đội (H2H) phục vụ cho dự đoán trận đấu cụ thể trong **Prediction D4.4** vẫn được triển khai đầy đủ 100% vì đã có contract `MatchPredictionContext.h2hMatches` và `MatchRepository.getH2HMatches(teamAId, teamBId)`.
+- **5. Elo Rating**:
+  - Hiển thị điểm Elo đã lưu trữ trong database (`TeamDetail.eloRating`).
+  - Không gọi giả tạo `CalculateEloRatingUseCase` chỉ để hiển thị.
 
 ### 5.3. Thiết kế `TeamsUiState`:
 ```kotlin
@@ -302,8 +315,8 @@ sealed interface TeamsUiState {
         val searchQuery: String,
         val standingsSort: StandingsSortCriteria
     ) : TeamsUiState
-    data class Empty(val message: String) : TeamsUiState
-    data class Error(val message: String) : TeamsUiState
+    data class Empty(val message: UiText) : TeamsUiState
+    data class Error(val message: UiText) : TeamsUiState
 }
 ```
 
@@ -312,66 +325,62 @@ sealed interface TeamsUiState {
 @HiltViewModel
 class TeamsViewModel @Inject constructor(
     private val teamRepository: TeamRepository,
-    private val matchRepository: MatchRepository,
     private val searchTeamsUseCase: SearchTeamsUseCase,
-    private val sortSeasonRankingUseCase: SortSeasonRankingUseCase,
-    private val calculateTeamFormUseCase: CalculateTeamFormUseCase
+    private val sortSeasonRankingUseCase: SortSeasonRankingUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
-    private val _standingsSort = MutableStateFlow(StandingsSortCriteria.POINTS_DESC)
+    private val _standingsSort = MutableStateFlow(StandingsSortCriteria.POSITION_ASC)
 
     val uiState: StateFlow<TeamsUiState> = combine(
-        matchRepository.getMatches(""),
+        teamRepository.getTeams(),
+        teamRepository.getSeasonRankings(),
         _searchQuery,
         _standingsSort
-    ) { allMatches, query, sort ->
-        if (allMatches.isEmpty()) {
-            TeamsUiState.Empty("Không có dữ liệu đội bóng")
+    ) { teams, rankings, query, sort ->
+        if (teams.isEmpty()) {
+            TeamsUiState.Empty(UiText.StringResource(R.string.teams_empty_no_data))
         } else {
-            val uniqueTeams = extractUniqueTeams(allMatches)
-            
-            val teamRecords = uniqueTeams.map { team ->
-                val teamMatches = allMatches.filter { it.homeTeam.id == team.id || it.awayTeam.id == team.id }
-                val formScore = calculateTeamFormUseCase(team.id, teamMatches, windowSize = 5)
-                
-                TeamAnalyticsRecord(
-                    id = team.id.toString(),
-                    name = team.name,
-                    league = "Football League",
-                    eloRating = 1500, // Hoặc lấy từ TeamDetail nếu nạp
-                    rank = 1,
-                    played = teamMatches.size,
-                    wins = teamMatches.count { it.isHomeWin && it.homeTeam.id == team.id || it.isAwayWin && it.awayTeam.id == team.id },
-                    draws = teamMatches.count { it.isDraw },
-                    losses = teamMatches.count { it.isAwayWin && it.homeTeam.id == team.id || it.isHomeWin && it.awayTeam.id == team.id },
-                    form = formScore.recentOutcomes.map { when (it) { MatchOutcome.WIN -> 'W'; MatchOutcome.DRAW -> 'D'; MatchOutcome.LOSS -> 'L' } },
-                    formScore = formScore.points,
-                    homeWinRate = 0.0,
-                    homeRecord = "—",
-                    awayWinRate = 0.0,
-                    awayRecord = "—",
-                    h2hHighlight = ""
+            // 1. Sắp xếp SeasonRanking bằng Domain UseCase (MergeSort 4 tầng composite tie-breakers)
+            val sortedRankings = sortSeasonRankingUseCase(rankings, sort)
+            val rankingMap = sortedRankings.associateBy { it.teamId }
+
+            // 2. Tìm kiếm đội bóng bằng Domain UseCase (LinearSearch)
+            val teamSummaries = teams.map { TeamSummary(it.id, it.name, it.logo) }
+            val matchedSummaries = searchTeamsUseCase.searchByName(teamSummaries, query)
+            val matchedIds = matchedSummaries.map { it.id }.toSet()
+
+            // 3. Lọc và ánh xạ sang TeamAnalyticsRecord
+            val filteredTeams = teams.filter { it.id in matchedIds }
+            val records = if (rankings.isNotEmpty()) {
+                val matchedRankings = sortedRankings.filter { it.teamId in matchedIds }
+                val teamsById = filteredTeams.associateBy { it.id }
+                val fromRankings = matchedRankings.mapNotNull { ranking ->
+                    teamsById[ranking.teamId]?.let { team ->
+                        TeamUiMapper.toRecord(team, ranking)
+                    }
+                }
+                val rankedIds = matchedRankings.map { it.teamId }.toSet()
+                val unranked = filteredTeams.filter { it.id !in rankedIds }
+                    .map { team -> TeamUiMapper.toRecord(team, null) }
+                fromRankings + unranked
+            } else {
+                filteredTeams.map { team -> TeamUiMapper.toRecord(team, null) }
+            }
+
+            if (records.isEmpty()) {
+                TeamsUiState.Empty(UiText.StringResource(R.string.teams_empty_search, query))
+            } else {
+                TeamsUiState.Success(
+                    teams = records,
+                    rawTeamsCount = teams.size,
+                    searchQuery = query,
+                    standingsSort = sort
                 )
             }
-
-            // Lọc theo từ khóa tìm kiếm (LinearSearch partial theo tên)
-            val filtered = if (query.isBlank()) teamRecords else {
-                teamRecords.filter { it.name.contains(query.trim(), ignoreCase = true) }
-            }
-
-            // Sắp xếp danh sách
-            val sorted = sortTeamRecords(filtered, sort)
-
-            TeamsUiState.Success(
-                teams = sorted,
-                rawTeamsCount = teamRecords.size,
-                searchQuery = query,
-                standingsSort = sort
-            )
         }
     }.catch { e ->
-        emit(TeamsUiState.Error(e.message ?: "Lỗi tải danh sách đội bóng"))
+        emit(TeamsUiState.Error(UiText.DynamicString(e.message ?: "Lỗi tải danh sách đội bóng")))
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

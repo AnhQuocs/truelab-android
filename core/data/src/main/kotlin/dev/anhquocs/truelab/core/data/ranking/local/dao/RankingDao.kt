@@ -18,4 +18,7 @@ interface RankingDao {
 
     @Query("SELECT * FROM season_rankings WHERE teamId = :teamId ORDER BY matchId DESC LIMIT 1")
     fun getLatestRankingForTeam(teamId: Int): Flow<SeasonRankingEntity?>
+
+    @Query("SELECT * FROM season_rankings WHERE matchId = (SELECT MAX(matchId) FROM season_rankings) ORDER BY position ASC")
+    fun getLatestSeasonRankings(): Flow<List<SeasonRankingEntity>>
 }

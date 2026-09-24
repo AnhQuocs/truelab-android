@@ -79,6 +79,15 @@
     <string name="teams_title">Teams, Elo &amp; Form Analysis</string>
     <string name="teams_subtitle">Form Score • Home/Away Splits • H2H Matrix • Elo Rating</string>
     <string name="teams_search_hint">Search team name or league...</string>
+    <string name="teams_sort_label">Sort By:</string>
+    <string name="teams_sort_position">Rank (MergeSort)</string>
+    <string name="teams_sort_points">Points</string>
+    <string name="teams_sort_goal_diff">Goal Diff</string>
+    <string name="teams_sort_wins">Wins</string>
+    <string name="teams_sort_losses">Losses</string>
+    <string name="teams_empty_no_data">No teams found in database.</string>
+    <string name="teams_empty_search">No teams match the keyword \"%1$s\".</string>
+    <string name="teams_error_default">An error occurred while loading teams.</string>
     <string name="teams_elo_label">Elo Rating</string>
     <string name="teams_form_score_label">Form Score (5 Matches)</string>
     <string name="teams_home_away_label">Home / Away Splits</string>
