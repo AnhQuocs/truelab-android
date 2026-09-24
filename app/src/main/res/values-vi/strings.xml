@@ -99,6 +99,8 @@
     <!-- Analytics Screen -->
     <string name="analytics_title">Bảng phân tích</string>
     <string name="analytics_subtitle">Thống kê mô tả toàn diện • So sánh kèo • Xu hướng</string>
+    <string name="analytics_select_team">Chọn đội bóng:</string>
+    <string name="analytics_select_match">Chọn trận đấu:</string>
     <string name="analytics_descriptive_stats">Thống kê Mô tả Toàn diện</string>
     <string name="analytics_mean_goals">Số bàn/trận (Mean)</string>
     <string name="analytics_median_goals">Trung vị (Median)</string>
@@ -113,6 +115,20 @@
     <string name="analytics_goal_median_desc">Trung vị bàn thắng</string>
     <string name="analytics_variance_val">Phương sai: %1$s</string>
     <string name="analytics_spread_index">Chỉ số phân tán</string>
+    <string name="analytics_empty_no_data">Không có dữ liệu trận đấu hoặc đội bóng để phân tích.</string>
+    <string name="analytics_error_default">Đã xảy ra lỗi khi tải dữ liệu phân tích thống kê.</string>
+    <string name="analytics_no_odds">Chưa có dữ liệu tỷ lệ kèo cho trận đấu này.</string>
+    <string name="analytics_no_stats">Chưa có trận đấu nào hoàn thành cho đội bóng này.</string>
+    <string name="analytics_matches_count">N = %1$d trận</string>
+    <string name="analytics_target_home">Chủ nhà thắng</string>
+    <string name="analytics_target_draw">Hòa</string>
+    <string name="analytics_target_away">Khách thắng</string>
+    <string name="analytics_window_size">MA(%1$d)</string>
+    <string name="analytics_avg_odds">Odds TB: %1$s | %2$s | %3$s</string>
+    <string name="analytics_volatility_val">Độ biến động: %1$.3f</string>
+    <string name="analytics_odds_shift">Mở kèo: %1$s ➔ Hiện tại: %2$s</string>
+    <string name="analytics_provider_header">Nhà cung cấp</string>
+    <string name="analytics_provider_count">%1$d Nhà cung cấp</string>
 
     <!-- Prediction Screen -->
     <string name="prediction_title">Dự đoán Kết quả Trận đấu</string>
