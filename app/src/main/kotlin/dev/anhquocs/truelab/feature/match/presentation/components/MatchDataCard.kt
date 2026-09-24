@@ -45,7 +45,7 @@ import dev.anhquocs.truelab.core.ui.utils.s13
 import dev.anhquocs.truelab.core.ui.utils.s15
 import dev.anhquocs.truelab.core.ui.utils.s18
 import dev.anhquocs.truelab.core.ui.utils.semiBold
-import dev.anhquocs.truelab.feature.match.presentation.MatchDataRecord
+import dev.anhquocs.truelab.feature.match.presentation.model.MatchDataRecord
 
 @Composable
 fun MatchDataCard(
@@ -282,7 +282,8 @@ private fun ResultBadge(result: String) {
     val (label, bgColor, textColor) = when (result) {
         "HOME_WIN" -> Triple("Chủ nhà Thắng", Color(0xFF10B981).copy(alpha = 0.15f), Color(0xFF059669))
         "DRAW" -> Triple("Hòa", Color(0xFFF59E0B).copy(alpha = 0.15f), Color(0xFFD97706))
-        else -> Triple("Đội khách Thắng", Color(0xFF3B82F6).copy(alpha = 0.15f), Color(0xFF2563EB))
+        "AWAY_WIN" -> Triple("Đội khách Thắng", Color(0xFF3B82F6).copy(alpha = 0.15f), Color(0xFF2563EB))
+        else -> Triple("Sắp diễn ra", Color(0xFF6B7280).copy(alpha = 0.15f), Color(0xFF4B5563))
     }
 
     Box(

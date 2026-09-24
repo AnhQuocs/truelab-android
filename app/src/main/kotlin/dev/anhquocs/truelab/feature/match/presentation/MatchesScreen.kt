@@ -1,6 +1,7 @@
 package dev.anhquocs.truelab.feature.match.presentation
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,8 +17,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -28,15 +34,15 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.anhquocs.truelab.R
+import dev.anhquocs.truelab.core.domain.match.model.MatchSortCriteria
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
@@ -50,145 +56,35 @@ import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.s20
 import dev.anhquocs.truelab.core.ui.utils.semiBold
 import dev.anhquocs.truelab.feature.match.presentation.components.MatchDataCard
+import dev.anhquocs.truelab.feature.match.presentation.model.MatchStatusFilter
+import dev.anhquocs.truelab.feature.match.presentation.model.MatchesUiState
+import dev.anhquocs.truelab.feature.match.presentation.viewmodel.MatchesViewModel
 import dev.anhquocs.truelab.navigation.TrueLabMainLayout
 
 private val TOP_BAR_HEIGHT = 75.dp
 
-data class MatchDataRecord(
-    val id: String,
-    val league: String,
-    val date: String,
-    val homeTeam: String,
-    val awayTeam: String,
-    val homeScore: Int,
-    val awayScore: Int,
-    val actualResult: String, // "HOME_WIN", "DRAW", "AWAY_WIN"
-    val avgHomeOdds: Double,
-    val avgDrawOdds: Double,
-    val avgAwayOdds: Double,
-    val providerCount: Int,
-    val eloDiff: Int,
-    val totalGoals: Int,
-    val isNormalized: Boolean,
-    val predictedProb: String
-)
-
 @Composable
 fun MatchesScreen(
     modifier: Modifier = Modifier,
+    viewModel: MatchesViewModel = hiltViewModel(),
     onMatchClick: (String) -> Unit = {}
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedFilterIndex by remember { mutableIntStateOf(0) }
-    var selectedSortIndex by remember { mutableIntStateOf(0) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val currentSort by viewModel.sortCriteria.collectAsStateWithLifecycle()
+    val currentFilter by viewModel.statusFilter.collectAsStateWithLifecycle()
 
-    val filterLabels = listOf(
-        stringResource(R.string.matches_filter_all),
-        stringResource(R.string.matches_filter_with_odds),
-        stringResource(R.string.matches_filter_cleaned),
-        stringResource(R.string.matches_filter_backtested)
+    val filterOptions = listOf(
+        MatchStatusFilter.ALL to stringResource(R.string.matches_filter_all),
+        MatchStatusFilter.ENDED to stringResource(R.string.matches_filter_ended),
+        MatchStatusFilter.SCHEDULED to stringResource(R.string.matches_filter_scheduled)
     )
 
-    val sortLabels = listOf(
-        stringResource(R.string.matches_sort_date),
-        stringResource(R.string.matches_sort_goals),
-        stringResource(R.string.matches_sort_id)
+    val sortOptions = listOf(
+        MatchSortCriteria.START_TIME_DESC to stringResource(R.string.matches_sort_date),
+        MatchSortCriteria.TOTAL_GOALS_DESC to stringResource(R.string.matches_sort_goals),
+        MatchSortCriteria.ID_ASC to stringResource(R.string.matches_sort_id)
     )
-
-    val sampleRecords = remember {
-        listOf(
-            MatchDataRecord(
-                id = "M-38012",
-                league = "Premier League",
-                date = "10 Th03, 2024",
-                homeTeam = "Arsenal",
-                awayTeam = "Chelsea",
-                homeScore = 2,
-                awayScore = 1,
-                actualResult = "HOME_WIN",
-                avgHomeOdds = 1.85,
-                avgDrawOdds = 3.60,
-                avgAwayOdds = 4.20,
-                providerCount = 3,
-                eloDiff = 85,
-                totalGoals = 3,
-                isNormalized = true,
-                predictedProb = "HW 54%"
-            ),
-            MatchDataRecord(
-                id = "M-38013",
-                league = "Premier League",
-                date = "11 Th03, 2024",
-                homeTeam = "Man City",
-                awayTeam = "Liverpool",
-                homeScore = 1,
-                awayScore = 1,
-                actualResult = "DRAW",
-                avgHomeOdds = 2.10,
-                avgDrawOdds = 3.45,
-                avgAwayOdds = 3.30,
-                providerCount = 3,
-                eloDiff = 60,
-                totalGoals = 2,
-                isNormalized = true,
-                predictedProb = "DR 32%"
-            ),
-            MatchDataRecord(
-                id = "M-38014",
-                league = "La Liga",
-                date = "12 Th03, 2024",
-                homeTeam = "Real Madrid",
-                awayTeam = "Barcelona",
-                homeScore = 3,
-                awayScore = 2,
-                actualResult = "HOME_WIN",
-                avgHomeOdds = 1.95,
-                avgDrawOdds = 3.50,
-                avgAwayOdds = 3.80,
-                providerCount = 3,
-                eloDiff = 40,
-                totalGoals = 5,
-                isNormalized = true,
-                predictedProb = "HW 49%"
-            ),
-            MatchDataRecord(
-                id = "M-38015",
-                league = "Bundesliga",
-                date = "13 Th03, 2024",
-                homeTeam = "Bayern Munich",
-                awayTeam = "Dortmund",
-                homeScore = 2,
-                awayScore = 2,
-                actualResult = "DRAW",
-                avgHomeOdds = 1.65,
-                avgDrawOdds = 4.10,
-                avgAwayOdds = 5.00,
-                providerCount = 3,
-                eloDiff = 120,
-                totalGoals = 4,
-                isNormalized = true,
-                predictedProb = "HW 61%"
-            ),
-            MatchDataRecord(
-                id = "M-38016",
-                league = "Serie A",
-                date = "14 Th03, 2024",
-                homeTeam = "Inter Milan",
-                awayTeam = "AC Milan",
-                homeScore = 0,
-                awayScore = 1,
-                actualResult = "AWAY_WIN",
-                avgHomeOdds = 2.05,
-                avgDrawOdds = 3.30,
-                avgAwayOdds = 3.70,
-                providerCount = 3,
-                eloDiff = 30,
-                totalGoals = 1,
-                isNormalized = true,
-                predictedProb = "HW 45%"
-            )
-        )
-    }
 
     TrueLabMainLayout(
         modifier = modifier,
@@ -202,35 +98,143 @@ fun MatchesScreen(
             verticalArrangement = Arrangement.spacedBy(Dimen.PaddingM),
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
+            // Search Input Field
             item {
                 Spacer(modifier = Modifier.height(Dimen.PaddingS))
                 DatasetSearchField(
                     searchQuery = searchQuery,
-                    onSearchQueryChange = { searchQuery = it }
+                    onSearchQueryChange = { viewModel.onSearchQueryChanged(it) }
                 )
             }
 
+            // Status Filter Chips
             item {
                 DatasetFilterChips(
-                    filterLabels = filterLabels,
-                    selectedIndex = selectedFilterIndex,
-                    onSelectIndex = { selectedFilterIndex = it }
+                    filterOptions = filterOptions,
+                    selectedFilter = currentFilter,
+                    onSelectFilter = { viewModel.onStatusFilterChanged(it) }
                 )
             }
 
+            // Sort Section Chips
             item {
                 DatasetSortSection(
-                    sortLabels = sortLabels,
-                    selectedSortIndex = selectedSortIndex,
-                    onSelectSortIndex = { selectedSortIndex = it }
+                    sortOptions = sortOptions,
+                    selectedSort = currentSort,
+                    onSelectSort = { viewModel.onSortCriteriaChanged(it) }
                 )
             }
 
-            items(sampleRecords) { record ->
-                MatchDataCard(
-                    record = record,
-                    onClick = { onMatchClick(record.id) }
-                )
+            // Content based on UiState
+            when (val state = uiState) {
+                is MatchesUiState.Loading -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+                    }
+                }
+
+                is MatchesUiState.Empty -> {
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = Dimen.PaddingL),
+                            shape = RoundedCornerShape(RadiusLarge),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(Dimen.PaddingXL),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(40.dp)
+                                )
+                                Spacer(modifier = Modifier.height(Dimen.PaddingS))
+                                Text(
+                                    text = stringResource(R.string.matches_empty_title),
+                                    style = MaterialTheme.typography.s14.semiBold(),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(SpacingXS))
+                                Text(
+                                    text = state.message,
+                                    style = MaterialTheme.typography.s12,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+
+                is MatchesUiState.Error -> {
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = Dimen.PaddingL),
+                            shape = RoundedCornerShape(RadiusLarge),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(Dimen.PaddingXL),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ErrorOutline,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(40.dp)
+                                )
+                                Spacer(modifier = Modifier.height(Dimen.PaddingS))
+                                Text(
+                                    text = stringResource(R.string.matches_error_title),
+                                    style = MaterialTheme.typography.s14.semiBold(),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Spacer(modifier = Modifier.height(SpacingXS))
+                                Text(
+                                    text = state.message,
+                                    style = MaterialTheme.typography.s12,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+
+                is MatchesUiState.Success -> {
+                    items(state.matches, key = { it.id }) { record ->
+                        MatchDataCard(
+                            record = record,
+                            onClick = { onMatchClick(record.id) }
+                        )
+                    }
+                }
             }
         }
     }
@@ -308,18 +312,18 @@ private fun DatasetSearchField(
 
 @Composable
 private fun DatasetFilterChips(
-    filterLabels: List<String>,
-    selectedIndex: Int,
-    onSelectIndex: (Int) -> Unit
+    filterOptions: List<Pair<MatchStatusFilter, String>>,
+    selectedFilter: MatchStatusFilter,
+    onSelectFilter: (MatchStatusFilter) -> Unit
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingS),
         contentPadding = PaddingValues(vertical = Dimen.PaddingXXS)
     ) {
-        items(filterLabels.size) { index ->
+        items(filterOptions) { (filter, label) ->
             FilterChip(
-                selected = selectedIndex == index,
-                onClick = { onSelectIndex(index) },
+                selected = selectedFilter == filter,
+                onClick = { onSelectFilter(filter) },
                 shape = RoundedCornerShape(RadiusMedium),
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -327,7 +331,7 @@ private fun DatasetFilterChips(
                 ),
                 label = {
                     Text(
-                        text = filterLabels[index],
+                        text = label,
                         style = MaterialTheme.typography.s12.semiBold()
                     )
                 }
@@ -338,9 +342,9 @@ private fun DatasetFilterChips(
 
 @Composable
 private fun DatasetSortSection(
-    sortLabels: List<String>,
-    selectedSortIndex: Int,
-    onSelectSortIndex: (Int) -> Unit
+    sortOptions: List<Pair<MatchSortCriteria, String>>,
+    selectedSort: MatchSortCriteria,
+    onSelectSort: (MatchSortCriteria) -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -361,14 +365,14 @@ private fun DatasetSortSection(
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXS)
         ) {
-            items(sortLabels.size) { index ->
+            items(sortOptions) { (criteria, label) ->
                 FilterChip(
-                    selected = selectedSortIndex == index,
-                    onClick = { onSelectSortIndex(index) },
+                    selected = selectedSort == criteria,
+                    onClick = { onSelectSort(criteria) },
                     shape = RoundedCornerShape(RadiusMedium),
                     label = {
                         Text(
-                            text = sortLabels[index],
+                            text = label,
                             style = MaterialTheme.typography.s10.medium()
                         )
                     }

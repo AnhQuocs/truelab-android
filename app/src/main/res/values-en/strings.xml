@@ -39,7 +39,13 @@
     <string name="matches_title">Match Dataset Explorer</string>
     <string name="matches_subtitle">380 Records • Multi-provider Odds • Extracted Features</string>
     <string name="matches_search_hint">Search Team, Match ID (#M-xxx) or League...</string>
-    <string name="matches_filter_all">All (380)</string>
+    <string name="matches_filter_all">All</string>
+    <string name="matches_filter_ended">Finished</string>
+    <string name="matches_filter_scheduled">Scheduled</string>
+    <string name="matches_empty_title">No Matches Found</string>
+    <string name="matches_empty_desc">No matches match the selected criteria.</string>
+    <string name="matches_error_title">Failed to Load Matches</string>
+    <string name="matches_result_scheduled">Scheduled</string>
     <string name="matches_filter_with_odds">With Odds</string>
     <string name="matches_filter_cleaned">Normalized</string>
     <string name="matches_filter_backtested">Backtested</string>
