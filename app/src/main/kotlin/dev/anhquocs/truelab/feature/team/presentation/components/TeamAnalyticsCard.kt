@@ -41,7 +41,7 @@ import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s13
 import dev.anhquocs.truelab.core.ui.utils.s16
 import dev.anhquocs.truelab.core.ui.utils.semiBold
-import dev.anhquocs.truelab.feature.team.presentation.TeamAnalyticsRecord
+import dev.anhquocs.truelab.feature.team.presentation.model.TeamAnalyticsRecord
 
 @Composable
 fun TeamAnalyticsCard(
@@ -171,7 +171,7 @@ fun TeamAnalyticsCard(
                     }
                     Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
                     Text(
-                        text = "${team.homeWinRate}%",
+                        text = team.homeWinRate?.let { "$it%" } ?: "—",
                         style = MaterialTheme.typography.s12.semiBold(),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -190,7 +190,7 @@ fun TeamAnalyticsCard(
                     }
                     Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
                     Text(
-                        text = "${team.awayWinRate}%",
+                        text = team.awayWinRate?.let { "$it%" } ?: "—",
                         style = MaterialTheme.typography.s12.semiBold(),
                         color = MaterialTheme.colorScheme.onSurface
                     )

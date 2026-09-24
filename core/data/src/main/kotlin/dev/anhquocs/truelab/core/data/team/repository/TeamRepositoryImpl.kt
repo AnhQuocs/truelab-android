@@ -21,9 +21,21 @@ class TeamRepositoryImpl @Inject constructor(
         return teamDao.getTeamById(teamId).map { it?.toDomain() }
     }
 
+    override fun getTeams(): Flow<List<TeamDetail>> {
+        return teamDao.searchTeams("").map { list ->
+            list.map { it.toDomain() }
+        }
+    }
+
     override fun getSeasonRanking(matchId: Long): Flow<List<SeasonRanking>> {
         // Gap solved: RankingDao now queries specifically by matchId!
         return rankingDao.getRankingsForMatch(matchId).map { list ->
+            list.map { it.toDomain(json) }
+        }
+    }
+
+    override fun getSeasonRankings(): Flow<List<SeasonRanking>> {
+        return rankingDao.getLatestSeasonRankings().map { list ->
             list.map { it.toDomain(json) }
         }
     }

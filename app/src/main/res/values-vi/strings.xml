@@ -79,6 +79,15 @@
     <string name="teams_title">Đội bóng, Elo &amp; Phong độ</string>
     <string name="teams_subtitle">Điểm Phong độ • Sân Nhà/Khách • Đối đầu H2H • Elo Rating</string>
     <string name="teams_search_hint">Tìm tên đội bóng hoặc giải đấu…</string>
+    <string name="teams_sort_label">Sắp xếp theo:</string>
+    <string name="teams_sort_position">Thứ hạng (MergeSort)</string>
+    <string name="teams_sort_points">Điểm số</string>
+    <string name="teams_sort_goal_diff">Hiệu số</string>
+    <string name="teams_sort_wins">Trận thắng</string>
+    <string name="teams_sort_losses">Trận thua</string>
+    <string name="teams_empty_no_data">Không có đội bóng nào trong cơ sở dữ liệu.</string>
+    <string name="teams_empty_search">Không tìm thấy đội bóng nào khớp với từ khóa \"%1$s\".</string>
+    <string name="teams_error_default">Đã xảy ra lỗi khi tải danh sách đội bóng.</string>
     <string name="teams_elo_label">Hệ số Elo</string>
     <string name="teams_form_score_label">Điểm Phong độ (5 trận)</string>
     <string name="teams_home_away_label">Thống kê Sân nhà / Sân khách</string>
