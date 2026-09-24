@@ -36,6 +36,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -56,6 +58,8 @@ import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.s20
 import dev.anhquocs.truelab.core.ui.utils.semiBold
 import dev.anhquocs.truelab.feature.match.presentation.components.MatchDataCard
+import dev.anhquocs.truelab.feature.match.presentation.components.MatchDetailBottomSheet
+import dev.anhquocs.truelab.feature.match.presentation.model.MatchDetailUiState
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchStatusFilter
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchesUiState
 import dev.anhquocs.truelab.feature.match.presentation.viewmodel.MatchesViewModel
@@ -67,9 +71,11 @@ private val TOP_BAR_HEIGHT = 75.dp
 fun MatchesScreen(
     modifier: Modifier = Modifier,
     viewModel: MatchesViewModel = hiltViewModel(),
-    onMatchClick: (String) -> Unit = {}
+    onMatchClick: (String) -> Unit = {},
+    onNavigateToPrediction: (Long) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val matchDetailState by viewModel.matchDetailState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val currentSort by viewModel.sortCriteria.collectAsStateWithLifecycle()
     val currentFilter by viewModel.statusFilter.collectAsStateWithLifecycle()
@@ -145,85 +151,29 @@ fun MatchesScreen(
 
                 is MatchesUiState.Empty -> {
                     item {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = Dimen.PaddingL),
-                            shape = RoundedCornerShape(RadiusLarge),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(Dimen.PaddingXL),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(40.dp)
-                                )
-                                Spacer(modifier = Modifier.height(Dimen.PaddingS))
-                                Text(
-                                    text = stringResource(R.string.matches_empty_title),
-                                    style = MaterialTheme.typography.s14.semiBold(),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.height(SpacingXS))
-                                Text(
-                                    text = state.message,
-                                    style = MaterialTheme.typography.s12,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
+                        MatchesFeedbackCard(
+                            icon = Icons.Default.Info,
+                            iconTint = MaterialTheme.colorScheme.primary,
+                            title = stringResource(R.string.matches_empty_title),
+                            message = state.message.asString(),
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            titleColor = MaterialTheme.colorScheme.onSurface,
+                            messageColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 
                 is MatchesUiState.Error -> {
                     item {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = Dimen.PaddingL),
-                            shape = RoundedCornerShape(RadiusLarge),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(Dimen.PaddingXL),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ErrorOutline,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.size(40.dp)
-                                )
-                                Spacer(modifier = Modifier.height(Dimen.PaddingS))
-                                Text(
-                                    text = stringResource(R.string.matches_error_title),
-                                    style = MaterialTheme.typography.s14.semiBold(),
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                                Spacer(modifier = Modifier.height(SpacingXS))
-                                Text(
-                                    text = state.message,
-                                    style = MaterialTheme.typography.s12,
-                                    color = MaterialTheme.colorScheme.onErrorContainer,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
+                        MatchesFeedbackCard(
+                            icon = Icons.Default.ErrorOutline,
+                            iconTint = MaterialTheme.colorScheme.error,
+                            title = stringResource(R.string.matches_error_title),
+                            message = state.message.asString(),
+                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f),
+                            titleColor = MaterialTheme.colorScheme.error,
+                            messageColor = MaterialTheme.colorScheme.onErrorContainer
+                        )
                     }
                 }
 
@@ -231,12 +181,26 @@ fun MatchesScreen(
                     items(state.matches, key = { it.id }) { record ->
                         MatchDataCard(
                             record = record,
-                            onClick = { onMatchClick(record.id) }
+                            onClick = {
+                                onMatchClick(record.id)
+                                viewModel.onMatchClicked(record.id.toLongOrNull() ?: 0L)
+                            }
                         )
                     }
                 }
             }
         }
+    }
+
+    if (matchDetailState !is MatchDetailUiState.Idle) {
+        MatchDetailBottomSheet(
+            state = matchDetailState,
+            onDismiss = { viewModel.onDismissMatchDetail() },
+            onPredictClick = { matchId ->
+                viewModel.onDismissMatchDetail()
+                onNavigateToPrediction(matchId)
+            }
+        )
     }
 }
 
@@ -378,6 +342,53 @@ private fun DatasetSortSection(
                     }
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun MatchesFeedbackCard(
+    icon: ImageVector,
+    iconTint: Color,
+    title: String,
+    message: String,
+    containerColor: Color,
+    titleColor: Color,
+    messageColor: Color
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = Dimen.PaddingL),
+        shape = RoundedCornerShape(RadiusLarge),
+        colors = CardDefaults.cardColors(containerColor = containerColor)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimen.PaddingXL),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.height(Dimen.PaddingS))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.s14.semiBold(),
+                color = titleColor
+            )
+            Spacer(modifier = Modifier.height(SpacingXS))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.s12,
+                color = messageColor,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

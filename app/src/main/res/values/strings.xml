@@ -55,6 +55,25 @@
     <string name="matches_sort_id">ID (BinarySearch)</string>
     <string name="matches_odds_label">Avg Odds:</string>
     <string name="matches_features_label">Features:</string>
+    <string name="matches_empty_no_data">No matches found in database.</string>
+    <string name="matches_empty_filter">No matches match the selected filter.</string>
+    <string name="matches_empty_search">No matches match the keyword \"%1$s\".</string>
+    <string name="matches_error_default">An error occurred while loading matches.</string>
+
+    <!-- Match Detail BottomSheet -->
+    <string name="match_detail_title">Match Details</string>
+    <string name="match_detail_cta_predict">Predict This Match</string>
+    <string name="match_detail_status_label">Status</string>
+    <string name="match_detail_date_label">Kickoff Time</string>
+    <string name="match_detail_score_label">Score</string>
+    <string name="match_detail_total_goals">Total Goals</string>
+    <string name="match_detail_result_label">Result</string>
+    <string name="match_detail_home_win">Home Win</string>
+    <string name="match_detail_away_win">Away Win</string>
+    <string name="match_detail_draw">Draw</string>
+    <string name="match_detail_not_played">Not Started</string>
+    <string name="match_detail_empty">Match details not found in database.</string>
+    <string name="match_detail_error_default">An error occurred while loading match details.</string>
 
     <!-- Teams Screen -->
     <string name="teams_title">Teams, Elo &amp; Form Analysis</string>
