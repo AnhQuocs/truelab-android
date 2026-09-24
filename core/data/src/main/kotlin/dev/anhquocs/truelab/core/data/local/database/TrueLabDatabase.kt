@@ -2,8 +2,11 @@ package dev.anhquocs.truelab.core.data.local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity
+import dev.anhquocs.truelab.core.data.league.local.entity.SeasonEntity
 import dev.anhquocs.truelab.core.data.match.local.dao.MatchDao
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchEntity
+import dev.anhquocs.truelab.core.data.metadata.local.entity.DatasetMetadataEntity
 import dev.anhquocs.truelab.core.data.odds.local.dao.OddsDao
 import dev.anhquocs.truelab.core.data.odds.local.entity.OddsEntity
 import dev.anhquocs.truelab.core.data.prediction.local.dao.PredictionDao
@@ -19,9 +22,12 @@ import dev.anhquocs.truelab.core.data.team.local.entity.TeamEntity
         MatchEntity::class,
         OddsEntity::class,
         SeasonRankingEntity::class,
-        PredictionEntity::class
+        PredictionEntity::class,
+        LeagueEntity::class,
+        SeasonEntity::class,
+        DatasetMetadataEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class TrueLabDatabase : RoomDatabase() {

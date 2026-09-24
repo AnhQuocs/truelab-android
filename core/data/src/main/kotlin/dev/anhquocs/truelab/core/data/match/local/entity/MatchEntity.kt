@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity
 import dev.anhquocs.truelab.core.data.team.local.entity.TeamEntity
 
 @Entity(
@@ -22,14 +23,23 @@ import dev.anhquocs.truelab.core.data.team.local.entity.TeamEntity
             parentColumns = ["id"],
             childColumns = ["awayTeamId"],
             onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = LeagueEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["leagueId"],
+            onDelete = ForeignKey.SET_NULL
         )
     ],
     indices = [
         Index(value = ["homeTeamId"]),
         Index(value = ["awayTeamId"]),
-        Index(value = ["homeTeamId", "awayTeamId"]), 
-        Index(value = ["startTimeDate"]), 
-        Index(value = ["status"]) 
+        Index(value = ["homeTeamId", "awayTeamId"]),
+        Index(value = ["startTimeDate"]),
+        Index(value = ["status"]),
+        Index(value = ["leagueId"]),
+        Index(value = ["season"]),
+        Index(value = ["leagueId", "season"])
     ]
 )
 data class MatchEntity(
@@ -40,7 +50,9 @@ data class MatchEntity(
     val homeScore: Int?,
     val awayScore: Int?,
     val startTimeDate: String,
-    val status: String
+    val status: String,
+    val leagueId: Int? = null,
+    val season: String? = null
 )
 
 data class MatchWithTeams(
