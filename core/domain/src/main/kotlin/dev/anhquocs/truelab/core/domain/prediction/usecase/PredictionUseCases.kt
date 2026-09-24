@@ -8,6 +8,7 @@ data class PredictionUseCases(
     val predictMatchUseCase: PredictMatchUseCase
 )
 
+@Deprecated("Use PredictMatchOutcomeUseCase instead")
 class PredictMatchUseCase(
     private val repository: PredictionRepository
 ) {
