@@ -132,12 +132,24 @@
 
     <!-- Prediction Screen -->
     <string name="prediction_title">Match Outcome Prediction</string>
-    <string name="prediction_select_match">Selected Match</string>
-    <string name="prediction_weighted_model">Weighted Scoring Features</string>
+    <string name="prediction_subtitle">3-Way Probability • Weighted Scoring Engine • Confidence Index</string>
+    <string name="prediction_select_match">Select Match:</string>
+    <string name="prediction_selected_match">Selected Match</string>
+    <string name="prediction_probabilities_title">Win/Draw/Loss Probabilities</string>
     <string name="prediction_home_win">Home Win</string>
     <string name="prediction_draw">Draw</string>
     <string name="prediction_away_win">Away Win</string>
-    <string name="prediction_calculate_btn">Run Prediction Engine</string>
+    <string name="prediction_predicted_outcome">Predicted Outcome</string>
+    <string name="prediction_confidence">Confidence: %1$.1f%%</string>
+    <string name="prediction_factors_title">Prediction Key Factors</string>
+    <string name="prediction_elo_diff">Elo: %1$s (%2$s) vs %3$s (%4$s) • Diff: %5$s</string>
+    <string name="prediction_algorithm_badge">Engine: %1$s</string>
+    <string name="prediction_empty_no_matches">No match data available for prediction.</string>
+    <string name="prediction_error_default">An error occurred during prediction calculation.</string>
+    <string name="prediction_outcome_home">Home Win</string>
+    <string name="prediction_outcome_draw">Draw</string>
+    <string name="prediction_outcome_away">Away Win</string>
+    <string name="prediction_calculate_btn">Refresh Prediction</string>
 
     <!-- Benchmark Screen -->
     <string name="benchmark_title">Algorithm Performance</string>
