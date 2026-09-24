@@ -7,6 +7,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dev.anhquocs.truelab.core.data.league.local.dao.LeagueDao
+import dev.anhquocs.truelab.core.data.league.local.dao.SeasonDao
 import dev.anhquocs.truelab.core.data.local.database.MIGRATION_1_2
 import dev.anhquocs.truelab.core.data.local.database.TrueLabDatabase
 import dev.anhquocs.truelab.core.data.match.local.dao.MatchDao
@@ -56,4 +58,12 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun providePredictionDao(database: TrueLabDatabase): PredictionDao = database.predictionDao()
+
+    @Provides
+    @Singleton
+    fun provideLeagueDao(database: TrueLabDatabase): LeagueDao = database.leagueDao()
+
+    @Provides
+    @Singleton
+    fun provideSeasonDao(database: TrueLabDatabase): SeasonDao = database.seasonDao()
 }

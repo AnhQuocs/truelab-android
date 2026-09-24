@@ -48,4 +48,12 @@ interface MatchDao {
         ORDER BY startTimeDate DESC LIMIT :limit
     """)
     fun getRecentMatchesForTeam(teamId: Int, limit: Int = 5): Flow<List<MatchWithTeams>>
+
+    @Transaction
+    @Query("SELECT * FROM matches WHERE leagueId = :leagueId ORDER BY startTimeDate DESC")
+    fun getMatchesByLeague(leagueId: Int): Flow<List<MatchWithTeams>>
+
+    @Transaction
+    @Query("SELECT * FROM matches WHERE leagueId = :leagueId AND season = :season ORDER BY startTimeDate DESC")
+    fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<MatchWithTeams>>
 }

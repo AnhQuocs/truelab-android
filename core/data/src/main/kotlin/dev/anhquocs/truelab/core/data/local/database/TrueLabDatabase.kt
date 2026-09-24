@@ -2,6 +2,8 @@ package dev.anhquocs.truelab.core.data.local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import dev.anhquocs.truelab.core.data.league.local.dao.LeagueDao
+import dev.anhquocs.truelab.core.data.league.local.dao.SeasonDao
 import dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity
 import dev.anhquocs.truelab.core.data.league.local.entity.SeasonEntity
 import dev.anhquocs.truelab.core.data.match.local.dao.MatchDao
@@ -36,4 +38,6 @@ abstract class TrueLabDatabase : RoomDatabase() {
     abstract fun oddsDao(): OddsDao
     abstract fun rankingDao(): RankingDao
     abstract fun predictionDao(): PredictionDao
+    abstract fun leagueDao(): LeagueDao
+    abstract fun seasonDao(): SeasonDao
 }
