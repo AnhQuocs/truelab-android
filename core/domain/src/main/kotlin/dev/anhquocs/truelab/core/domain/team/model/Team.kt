@@ -21,6 +21,7 @@ data class SeasonRanking(
     val totalMatches: Int get() = won + draw + loss
     val totalPoints: Int get() = won * 3 + draw
 
+    @Deprecated("Use CalculateTeamFormUseCase instead")
     fun calculateFormScore(): Double {
         if (recently.isEmpty()) return 0.0
         val points = recently.take(5).sumOf { matchResult ->

@@ -10,6 +10,7 @@ data class PredictionResult(
     val confidenceScore: Double
 ) {
     companion object {
+        @Deprecated("Use PredictMatchOutcomeUseCase instead")
         fun computeWeightedScoring(
             matchId: Long,
             homeFormScore: Double,
