@@ -25,21 +25,43 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
+import dev.anhquocs.truelab.core.domain.team.model.TeamPerformanceStatistics
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
 import dev.anhquocs.truelab.core.ui.theme.RadiusPill
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.s10
-import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.s18
 import dev.anhquocs.truelab.core.ui.utils.semiBold
+import java.util.Locale
 
 @Composable
 fun DescriptiveStatsCard(
+    teamStats: TeamPerformanceStatistics?,
     modifier: Modifier = Modifier
 ) {
+    val stats = teamStats?.totalGoalsStats
+    val hasData = teamStats != null && teamStats.matchesCount > 0
+
+    val meanStr = if (hasData) String.format(Locale.US, "%.2f", stats!!.mean) else "—"
+    val medianStr = if (hasData) String.format(Locale.US, "%.2f", stats!!.median) else "—"
+    val stdDevStr = if (hasData) String.format(Locale.US, "±%.2f", stats!!.sampleStandardDeviation) else "—"
+    val varianceStr = if (hasData) String.format(Locale.US, "%.2f", stats!!.sampleVariance) else "—"
+    val minMaxStr = if (hasData) "${stats!!.min.toInt()} - ${stats.max.toInt()}" else "—"
+    val skewnessStr = if (hasData) String.format(Locale.US, "%+.2f", stats!!.skewness) else "—"
+
+    val skewnessSubtext = if (hasData) {
+        when {
+            stats!!.skewness > 0.1 -> "Lệch phải (Right-skewed)"
+            stats.skewness < -0.1 -> "Lệch trái (Left-skewed)"
+            else -> "Đối xứng (Symmetric)"
+        }
+    } else {
+        "Hệ số bất đối xứng"
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(RadiusLarge),
@@ -55,11 +77,11 @@ fun DescriptiveStatsCard(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top, // Đảm bảo căn trên để badge không bị kéo lệch
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
-                    modifier = Modifier.weight(1f).padding(end = Dimen.PaddingS), // Cho title chiếm weight để badge không bị bóp méo
+                    modifier = Modifier.weight(1f).padding(end = Dimen.PaddingS),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXSPlus)
                 ) {
@@ -73,7 +95,7 @@ fun DescriptiveStatsCard(
                         text = "1. " + stringResource(R.string.analytics_descriptive_stats),
                         style = MaterialTheme.typography.s14.semiBold(),
                         color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 2 // Cho phép rớt dòng tối đa 2 dòng nếu màn hình quá nhỏ
+                        maxLines = 2
                     )
                 }
 
@@ -84,10 +106,10 @@ fun DescriptiveStatsCard(
                         .padding(horizontal = Dimen.PaddingS, vertical = Dimen.PaddingXXS)
                 ) {
                     Text(
-                        text = "N = 75,000 trận",
+                        text = stringResource(R.string.analytics_matches_count, teamStats?.matchesCount ?: 0),
                         style = MaterialTheme.typography.s10.bold(),
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        maxLines = 1 // Chống rớt dòng tạo hình con giun
+                        maxLines = 1
                     )
                 }
             }
@@ -101,13 +123,13 @@ fun DescriptiveStatsCard(
             ) {
                 StatGridItem(
                     label = stringResource(R.string.analytics_mean_goals),
-                    value = "2.84",
+                    value = meanStr,
                     subtext = stringResource(R.string.analytics_goals_match),
                     modifier = Modifier.weight(1f)
                 )
                 StatGridItem(
                     label = stringResource(R.string.analytics_median_goals),
-                    value = "3.00",
+                    value = medianStr,
                     subtext = stringResource(R.string.analytics_goal_median_desc),
                     modifier = Modifier.weight(1f)
                 )
@@ -121,14 +143,14 @@ fun DescriptiveStatsCard(
             ) {
                 StatGridItem(
                     label = stringResource(R.string.analytics_std_dev),
-                    value = "±1.42",
-                    subtext = "σ phân tán",
+                    value = stdDevStr,
+                    subtext = "σ phân tán (StdDev)",
                     modifier = Modifier.weight(1f)
                 )
                 StatGridItem(
                     label = stringResource(R.string.analytics_variance),
-                    value = "2.01",
-                    subtext = "σ² biến thiên",
+                    value = varianceStr,
+                    subtext = "σ² biến thiên (Variance)",
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -141,14 +163,14 @@ fun DescriptiveStatsCard(
             ) {
                 StatGridItem(
                     label = stringResource(R.string.analytics_min_max_goals),
-                    value = "0 - 8",
-                    subtext = "Bàn thắng tối đa",
+                    value = minMaxStr,
+                    subtext = "Khoảng Min/Max",
                     modifier = Modifier.weight(1f)
                 )
                 StatGridItem(
                     label = stringResource(R.string.analytics_skewness),
-                    value = "+0.42",
-                    subtext = "Lệch phải nhẹ",
+                    value = skewnessStr,
+                    subtext = skewnessSubtext,
                     modifier = Modifier.weight(1f)
                 )
             }

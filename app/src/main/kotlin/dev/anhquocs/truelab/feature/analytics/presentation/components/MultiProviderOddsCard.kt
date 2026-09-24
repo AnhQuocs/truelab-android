@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
+import dev.anhquocs.truelab.core.domain.odds.model.MatchOdds
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusPill
@@ -35,11 +36,25 @@ import dev.anhquocs.truelab.core.ui.utils.s10
 import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.semiBold
+import java.util.Locale
 
 @Composable
 fun MultiProviderOddsCard(
+    matchOdds: MatchOdds?,
+    matchTitle: String,
+    avgHomeOdds: Double?,
+    avgDrawOdds: Double?,
+    avgAwayOdds: Double?,
+    oddsSpread: Double?,
     modifier: Modifier = Modifier
 ) {
+    val oddsList = matchOdds?.oddsList ?: emptyList()
+    val hasOdds = oddsList.isNotEmpty()
+
+    val avgHomeStr = avgHomeOdds?.let { String.format(Locale.US, "%.2f", it) } ?: "—"
+    val avgDrawStr = avgDrawOdds?.let { String.format(Locale.US, "%.2f", it) } ?: "—"
+    val avgAwayStr = avgAwayOdds?.let { String.format(Locale.US, "%.2f", it) } ?: "—"
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(RadiusLarge),
@@ -56,17 +71,17 @@ fun MultiProviderOddsCard(
             // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top, // Đảm bảo căn trên cùng, đề phòng lỗi lệch do xuống dòng
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(modifier = Modifier.weight(1f).padding(end = Dimen.PaddingS)) { // Cấp weight cho Tiêu đề để không lấn át Box bên phải
+                Column(modifier = Modifier.weight(1f).padding(end = Dimen.PaddingS)) {
                     Text(
                         text = "2. " + stringResource(R.string.analytics_odds_comparison),
                         style = MaterialTheme.typography.s14.semiBold(),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Mẫu trận: Arsenal vs Chelsea (#M-38012)",
+                        text = matchTitle,
                         style = MaterialTheme.typography.s12,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -79,59 +94,93 @@ fun MultiProviderOddsCard(
                         .padding(horizontal = Dimen.PaddingS, vertical = Dimen.PaddingXXS)
                 ) {
                     Text(
-                        text = "4 Nhà cung cấp",
+                        text = stringResource(R.string.analytics_provider_count, oddsList.size),
                         style = MaterialTheme.typography.s10.bold(),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        maxLines = 1 // Chống rớt dòng dọc
+                        maxLines = 1
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(Dimen.PaddingM))
 
-            // Table Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(RadiusSmall))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    .padding(vertical = Dimen.PaddingXS, horizontal = Dimen.PaddingS),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = "Nhà cung cấp", style = MaterialTheme.typography.s10.bold(), modifier = Modifier.weight(1.3f))
-                Text(text = "1 (Home)", style = MaterialTheme.typography.s10.bold(), modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                Text(text = "X (Draw)", style = MaterialTheme.typography.s10.bold(), modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                Text(text = "2 (Away)", style = MaterialTheme.typography.s10.bold(), modifier = Modifier.weight(1f), textAlign = TextAlign.End)
-            }
-
-            Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
-
-            OddsTableRow(provider = "Bet365", home = 1.85, draw = 3.60, away = 4.20)
-            OddsTableRow(provider = "Pinnacle", home = 1.88, draw = 3.65, away = 4.10)
-            OddsTableRow(provider = "Bwin", home = 1.83, draw = 3.50, away = 4.30)
-            OddsTableRow(provider = "William Hill", home = 1.85, draw = 3.55, away = 4.25)
-
-            Spacer(modifier = Modifier.height(Dimen.PaddingS))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-            Spacer(modifier = Modifier.height(Dimen.PaddingS))
-
-            // Variance & Spread Metric Footer
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            if (!hasOdds) {
                 Text(
-                    text = "Odds TB: 1.85 | 3.58 | 4.21",
-                    style = MaterialTheme.typography.s12.semiBold(),
-                    fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.primary
+                    text = stringResource(R.string.analytics_no_odds),
+                    style = MaterialTheme.typography.s12,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(vertical = Dimen.PaddingS)
                 )
-                Text(
-                    text = "Độ biến động: 0.038 (Thấp)",
-                    style = MaterialTheme.typography.s10.medium(),
-                    color = Color(0xFF10B981)
-                )
+            } else {
+                // Table Header
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(RadiusSmall))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .padding(vertical = Dimen.PaddingXS, horizontal = Dimen.PaddingS),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.analytics_provider_header),
+                        style = MaterialTheme.typography.s10.bold(),
+                        modifier = Modifier.weight(1.3f)
+                    )
+                    Text(
+                        text = "1 (Home)",
+                        style = MaterialTheme.typography.s10.bold(),
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "X (Draw)",
+                        style = MaterialTheme.typography.s10.bold(),
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "2 (Away)",
+                        style = MaterialTheme.typography.s10.bold(),
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.End
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
+
+                oddsList.forEach { item ->
+                    OddsTableRow(
+                        provider = item.companyName,
+                        home = item.homeWin,
+                        draw = item.draw,
+                        away = item.awayWin
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(Dimen.PaddingS))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                Spacer(modifier = Modifier.height(Dimen.PaddingS))
+
+                // Variance & Spread Metric Footer
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.analytics_avg_odds, avgHomeStr, avgDrawStr, avgAwayStr),
+                        style = MaterialTheme.typography.s12.semiBold(),
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (oddsSpread != null) {
+                        Text(
+                            text = "Độ lệch biên: ${String.format(Locale.US, "%.3f", oddsSpread)}",
+                            style = MaterialTheme.typography.s10.medium(),
+                            color = Color(0xFF10B981)
+                        )
+                    }
+                }
             }
         }
     }
@@ -140,10 +189,14 @@ fun MultiProviderOddsCard(
 @Composable
 private fun OddsTableRow(
     provider: String,
-    home: Double,
-    draw: Double,
-    away: Double
+    home: Double?,
+    draw: Double?,
+    away: Double?
 ) {
+    val homeText = home?.let { String.format(Locale.US, "%.2f", it) } ?: "—"
+    val drawText = draw?.let { String.format(Locale.US, "%.2f", it) } ?: "—"
+    val awayText = away?.let { String.format(Locale.US, "%.2f", it) } ?: "—"
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -156,20 +209,20 @@ private fun OddsTableRow(
             modifier = Modifier.weight(1.3f)
         )
         Text(
-            text = "%.2f".format(home),
+            text = homeText,
             style = MaterialTheme.typography.s12.bold(),
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.primary
         )
         Text(
-            text = "%.2f".format(draw),
+            text = drawText,
             style = MaterialTheme.typography.s12,
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center
         )
         Text(
-            text = "%.2f".format(away),
+            text = awayText,
             style = MaterialTheme.typography.s12.bold(),
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.End,

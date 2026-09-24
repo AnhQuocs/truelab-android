@@ -99,6 +99,8 @@
     <!-- Analytics Screen -->
     <string name="analytics_title">Analytics Dashboard</string>
     <string name="analytics_subtitle">Comprehensive Stats • Multi-Provider Odds • Trend</string>
+    <string name="analytics_select_team">Select Team:</string>
+    <string name="analytics_select_match">Select Match:</string>
     <string name="analytics_descriptive_stats">Comprehensive Descriptive Statistics</string>
     <string name="analytics_mean_goals">Mean Goals</string>
     <string name="analytics_median_goals">Median Goals</string>
@@ -113,6 +115,20 @@
     <string name="analytics_goal_median_desc">Goal median</string>
     <string name="analytics_variance_val">Variance: %1$s</string>
     <string name="analytics_spread_index">Spread index</string>
+    <string name="analytics_empty_no_data">No match or team data available for analytics.</string>
+    <string name="analytics_error_default">An error occurred while loading analytics data.</string>
+    <string name="analytics_no_odds">No odds data recorded for this match.</string>
+    <string name="analytics_no_stats">No finished matches available for this team.</string>
+    <string name="analytics_matches_count">N = %1$d matches</string>
+    <string name="analytics_target_home">Home Win</string>
+    <string name="analytics_target_draw">Draw</string>
+    <string name="analytics_target_away">Away Win</string>
+    <string name="analytics_window_size">MA(%1$d)</string>
+    <string name="analytics_avg_odds">Avg Odds: %1$s | %2$s | %3$s</string>
+    <string name="analytics_volatility_val">Volatility: %1$.3f</string>
+    <string name="analytics_odds_shift">Opening: %1$s ➔ Current: %2$s</string>
+    <string name="analytics_provider_header">Provider</string>
+    <string name="analytics_provider_count">%1$d Providers</string>
 
     <!-- Prediction Screen -->
     <string name="prediction_title">Match Outcome Prediction</string>
