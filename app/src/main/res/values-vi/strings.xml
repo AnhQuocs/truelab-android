@@ -132,12 +132,24 @@
 
     <!-- Prediction Screen -->
     <string name="prediction_title">Dự đoán Kết quả Trận đấu</string>
-    <string name="prediction_select_match">Trận đấu được chọn</string>
-    <string name="prediction_weighted_model">Mô hình Điểm số Trọng số</string>
+    <string name="prediction_subtitle">Xác suất 3 Chiều • Động cơ Trọng số • Chỉ số Tin cậy</string>
+    <string name="prediction_select_match">Chọn trận đấu:</string>
+    <string name="prediction_selected_match">Trận đấu được chọn</string>
+    <string name="prediction_probabilities_title">Phân phối Xác suất Thắng / Hòa / Thua</string>
     <string name="prediction_home_win">Chủ nhà Thắng</string>
     <string name="prediction_draw">Hòa</string>
     <string name="prediction_away_win">Đội khách Thắng</string>
-    <string name="prediction_calculate_btn">Chạy Mô hình Dự đoán</string>
+    <string name="prediction_predicted_outcome">Kết quả Dự đoán</string>
+    <string name="prediction_confidence">Độ tin cậy: %1$.1f%%</string>
+    <string name="prediction_factors_title">Các Yếu tố Dự đoán Chính</string>
+    <string name="prediction_elo_diff">Elo: %1$s (%2$s) vs %3$s (%4$s) • Chênh lệch: %5$s</string>
+    <string name="prediction_algorithm_badge">Mô hình: %1$s</string>
+    <string name="prediction_empty_no_matches">Chưa có dữ liệu trận đấu để thực hiện dự đoán.</string>
+    <string name="prediction_error_default">Đã xảy ra lỗi khi tính toán dự đoán kết quả.</string>
+    <string name="prediction_outcome_home">Chủ nhà Thắng</string>
+    <string name="prediction_outcome_draw">Hòa</string>
+    <string name="prediction_outcome_away">Đội khách Thắng</string>
+    <string name="prediction_calculate_btn">Làm mới Dự đoán</string>
 
     <!-- Benchmark Screen -->
     <string name="benchmark_title">Hiệu năng Thuật toán</string>

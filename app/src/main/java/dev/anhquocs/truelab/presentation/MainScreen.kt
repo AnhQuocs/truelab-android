@@ -85,8 +85,8 @@ fun MainScreen(
 
                 composable(MainNavDestination.Matches.route) {
                     MatchesScreen(
-                        onNavigateToPrediction = {
-                            navController.navigate(MainNavDestination.Prediction.route) {
+                        onNavigateToPrediction = { matchId ->
+                            navController.navigate("${MainNavDestination.Prediction.route}?matchId=$matchId") {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
                                 }
@@ -105,7 +105,16 @@ fun MainScreen(
                     AnalyticsScreen()
                 }
 
-                composable(MainNavDestination.Prediction.route) {
+                composable(
+                    route = "${MainNavDestination.Prediction.route}?matchId={matchId}",
+                    arguments = listOf(
+                        androidx.navigation.navArgument("matchId") {
+                            type = androidx.navigation.NavType.StringType
+                            nullable = true
+                            defaultValue = null
+                        }
+                    )
+                ) {
                     PredictionScreen(
                         onNavigateBack = { navController.popBackStack() }
                     )
