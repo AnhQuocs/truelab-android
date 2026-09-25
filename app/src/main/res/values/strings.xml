@@ -40,6 +40,7 @@
     <string name="matches_subtitle">380 Records • Multi-provider Odds • Extracted Features</string>
     <string name="matches_search_hint">Search Team, Match ID (#M-xxx) or League...</string>
     <string name="matches_filter_all">All</string>
+    <string name="matches_filter_all_leagues">All Leagues</string>
     <string name="matches_filter_ended">Finished</string>
     <string name="matches_filter_scheduled">Scheduled</string>
     <string name="matches_empty_title">No Matches Found</string>
