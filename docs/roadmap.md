@@ -13,7 +13,7 @@
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        PRESENTATION ROADMAP                            │
 │  [P1: Matches + Teams + Analytics + Prediction + Deprecation] (DONE)   │
-│  [P2: Benchmark Runner UI + Splits UI + Filters UI + Dataset UI]       │
+│  [P2: Benchmark Runner UI + Splits UI + Filters UI + Dataset UI] (DONE)│
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │
                                     ▼
@@ -53,7 +53,7 @@ Tầng Presentation chịu trách nhiệm về Jetpack Compose UI, ViewModel, Ui
 | Phase | Phạm vi Giao diện & Trải nghiệm Người dùng | Trạng thái | Kế hoạch Chi tiết / Deliverables |
 | :--- | :--- | :---: | :--- |
 | **Presentation P1** | **Core Football Screens Integration & Deprecation** | **DONE** | • `MatchesScreen` + `MatchesViewModel` (Dynamic data, search, sort, status filter, match detail bottom sheet)<br/>• `TeamsScreen` + `TeamsViewModel` (Dynamic standings, tie-breakers, search, form score, Elo rating)<br/>• `AnalyticsScreen` + `AnalyticsViewModel` (Descriptive stats cards, odds matrix, `OddsTrendLineChart` Canvas)<br/>• `PredictionScreen` + `PredictionViewModel` (Match selector, 3-way probabilities card, prediction factors card)<br/>• Triển khai Triple-Locale (`values`, `values-en`, `values-vi`) và `@Deprecated` legacy paths |
-| **Presentation P2** | **Presentation Expansion & Tools** | **FUTURE** | • `BenchmarkScreen` Runner UI (Kích hoạt đo lường thời gian thực thi thuật toán, hiển thị đồ thị so sánh hiệu năng)<br/>• Hiển thị Home/Away Splits chi tiết trên Team Details<br/>• Bộ lọc nâng cao League / Season trên Matches Screen (kết nối với Data D1)<br/>• Dynamic Dataset Overview Card trên Home Screen (kết nối với Data D1)<br/>• Team Comparison Tool / H2H Multi-Match Comparison Screen |
+| **Presentation P2** | **Presentation Expansion & Tools** | **DONE** | • **P2.1**: `BenchmarkScreen` Runner UI (Đo lường thời gian thực thi thuật toán trên `Dispatchers.Default`, so sánh Search/Sort, Speedup banner, $O(\cdot)$ badge)<br/>• **P2.2**: Hiển thị Home/Away Splits chi tiết (W-D-L và Win Rate động) trên `TeamAnalyticsCard`<br/>• **P2.3**: Dynamic Dataset Overview trên `HomeScreen` + Bộ lọc League/Season trên `MatchesScreen` |
 
 ---
 
