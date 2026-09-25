@@ -2,6 +2,7 @@ package dev.anhquocs.truelab.core.data.crawler
 
 import dev.anhquocs.truelab.core.data.crawler.model.SyncResult
 import dev.anhquocs.truelab.core.data.crawler.model.SyncSummary
+import dev.anhquocs.truelab.core.data.crawler.retry.RetryExecutor
 import dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity
 import dev.anhquocs.truelab.core.data.league.local.entity.SeasonEntity
 import dev.anhquocs.truelab.core.data.local.database.TrueLabDatabase
@@ -30,7 +31,8 @@ class DataSyncEngine @Inject constructor(
     private val rankingApi: RankingApi,
     private val database: TrueLabDatabase,
     private val json: Json,
-    private val metadataRepository: DatasetMetadataRepository? = null
+    private val metadataRepository: DatasetMetadataRepository? = null,
+    private val retryExecutor: RetryExecutor = RetryExecutor()
 ) {
 
     /**
@@ -54,8 +56,10 @@ class DataSyncEngine @Inject constructor(
             var totalRankingsSynced = 0
 
             while (currentPage <= totalPages) {
-                // 1. Fetch remote matches page
-                val response = matchApi.getMatches(date = date, page = currentPage)
+                // 1. Fetch remote matches page with retry
+                val response = retryExecutor.execute {
+                    matchApi.getMatches(date = date, page = currentPage)
+                }
                 val matchRecords = response.data.data
 
                 if (matchRecords.isEmpty()) break
@@ -172,7 +176,9 @@ class DataSyncEngine @Inject constructor(
     }
 
     private suspend fun syncOddsInternal(matchId: Long): Int {
-        val response = oddsApi.getOddsHistory(matchId)
+        val response = retryExecutor.execute {
+            oddsApi.getOddsHistory(matchId)
+        }
         val oddsRecords = response.data.data
 
         if (oddsRecords.isNotEmpty()) {
@@ -186,7 +192,9 @@ class DataSyncEngine @Inject constructor(
     }
 
     private suspend fun syncRankingInternal(matchId: Long): Int {
-        val response = rankingApi.getSeasonRanking(matchId)
+        val response = retryExecutor.execute {
+            rankingApi.getSeasonRanking(matchId)
+        }
         val rankRecords = response.data
 
         if (rankRecords.isNotEmpty()) {
