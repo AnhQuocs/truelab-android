@@ -1,5 +1,9 @@
 package dev.anhquocs.truelab.core.data.crawler
 
+import dev.anhquocs.truelab.core.data.crawler.cache.CacheFreshnessChecker
+import dev.anhquocs.truelab.core.data.crawler.cache.DataFreshnessPolicy
+import dev.anhquocs.truelab.core.data.crawler.cache.DatasetCategory
+import dev.anhquocs.truelab.core.data.crawler.cache.DefaultCacheFreshnessChecker
 import dev.anhquocs.truelab.core.data.crawler.model.SyncResult
 import dev.anhquocs.truelab.core.data.crawler.model.SyncSummary
 import dev.anhquocs.truelab.core.data.crawler.retry.RetryExecutor
@@ -13,8 +17,10 @@ import dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.toMatchEntity
 import dev.anhquocs.truelab.core.data.match.remote.api.MatchApi
 import dev.anhquocs.truelab.core.data.odds.remote.api.OddsApi
 import dev.anhquocs.truelab.core.data.ranking.remote.api.RankingApi
+import dev.anhquocs.truelab.core.domain.metadata.model.DatasetMetadata
 import dev.anhquocs.truelab.core.domain.metadata.repository.DatasetMetadataRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
@@ -32,11 +38,15 @@ class DataSyncEngine @Inject constructor(
     private val database: TrueLabDatabase,
     private val json: Json,
     private val metadataRepository: DatasetMetadataRepository? = null,
-    private val retryExecutor: RetryExecutor = RetryExecutor()
+    private val retryExecutor: RetryExecutor = RetryExecutor(),
+    private val cacheFreshnessChecker: CacheFreshnessChecker = DefaultCacheFreshnessChecker(),
+    private val freshnessPolicy: DataFreshnessPolicy = DataFreshnessPolicy(),
+    private val timeProvider: () -> Long = { System.currentTimeMillis() }
 ) {
 
     /**
      * Đồng bộ đầy đủ danh sách trận đấu và dữ liệu liên quan theo ngày với thứ tự phụ thuộc xác định:
+     * 0. Kiểm tra Cache Freshness (nếu forceRefresh = false và cache còn fresh -> bỏ qua remote sync)
      * 1. Teams (Deduplicated & Inserted with IGNORE to preserve Elo/Form)
      * 2. Matches (Batch inserted with REPLACE)
      * 3. Rankings & Odds (Optional per match)
@@ -45,9 +55,31 @@ class DataSyncEngine @Inject constructor(
     suspend fun syncFullPipelineForDate(
         date: String,
         syncOddsAndRankings: Boolean = false,
+        forceRefresh: Boolean = false,
+        category: DatasetCategory = DatasetCategory.DEFAULT,
         onMetadataHook: (suspend (timestamp: Long, matchesSynced: Int, teamsSynced: Int) -> Unit)? = null
     ): SyncResult<SyncSummary> = withContext(Dispatchers.IO) {
         try {
+            // 0. Cache Freshness Check
+            if (!forceRefresh && metadataRepository != null) {
+                val currentMetadata = metadataRepository.getMetadata(DatasetMetadata.DEFAULT_KEY).firstOrNull()
+                val lastSyncTimestamp = currentMetadata?.lastSyncTimestamp ?: 0L
+                val currentTime = timeProvider()
+                val ttlMs = freshnessPolicy.getTtlMs(category)
+
+                if (cacheFreshnessChecker.isFresh(lastSyncTimestamp, currentTime, ttlMs)) {
+                    return@withContext SyncResult.Success(
+                        SyncSummary(
+                            matchesSynced = 0,
+                            teamsSynced = 0,
+                            oddsRecordsSynced = 0,
+                            rankingsSynced = 0,
+                            timestamp = lastSyncTimestamp
+                        )
+                    )
+                }
+            }
+
             var currentPage = 1
             var totalPages = 1
             var totalMatchesSynced = 0
@@ -95,7 +127,7 @@ class DataSyncEngine @Inject constructor(
                 currentPage++
             }
 
-            val timestamp = System.currentTimeMillis()
+            val timestamp = timeProvider()
 
             // 6. Metadata Hook execution
             if (onMetadataHook != null) {
@@ -144,8 +176,12 @@ class DataSyncEngine @Inject constructor(
     /**
      * Backward-compatible helper method for syncing matches by date.
      */
-    suspend fun syncMatchesByDate(date: String): Result<Unit> = withContext(Dispatchers.IO) {
-        when (val result = syncFullPipelineForDate(date, syncOddsAndRankings = false)) {
+    suspend fun syncMatchesByDate(
+        date: String,
+        forceRefresh: Boolean = false,
+        category: DatasetCategory = DatasetCategory.DEFAULT
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        when (val result = syncFullPipelineForDate(date, syncOddsAndRankings = false, forceRefresh = forceRefresh, category = category)) {
             is SyncResult.Success -> Result.success(Unit)
             is SyncResult.Failure -> Result.failure(result.error)
         }
