@@ -161,6 +161,7 @@ class DataSyncEngineTest {
         override fun oddsDao(): OddsDao = oddsDaoImpl
         override fun rankingDao(): RankingDao = rankingDaoImpl
         override fun predictionDao(): dev.anhquocs.truelab.core.data.prediction.local.dao.PredictionDao = throw NotImplementedError()
+        override fun datasetMetadataDao(): dev.anhquocs.truelab.core.data.metadata.local.dao.DatasetMetadataDao = throw NotImplementedError()
         override fun clearAllTables() {}
         override fun createInvalidationTracker(): androidx.room.InvalidationTracker =
             androidx.room.InvalidationTracker(this, "teams", "matches")
@@ -215,24 +216,8 @@ class DataSyncEngineTest {
     @Test
     fun syncFullPipelineForDate_success_insertsTeamsAndMatchesDeterministically() = runTest {
         val matches = listOf(
-            MatchRecord(
-                id = 1001L,
-                homeTeam = TeamInfo(id = 1, name = "Arsenal", logo = "arsenal.png"),
-                awayTeam = TeamInfo(id = 2, name = "Chelsea", logo = "chelsea.png"),
-                homeScore = 2,
-                awayScore = 1,
-                startTimeDate = "2024-05-10 15:00:00",
-                status = "8"
-            ),
-            MatchRecord(
-                id = 1002L,
-                homeTeam = TeamInfo(id = 1, name = "Arsenal", logo = "arsenal.png"),
-                awayTeam = TeamInfo(id = 3, name = "Liverpool", logo = "liverpool.png"),
-                homeScore = 0,
-                awayScore = 0,
-                startTimeDate = "2024-05-10 18:00:00",
-                status = "8"
-            )
+            MatchRecord(id = 1001L, homeTeam = TeamInfo(1, "Arsenal", "arsenal.png"), awayTeam = TeamInfo(2, "Chelsea", "chelsea.png"), homeScore = 2, awayScore = 1, startTimeDate = "2024-05-10 15:00:00", status = "8"),
+            MatchRecord(id = 1002L, homeTeam = TeamInfo(1, "Arsenal", "arsenal.png"), awayTeam = TeamInfo(3, "Liverpool", "liverpool.png"), homeScore = 0, awayScore = 0, startTimeDate = "2024-05-10 18:00:00", status = "8")
         )
 
         fakeMatchApi.responseToReturn = BaseResponse(
@@ -352,6 +337,33 @@ class DataSyncEngineTest {
 
         assertTrue(result is SyncResult.Failure)
         assertEquals("Disk full", (result as SyncResult.Failure).error.message)
+    }
+
+    private class FakeDatasetMetadataRepository : dev.anhquocs.truelab.core.domain.metadata.repository.DatasetMetadataRepository {
+        var refreshedTimestamp: Long? = null
+        override fun getMetadata(key: String): Flow<dev.anhquocs.truelab.core.domain.metadata.model.DatasetMetadata?> = flowOf(null)
+        override suspend fun refreshSnapshot(timestamp: Long): Result<dev.anhquocs.truelab.core.domain.metadata.model.DatasetMetadata> {
+            refreshedTimestamp = timestamp
+            return Result.success(dev.anhquocs.truelab.core.domain.metadata.model.DatasetMetadata(lastSyncTimestamp = timestamp, totalMatches = 0, totalTeams = 0, totalOddsRecords = 0, totalLeagues = 0, totalSeasons = 0))
+        }
+    }
+
+    @Test
+    fun syncFullPipelineForDate_withMetadataRepository_triggersRefreshSnapshot() = runTest {
+        val fakeRepo = FakeDatasetMetadataRepository()
+        val engineWithRepo = DataSyncEngine(
+            matchApi = fakeMatchApi,
+            oddsApi = fakeOddsApi,
+            rankingApi = fakeRankingApi,
+            database = testDatabase,
+            json = json,
+            metadataRepository = fakeRepo
+        )
+
+        val result = engineWithRepo.syncFullPipelineForDate("2024-05-10")
+
+        assertTrue(result is SyncResult.Success)
+        org.junit.Assert.assertNotNull(fakeRepo.refreshedTimestamp)
     }
 
     @Test

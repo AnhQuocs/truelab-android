@@ -5,6 +5,7 @@ import dev.anhquocs.truelab.core.data.league.local.entity.SeasonEntity
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchEntity
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchWithTeams
 import dev.anhquocs.truelab.core.data.match.remote.dto.MatchRecord
+import dev.anhquocs.truelab.core.data.metadata.local.entity.DatasetMetadataEntity
 import dev.anhquocs.truelab.core.data.odds.local.entity.OddsEntity
 import dev.anhquocs.truelab.core.data.odds.remote.dto.OddsRecord
 import dev.anhquocs.truelab.core.data.prediction.local.entity.PredictionEntity
@@ -16,6 +17,7 @@ import dev.anhquocs.truelab.core.domain.league.model.Season
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
 import dev.anhquocs.truelab.core.domain.match.model.TeamSummary
+import dev.anhquocs.truelab.core.domain.metadata.model.DatasetMetadata
 import dev.anhquocs.truelab.core.domain.odds.model.OddsRecordItem
 import dev.anhquocs.truelab.core.domain.prediction.model.PredictionResult
 import dev.anhquocs.truelab.core.domain.team.model.SeasonRanking
@@ -55,7 +57,32 @@ object RoomMappers {
         endDate = endDate
     )
 
+    fun DatasetMetadata.toEntity() = DatasetMetadataEntity(
+        key = key,
+        lastSyncTimestamp = lastSyncTimestamp,
+        totalMatches = totalMatches,
+        totalTeams = totalTeams,
+        totalOddsRecords = totalOddsRecords,
+        totalLeagues = totalLeagues,
+        totalSeasons = totalSeasons,
+        earliestMatchDate = earliestMatchDate,
+        latestMatchDate = latestMatchDate,
+        schemaVersion = schemaVersion
+    )
+
     // --- Entity to Domain ---
+    fun DatasetMetadataEntity.toDomain() = DatasetMetadata(
+        key = key,
+        lastSyncTimestamp = lastSyncTimestamp,
+        totalMatches = totalMatches,
+        totalTeams = totalTeams,
+        totalOddsRecords = totalOddsRecords,
+        totalLeagues = totalLeagues,
+        totalSeasons = totalSeasons,
+        earliestMatchDate = earliestMatchDate,
+        latestMatchDate = latestMatchDate,
+        schemaVersion = schemaVersion
+    )
     fun PredictionEntity.toDomain() = PredictionResult(
         matchId = matchId,
         algorithmName = algorithmName,
