@@ -16,8 +16,7 @@ import kotlin.random.Random
  * @param delayProvider Suspending delay mechanism (defaults to [delay], customizable for testing).
  * @param randomProvider Random generator for jitter calculations (defaults to [Random.nextDouble]).
  */
-@Singleton
-class RetryExecutor @Inject constructor(
+class RetryExecutor(
     private val classifier: RetryClassifier = DefaultRetryClassifier(),
     private val defaultPolicy: RetryPolicy = RetryPolicy(),
     private val delayProvider: suspend (Long) -> Unit = { delay(it) },
