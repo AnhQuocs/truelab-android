@@ -1,8 +1,8 @@
 # TrueLab — Data D2.2 Report: Cache & Stale Data Policy
 
-**Phase:** Data D2.2  
-**Status:** COMPLETED (Pending Review)  
-**Parent Plan:** [docs/plans/data-d2-plan.md](../plans/data-d2-plan.md)  
+**Phase:** Data D2.2
+**Status:** COMPLETED (Pending Review)
+**Parent Plan:** [docs/plans/data-d2-plan.md](../plans/data-d2-plan.md)
 **Verification:** 457/457 Tests PASS (100%) | `assembleDebug` SUCCESS
 
 ---
@@ -25,7 +25,7 @@ Data D2.2 đã triển khai hoàn tất **Cache & Stale Data Policy** cho tầng
 ## 2. Chi tiết Implementation & Ranh giới Kiến trúc
 
 ### 2.1 `DataFreshnessPolicy` & `DatasetCategory`
-- **File:** [`DataFreshnessPolicy.kt`](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/cache/DataFreshnessPolicy.kt)
+- **File:** [`DataFreshnessPolicy.kt`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/cache/DataFreshnessPolicy.kt)
 - **Danh mục và TTL mặc định:**
   - `LIVE_MATCHES` (Trận đấu đang diễn ra / trong ngày): **5 phút** (`300_000L` ms)
   - `SCHEDULED_MATCHES` (Trận đấu sắp diễn ra): **30 phút** (`1_800_000L` ms)
@@ -34,7 +34,7 @@ Data D2.2 đã triển khai hoàn tất **Cache & Stale Data Policy** cho tầng
 - **Validation:** Bắt buộc toàn bộ giá trị TTL $\ge 0$.
 
 ### 2.2 `CacheFreshnessChecker`
-- **File:** [`CacheFreshnessChecker.kt`](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/cache/CacheFreshnessChecker.kt)
+- **File:** [`CacheFreshnessChecker.kt`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/cache/CacheFreshnessChecker.kt)
 - **Quy tắc đánh giá:**
   - `lastSyncTimestamp <= 0` $\to$ **Stale** (chưa từng đồng bộ).
   - `ttlMs <= 0` $\to$ **Stale** (không lưu cache).
@@ -43,7 +43,7 @@ Data D2.2 đã triển khai hoàn tất **Cache & Stale Data Policy** cho tầng
   - `currentTime - lastSyncTimestamp >= ttlMs` $\to$ **Stale** (hết hạn tại mốc biên và sau đó).
 
 ### 2.3 Tích hợp `DataSyncEngine`
-- **File:** [`DataSyncEngine.kt`](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/DataSyncEngine.kt)
+- **File:** [`DataSyncEngine.kt`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/DataSyncEngine.kt)
 - **Luồng xử lý:**
   1. Kiểm tra Freshness tại bước đầu tiên nếu `forceRefresh = false`.
   2. Nếu Fresh $\to$ trả về ngay `SyncResult.Success(SyncSummary(matchesSynced = 0, teamsSynced = 0, timestamp = lastSyncTimestamp))` mà không gọi bất kỳ HTTP request nào.
@@ -62,9 +62,9 @@ Data D2.2 đã triển khai hoàn tất **Cache & Stale Data Policy** cho tầng
 
 | Test Suite | Số lượng Test | Trọng tâm kiểm thử | Kết quả |
 | :--- | :---: | :--- | :---: |
-| [`DataFreshnessPolicyTest.kt`](../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/cache/DataFreshnessPolicyTest.kt) | 7 | Defaults, category mappings, custom configurations, validation rules | **PASS** |
-| [`CacheFreshnessCheckerTest.kt`](../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/cache/CacheFreshnessCheckerTest.kt) | 6 | Freshness boundaries, expired timestamps, zero/negative TTL, clock drift | **PASS** |
-| [`DataSyncEngineCacheTest.kt`](../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/DataSyncEngineCacheTest.kt) | 6 | Fresh cache skips remote sync, stale cache triggers sync, forceRefresh bypass, category TTLs, failure offline fallback | **PASS** |
+| [`DataFreshnessPolicyTest.kt`](../../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/cache/DataFreshnessPolicyTest.kt) | 7 | Defaults, category mappings, custom configurations, validation rules | **PASS** |
+| [`CacheFreshnessCheckerTest.kt`](../../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/cache/CacheFreshnessCheckerTest.kt) | 6 | Freshness boundaries, expired timestamps, zero/negative TTL, clock drift | **PASS** |
+| [`DataSyncEngineCacheTest.kt`](../../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/DataSyncEngineCacheTest.kt) | 6 | Fresh cache skips remote sync, stale cache triggers sync, forceRefresh bypass, category TTLs, failure offline fallback | **PASS** |
 
 ### Tổng hợp Full Regression:
 - `:core:algorithm`: **122 / 122 PASS**

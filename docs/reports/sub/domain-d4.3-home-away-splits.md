@@ -1,9 +1,9 @@
 # Báo Cáo Triển Khai: Domain D4.3 — Home/Away Splits
 
-> **Module**: `:core:domain`  
-> **Trạng thái**: Hoàn thành  
-> **Thuộc kế hoạch**: `docs/plans/domain-d4-plan.md` (Domain D4.3)  
-> **Kiểm thử**: 12/12 tests mới PASS — Toàn bộ hệ thống: 362/362 tests PASS  
+> **Module**: `:core:domain`
+> **Trạng thái**: Hoàn thành
+> **Thuộc kế hoạch**: `docs/plans/domain-d4-plan.md` (Domain D4.3)
+> **Kiểm thử**: 12/12 tests mới PASS — Toàn bộ hệ thống: 362/362 tests PASS
 
 ---
 
@@ -64,7 +64,7 @@ data class TeamHomeAwaySplits(
 4. **Tổng hợp chỉ số**:
    - **Hiệu số bàn thắng**: $\text{goalDiff} = \text{goalsFor} - \text{goalsAgainst}$.
    - **Điểm số**: $\text{points} = \text{won} \times 3 + \text{draw} \times 1$.
-   - **Tỷ lệ thắng**: 
+   - **Tỷ lệ thắng**:
      $$\text{winRate} = \begin{cases} \frac{\text{won}}{\text{played}} & \text{nếu } \text{played} > 0 \\ 0.0 & \text{nếu } \text{played} == 0 \end{cases}$$
 
 5. **Tính nhất quán phân hoạch (Total Split Consistency)**:

@@ -65,9 +65,9 @@ Presentation Layer (ViewModels: TeamDetail, Standings, Analytics, OddsTrend)
 
 ### 3.1. D2.1 — `CalculateTeamFormUseCase` (Phase 5: Form Score)
 
-- **File nguồn**: [`CalculateTeamFormUseCase.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateTeamFormUseCase.kt)
-- **File kiểm thử**: [`CalculateTeamFormUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateTeamFormUseCaseTest.kt) (13 tests)
-- **Algorithm Dependency**: [`FormEvaluator`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormEvaluator.kt) (mặc định [`LinearDecayFormEvaluator`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/LinearDecayFormEvaluator.kt)).
+- **File nguồn**: [`CalculateTeamFormUseCase.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateTeamFormUseCase.kt)
+- **File kiểm thử**: [`CalculateTeamFormUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateTeamFormUseCaseTest.kt) (13 tests)
+- **Algorithm Dependency**: [`FormEvaluator`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/FormEvaluator.kt) (mặc định [`LinearDecayFormEvaluator`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/evaluation/LinearDecayFormEvaluator.kt)).
 - **Contract**:
   ```kotlin
   class CalculateTeamFormUseCase(
@@ -94,9 +94,9 @@ Presentation Layer (ViewModels: TeamDetail, Standings, Analytics, OddsTrend)
 
 ### 3.2. D2.2 — `CalculateEloRatingUseCase` (Phase 6: Elo Rating)
 
-- **File nguồn**: [`CalculateEloRatingUseCase.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateEloRatingUseCase.kt)
-- **File kiểm thử**: [`CalculateEloRatingUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateEloRatingUseCaseTest.kt) (13 tests)
-- **Algorithm Dependency**: [`RatingCalculator`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/RatingCalculator.kt) (mặc định [`EloRatingCalculator`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/EloRatingCalculator.kt)).
+- **File nguồn**: [`CalculateEloRatingUseCase.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateEloRatingUseCase.kt)
+- **File kiểm thử**: [`CalculateEloRatingUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateEloRatingUseCaseTest.kt) (13 tests)
+- **Algorithm Dependency**: [`RatingCalculator`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/RatingCalculator.kt) (mặc định [`EloRatingCalculator`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/EloRatingCalculator.kt)).
 - **Contract**:
   ```kotlin
   class CalculateEloRatingUseCase(
@@ -118,19 +118,19 @@ Presentation Layer (ViewModels: TeamDetail, Standings, Analytics, OddsTrend)
      - `homeScore > awayScore` $\implies actualScoreHome = 1.0$ (Home Win).
      - `homeScore == awayScore` $\implies actualScoreHome = 0.5$ (Draw).
      - `homeScore < awayScore` $\implies actualScoreHome = 0.0$ (Away Win).
-  3. Ủy thác cho `ratingCalculator.calculateMatch(ratingHome, ratingAway, actualScoreHome, kFactor)` trả về [`RatingMatchResult`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/RatingMatchResult.kt) bảo toàn tính chất Zero-Sum ($\Delta R_H = -\Delta R_A$).
+  3. Ủy thác cho `ratingCalculator.calculateMatch(ratingHome, ratingAway, actualScoreHome, kFactor)` trả về [`RatingMatchResult`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/RatingMatchResult.kt) bảo toàn tính chất Zero-Sum ($\Delta R_H = -\Delta R_A$).
 - **Commit**: [`d1f7386`](https://github.com/AnhQuocs/truelab-android/commit/d1f7386).
 
 ---
 
 ### 3.3. D2.3 — `AnalyzeOddsTrendUseCase` (Phase 4: SMA Trend & Phase 3: Volatility)
 
-- **File models**: [`OddsTrendAnalysis.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/odds/model/OddsTrendAnalysis.kt)
-- **File nguồn**: [`AnalyzeOddsTrendUseCase.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/odds/usecase/AnalyzeOddsTrendUseCase.kt)
-- **File kiểm thử**: [`AnalyzeOddsTrendUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/odds/usecase/AnalyzeOddsTrendUseCaseTest.kt) (16 tests)
+- **File models**: [`OddsTrendAnalysis.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/odds/model/OddsTrendAnalysis.kt)
+- **File nguồn**: [`AnalyzeOddsTrendUseCase.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/odds/usecase/AnalyzeOddsTrendUseCase.kt)
+- **File kiểm thử**: [`AnalyzeOddsTrendUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/odds/usecase/AnalyzeOddsTrendUseCaseTest.kt) (16 tests)
 - **Algorithm Dependencies**:
-  - [`MovingAverageCalculator`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/trend/MovingAverageCalculator.kt) (mặc định [`SimpleMovingAverageCalculator`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/trend/SimpleMovingAverageCalculator.kt))
-  - [`StatisticsCalculator`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/statistics/StatisticsCalculator.kt) (mặc định [`DescriptiveStatisticsCalculator`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/statistics/DescriptiveStatisticsCalculator.kt))
+  - [`MovingAverageCalculator`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/trend/MovingAverageCalculator.kt) (mặc định [`SimpleMovingAverageCalculator`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/trend/SimpleMovingAverageCalculator.kt))
+  - [`StatisticsCalculator`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/statistics/StatisticsCalculator.kt) (mặc định [`DescriptiveStatisticsCalculator`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/statistics/DescriptiveStatisticsCalculator.kt))
 - **Contract**:
   ```kotlin
   enum class TargetOddsField { HOME_WIN, DRAW, AWAY_WIN, OVER, UNDER, HANDICAP }
@@ -172,10 +172,10 @@ Presentation Layer (ViewModels: TeamDetail, Standings, Analytics, OddsTrend)
 
 ### 3.4. D2.4 — `GetTeamStatisticsUseCase` (Phase 3: Statistics)
 
-- **File models**: [`TeamPerformanceStatistics.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/model/TeamPerformanceStatistics.kt)
-- **File nguồn**: [`GetTeamStatisticsUseCase.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/GetTeamStatisticsUseCase.kt)
-- **File kiểm thử**: [`GetTeamStatisticsUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/GetTeamStatisticsUseCaseTest.kt) (17 tests)
-- **Algorithm Dependency**: [`StatisticsCalculator`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/statistics/StatisticsCalculator.kt) (mặc định [`DescriptiveStatisticsCalculator`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/statistics/DescriptiveStatisticsCalculator.kt)).
+- **File models**: [`TeamPerformanceStatistics.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/model/TeamPerformanceStatistics.kt)
+- **File nguồn**: [`GetTeamStatisticsUseCase.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/GetTeamStatisticsUseCase.kt)
+- **File kiểm thử**: [`GetTeamStatisticsUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/GetTeamStatisticsUseCaseTest.kt) (17 tests)
+- **Algorithm Dependency**: [`StatisticsCalculator`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/statistics/StatisticsCalculator.kt) (mặc định [`DescriptiveStatisticsCalculator`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/statistics/DescriptiveStatisticsCalculator.kt)).
 - **Contract**:
   ```kotlin
   data class TeamPerformanceStatistics(
@@ -217,10 +217,10 @@ Toàn bộ 4 UseCases trong D2 đều sở hữu bộ Unit Test độc lập, ki
 
 | STT | Test Suite Class | File | Số Tests | Trạng thái | Các khía cạnh bao phủ chính |
 |:---:|---|---|:---:|:---:|---|
-| **1** | `CalculateTeamFormUseCaseTest` | [`CalculateTeamFormUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateTeamFormUseCaseTest.kt) | 13 | **PASS 100%** | Happy path (W-W-D-L-W), tự động đảo ngược thứ tự thời gian (`startTimeDate DESC`), xử lý $N < windowSize$, danh sách rỗng, lọc trận chưa đấu (`isEnded = false`), lọc tỷ số null, loại trừ `currentMatchId`, cách ly đội bóng khác, xác thực `windowSize <= 0`, bảo toàn tính bất biến (immutability), ủy thác delegation. |
-| **2** | `CalculateEloRatingUseCaseTest` | [`CalculateEloRatingUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateEloRatingUseCaseTest.kt) | 13 | **PASS 100%** | Xác suất kỳ vọng đối xứng ($E_H = 0.5$ khi Elo bằng nhau), kỳ vọng không đối xứng, Home win ($S_H = 1.0$), Away win ($S_H = 0.0$), Draw ($S_H = 0.5$), bảo toàn Zero-Sum, tùy chỉnh K-Factor, Elo phân cực cao, ủy thác delegation, tính toán độc lập không side-effect. |
-| **3** | `AnalyzeOddsTrendUseCaseTest` | [`AnalyzeOddsTrendUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/odds/usecase/AnalyzeOddsTrendUseCaseTest.kt) | 16 | **PASS 100%** | Happy path SMA ($k=3$), kiểm tra đủ 6 trường `TargetOddsField`, tự động sắp xếp theo `changeTime`, lọc bỏ odds null/âm/0.0/NaN, xử lý $N < windowSize$ (`smaSeries = emptyList()`, `hasSufficientData = false`), chuỗi rỗng an toàn, tính Volatility (Sample StdDev) với $N \ge 2$ và $N < 2$, xác thực `windowSize <= 0`, bảo toàn immutability. |
-| **4** | `GetTeamStatisticsUseCaseTest` | [`GetTeamStatisticsUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/GetTeamStatisticsUseCaseTest.kt) | 17 | **PASS 100%** | Happy path phân phối bàn thắng, kiểm tra riêng đội chủ nhà (Home), đội khách (Away), lịch sử kết hợp (Mixed Home/Away), xác minh 4 phân phối số liệu (`goalsScored`, `goalsConceded`, `totalGoals`, `goalDiff`), lọc trận chưa đấu, lọc tỷ số null, loại trừ `currentMatchId`, cách ly đội bóng không liên quan, danh sách rỗng, không có trận hợp lệ, ủy thác delegation, bảo toàn immutability. |
+| **1** | `CalculateTeamFormUseCaseTest` | [`CalculateTeamFormUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateTeamFormUseCaseTest.kt) | 13 | **PASS 100%** | Happy path (W-W-D-L-W), tự động đảo ngược thứ tự thời gian (`startTimeDate DESC`), xử lý $N < windowSize$, danh sách rỗng, lọc trận chưa đấu (`isEnded = false`), lọc tỷ số null, loại trừ `currentMatchId`, cách ly đội bóng khác, xác thực `windowSize <= 0`, bảo toàn tính bất biến (immutability), ủy thác delegation. |
+| **2** | `CalculateEloRatingUseCaseTest` | [`CalculateEloRatingUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/CalculateEloRatingUseCaseTest.kt) | 13 | **PASS 100%** | Xác suất kỳ vọng đối xứng ($E_H = 0.5$ khi Elo bằng nhau), kỳ vọng không đối xứng, Home win ($S_H = 1.0$), Away win ($S_H = 0.0$), Draw ($S_H = 0.5$), bảo toàn Zero-Sum, tùy chỉnh K-Factor, Elo phân cực cao, ủy thác delegation, tính toán độc lập không side-effect. |
+| **3** | `AnalyzeOddsTrendUseCaseTest` | [`AnalyzeOddsTrendUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/odds/usecase/AnalyzeOddsTrendUseCaseTest.kt) | 16 | **PASS 100%** | Happy path SMA ($k=3$), kiểm tra đủ 6 trường `TargetOddsField`, tự động sắp xếp theo `changeTime`, lọc bỏ odds null/âm/0.0/NaN, xử lý $N < windowSize$ (`smaSeries = emptyList()`, `hasSufficientData = false`), chuỗi rỗng an toàn, tính Volatility (Sample StdDev) với $N \ge 2$ và $N < 2$, xác thực `windowSize <= 0`, bảo toàn immutability. |
+| **4** | `GetTeamStatisticsUseCaseTest` | [`GetTeamStatisticsUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/GetTeamStatisticsUseCaseTest.kt) | 17 | **PASS 100%** | Happy path phân phối bàn thắng, kiểm tra riêng đội chủ nhà (Home), đội khách (Away), lịch sử kết hợp (Mixed Home/Away), xác minh 4 phân phối số liệu (`goalsScored`, `goalsConceded`, `totalGoals`, `goalDiff`), lọc trận chưa đấu, lọc tỷ số null, loại trừ `currentMatchId`, cách ly đội bóng không liên quan, danh sách rỗng, không có trận hợp lệ, ủy thác delegation, bảo toàn immutability. |
 | **Tổng** | **4 Suites mới của D2** | | **59** | **PASS 100%** | |
 
 ---
@@ -303,7 +303,7 @@ core/domain/
 - [x] **Bảo toàn Thuật toán**: 122/122 Algorithm Tests tiếp tục PASS (FROZEN không bị xâm phạm).
 - [x] **Không Hồi quy Domain**: 94/94 Domain Tests (35 tests cũ + 59 tests mới) đều PASS 100%.
 - [x] **Không Breaking Changes**: Không làm gãy `:core:data`, `:core:ui`, hay `:app`. Các hàm legacy tiếp tục tồn tại an toàn.
-- [x] **Báo cáo Hoàn tất**: Báo cáo `docs/reports/domain-d2-analytics.md` ghi nhận đầy đủ, chuẩn xác theo mã nguồn thực tế trên đĩa.
+- [x] **Báo cáo Hoàn tất**: Báo cáo `docs/reports/final/domain-d2-final.md` ghi nhận đầy đủ, chuẩn xác theo mã nguồn thực tế trên đĩa.
 
 ---
 

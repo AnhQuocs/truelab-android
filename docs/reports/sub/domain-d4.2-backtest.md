@@ -1,9 +1,9 @@
 # Báo Cáo Triển Khai: Domain D4.2 — Prediction Backtest Engine
 
-> **Module**: `:core:domain`  
-> **Trạng thái**: Hoàn thành  
-> **Thuộc kế hoạch**: `docs/plans/domain-d4-plan.md` (Domain D4.2)  
-> **Kiểm thử**: 14/14 tests mới PASS — Toàn bộ hệ thống: 350/350 tests PASS  
+> **Module**: `:core:domain`
+> **Trạng thái**: Hoàn thành
+> **Thuộc kế hoạch**: `docs/plans/domain-d4-plan.md` (Domain D4.2)
+> **Kiểm thử**: 14/14 tests mới PASS — Toàn bộ hệ thống: 350/350 tests PASS
 
 ---
 

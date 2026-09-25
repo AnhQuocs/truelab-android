@@ -340,7 +340,7 @@ BUILD SUCCESSFUL in 9s
 - **Xóa bỏ**:
   - `dev/anhquocs/truelab/core/algorithm/prediction/Prediction.kt`
 - **Tài liệu nghiệm thu**:
-  - `docs/reports/phase-7-prediction.md`
+  - `docs/reports/final/algorithm-phase-7-prediction.md`
 
 ### Xác nhận trạng thái Git:
 - Không sửa file nào thuộc Phase 1–6.

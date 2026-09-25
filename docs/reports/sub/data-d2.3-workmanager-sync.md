@@ -1,8 +1,8 @@
 # TrueLab — Data D2.3 Report: WorkManager Background Sync
 
-**Phase:** Data D2.3  
-**Status:** COMPLETED (Pending Review)  
-**Parent Plan:** [docs/plans/data-d2-plan.md](../plans/data-d2-plan.md)  
+**Phase:** Data D2.3
+**Status:** COMPLETED (Pending Review)
+**Parent Plan:** [docs/plans/data-d2-plan.md](../plans/data-d2-plan.md)
 **Verification:** 469/469 Tests PASS (100%) | `assembleDebug` SUCCESS
 
 ---
@@ -12,10 +12,10 @@
 Giai đoạn **Data D2.3** đã hoàn thành việc tích hợp **WorkManager Background Synchronization** cho TrueLab. Đây là sub-phase cuối cùng của **Data D2**, đưa hệ thống đồng bộ dữ liệu vào chu trình nền tự động, định kỳ và bền bỉ, tái sử dụng toàn bộ nền tảng đã xây dựng ở **D2.1 (Resilience & Retry Engine)** và **D2.2 (Cache Freshness Policy)** mà không làm biến dạng ranh giới Clean Architecture.
 
 ### Các hạng mục chính đã hoàn thành:
-1. **WorkManager & Hilt Work Dependencies**: Thiết lập `androidx.work:work-runtime-ktx:2.10.0`, `androidx.hilt:hilt-work:1.2.0`, và `androidx.work:work-testing:2.10.0` trong [`gradle/libs.versions.toml`](../../gradle/libs.versions.toml), cấu hình chuẩn xác cho `:core:data` và `:app`.
+1. **WorkManager & Hilt Work Dependencies**: Thiết lập `androidx.work:work-runtime-ktx:2.10.0`, `androidx.hilt:hilt-work:1.2.0`, và `androidx.work:work-testing:2.10.0` trong [`gradle/libs.versions.toml`](../../../gradle/libs.versions.toml), cấu hình chuẩn xác cho `:core:data` và `:app`.
 2. **`DataSyncWorker`**: Xây dựng Worker kế thừa `CoroutineWorker` với `@HiltWorker` và `@AssistedInject`, ủy quyền toàn bộ luồng đồng bộ cho `DataSyncEngine`.
 3. **`SyncWorkScheduler` & `DefaultSyncWorkScheduler`**: Cung cấp abstraction lập lịch nền định kỳ với Unique Work Name (`TrueLabPeriodicDataSyncWork`), chính sách `ExistingPeriodicWorkPolicy.KEEP` (chống duplicate job), và các ràng buộc phần cứng (`NetworkType.CONNECTED`, `requiresBatteryNotLow(true)`).
-4. **Hilt WorkManager Application Initialization**: Triển khai `Configuration.Provider` với `HiltWorkerFactory` trong [`TrueLabApplication`](../../app/src/main/kotlin/dev/anhquocs/truelab/TrueLabApplication.kt), đồng thời gỡ bỏ `WorkManagerInitializer` mặc định trong [`AndroidManifest.xml`](../../app/src/main/AndroidManifest.xml) để hỗ trợ On-demand Initialization.
+4. **Hilt WorkManager Application Initialization**: Triển khai `Configuration.Provider` với `HiltWorkerFactory` trong [`TrueLabApplication`](../../../app/src/main/kotlin/dev/anhquocs/truelab/TrueLabApplication.kt), đồng thời gỡ bỏ `WorkManagerInitializer` mặc định trong [`AndroidManifest.xml`](../../../app/src/main/AndroidManifest.xml) để hỗ trợ On-demand Initialization.
 5. **Đồng bộ Semantics & Hủy tác vụ Coroutine**: Xử lý `CancellationException` đúng chuẩn (không nuốt exception), phân loại lỗi `Result.retry()` vs `Result.failure()` bằng `RetryClassifier`.
 
 ---
@@ -44,7 +44,7 @@ Giai đoạn **Data D2.3** đã hoàn thành việc tích hợp **WorkManager Ba
 ```
 
 ### 2.1 `DataSyncWorker`
-- **File:** [`DataSyncWorker.kt`](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/worker/DataSyncWorker.kt)
+- **File:** [`DataSyncWorker.kt`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/worker/DataSyncWorker.kt)
 - **Cơ chế hoạt động:**
   - Nhận tham số tùy chọn từ `inputData` (`target_date`, `force_refresh`, `dataset_category`) với fallback an toàn (mặc định lấy ngày hôm nay theo định dạng `yyyy-MM-dd` và category `SCHEDULED_MATCHES`).
   - Gọi `dataSyncEngine.syncFullPipelineForDate(...)`.
@@ -55,7 +55,7 @@ Giai đoạn **Data D2.3** đã hoàn thành việc tích hợp **WorkManager Ba
   - Nếu xảy ra `CancellationException` $\to$ rethrow trực tiếp để WorkManager xử lý việc hủy tác vụ một cách tự nhiên.
 
 ### 2.2 `SyncWorkScheduler` & `DefaultSyncWorkScheduler`
-- **File:** [`SyncWorkScheduler.kt`](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/worker/SyncWorkScheduler.kt)
+- **File:** [`SyncWorkScheduler.kt`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/worker/SyncWorkScheduler.kt)
 - **Ràng buộc phần cứng (Constraints):**
   - `setRequiredNetworkType(NetworkType.CONNECTED)`: Chỉ chạy khi thiết bị có kết nối mạng.
   - `setRequiresBatteryNotLow(true)`: Chỉ chạy khi pin không ở mức yếu để bảo vệ trải nghiệm người dùng.
@@ -66,7 +66,7 @@ Giai đoạn **Data D2.3** đã hoàn thành việc tích hợp **WorkManager Ba
   - Áp dụng `intervalMinutes.coerceAtLeast(15L)` tuân thủ giới hạn tối thiểu của Android WorkManager.
 
 ### 2.3 Dependency Injection (`CrawlerDataModule`)
-- **File:** [`CrawlerDataModule.kt`](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/di/CrawlerDataModule.kt)
+- **File:** [`CrawlerDataModule.kt`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/di/CrawlerDataModule.kt)
 - Binds `DefaultSyncWorkScheduler` vào `SyncWorkScheduler`.
 - Cung cấp `WorkManager` singleton instance thông qua `WorkManager.getInstance(context)`.
 - Cung cấp explicit `@Provides` methods cho `DataSyncEngine`, `RetryExecutor`, và `DataFreshnessPolicy`.
@@ -79,8 +79,8 @@ Giai đoạn **Data D2.3** đã hoàn thành việc tích hợp **WorkManager Ba
 
 | Test Suite | Số lượng Test | Trọng tâm kiểm thử | Kết quả |
 | :--- | :---: | :--- | :---: |
-| [`DataSyncWorkerTest.kt`](../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/worker/DataSyncWorkerTest.kt) | 7 | Worker success, retryable failure (`Result.retry()`), non-retryable failure (`Result.failure()`), CancellationException rethrow, input data parameters, invalid category fallback, default date fallback | **PASS** |
-| [`SyncWorkSchedulerTest.kt`](../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/worker/SyncWorkSchedulerTest.kt) | 5 | Network CONNECTED constraint, BatteryNotLow constraint, 15-minute minimum interval enforcement, custom intervals, unique work cancellation | **PASS** |
+| [`DataSyncWorkerTest.kt`](../../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/worker/DataSyncWorkerTest.kt) | 7 | Worker success, retryable failure (`Result.retry()`), non-retryable failure (`Result.failure()`), CancellationException rethrow, input data parameters, invalid category fallback, default date fallback | **PASS** |
+| [`SyncWorkSchedulerTest.kt`](../../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/worker/SyncWorkSchedulerTest.kt) | 5 | Network CONNECTED constraint, BatteryNotLow constraint, 15-minute minimum interval enforcement, custom intervals, unique work cancellation | **PASS** |
 
 ### Tổng hợp Full Regression qua các giai đoạn:
 - `:core:algorithm`: **122 / 122 PASS**

@@ -1,9 +1,9 @@
 # Báo Cáo Triển Khai: Domain D4.4 — Algorithm Benchmark Suite
 
-> **Module**: `:core:domain`  
-> **Trạng thái**: Hoàn thành  
-> **Thuộc kế hoạch**: `docs/plans/domain-d4-plan.md` (Domain D4.4)  
-> **Kiểm thử**: 12/12 tests mới PASS — Toàn bộ hệ thống: 374/374 tests PASS  
+> **Module**: `:core:domain`
+> **Trạng thái**: Hoàn thành
+> **Thuộc kế hoạch**: `docs/plans/domain-d4-plan.md` (Domain D4.4)
+> **Kiểm thử**: 12/12 tests mới PASS — Toàn bộ hệ thống: 374/374 tests PASS
 
 ---
 

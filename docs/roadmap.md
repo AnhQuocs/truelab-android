@@ -2,7 +2,7 @@
 
 > **Nguyên tắc Phân kỳ Độc lập theo Layer**:
 > Kể từ sau khi hoàn thành Presentation Phase P1, hệ thống lộ trình (Roadmap) của TrueLab được phân định và đánh số **độc lập theo từng tầng kiến trúc** (Domain, Presentation, Data).
-> 
+>
 > *Lưu ý về tài liệu lịch sử*: Các tài liệu và báo cáo hoàn thành trước thời điểm chuẩn hóa có thể chứa các tên gọi phase cũ (ví dụ: gộp chung D1→D2→D3→P1→D5→D6). Tài liệu này là **Single Source of Truth** quy định phân kỳ hiện tại và tương lai.
 
 ---
@@ -82,18 +82,24 @@ Một số tính năng lớn trải dài qua nhiều tầng kiến trúc. Bảng
 
 ---
 
-## 6. Quy chuẩn Đặt tên Tài liệu (Documentation Naming Convention)
+## 6. Quy chuẩn Đặt tên và Cấu trúc Tài liệu (Documentation Convention)
 
-Mọi tài liệu kế hoạch (Plans) và báo cáo (Reports) mới cần tuân thủ quy tắc tiền tố định danh theo layer:
+Hệ thống tài liệu TrueLab được tổ chức chặt chẽ theo cấu trúc:
 
+- **Kế hoạch phát triển (`docs/plans/`)**: Chứa kế hoạch chi tiết cho các phase (`<layer>-<phase>-plan.md`).
+- **Báo cáo tổng kết Phase (`docs/reports/final/`)**: Chứa báo cáo nghiệm thu chính thức cấp Phase/Layer (`<layer>-<phase>-final.md` hoặc `algorithm-phase-<N>-<name>.md`).
+- **Báo cáo chi tiết Sub-Phase (`docs/reports/sub/`)**: Chứa các báo cáo kỹ thuật thành phần, task chuyên sâu (`<layer>-<subphase>-<name>.md`).
+
+### Định danh tiền tố theo Layer:
+- **Algorithm Reports**: `docs/reports/final/algorithm-phase-<N>-<name>.md`
 - **Domain Plans/Reports**:
-  - `docs/plans/domain-d1-*.md`, `docs/reports/domain-d1-*.md`
-  - `docs/plans/domain-d2-*.md`, `docs/reports/domain-d2-*.md`
-  - `docs/plans/domain-d3-*.md`, `docs/reports/domain-d3-*.md`
-  - `docs/plans/domain-d4-*.md`, `docs/reports/domain-d4-*.md`
+  - Plans: `docs/plans/domain-d<N>-*.md`
+  - Final Reports: `docs/reports/final/domain-d<N>-final.md`
+  - Sub Reports: `docs/reports/sub/domain-d<N>.*-*.md`
 - **Presentation Plans/Reports**:
-  - `docs/plans/presentation-p1-plan.md`, `docs/reports/presentation-p1-final.md`
-  - `docs/plans/presentation-p2-*.md`, `docs/reports/presentation-p2-*.md`
+  - Plans: `docs/plans/presentation-p<N>-plan.md`
+  - Final Reports: `docs/reports/final/presentation-p<N>-final.md`
 - **Data Plans/Reports**:
-  - `docs/plans/data-d1-*.md`, `docs/reports/data-d1-*.md`
-  - `docs/plans/data-d2-*.md`, `docs/reports/data-d2-*.md`
+  - Plans: `docs/plans/data-d<N>-plan.md`
+  - Final Reports: `docs/reports/final/data-d<N>-final.md`
+  - Sub Reports: `docs/reports/sub/data-d<N>.*-*.md`

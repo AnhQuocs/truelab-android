@@ -1,8 +1,8 @@
 # TrueLab — Data D2.1 Report: Resilience & Retry Engine
 
-**Phase:** Data D2.1  
-**Status:** COMPLETED (Pending Review)  
-**Parent Plan:** [docs/plans/data-d2-plan.md](../plans/data-d2-plan.md)  
+**Phase:** Data D2.1
+**Status:** COMPLETED (Pending Review)
+**Parent Plan:** [docs/plans/data-d2-plan.md](../plans/data-d2-plan.md)
 **Verification:** 438/438 Tests PASS (100%) | `assembleDebug` SUCCESS
 
 ---
@@ -23,7 +23,7 @@ Data D2.1 đã triển khai hoàn tất **Resilience & Retry Engine** cho tầng
 ## 2. Chi tiết Implementation
 
 ### 2.1 `RetryPolicy`
-- **File:** [`RetryPolicy.kt`](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryPolicy.kt)
+- **File:** [`RetryPolicy.kt`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryPolicy.kt)
 - **Cấu hình mặc định:**
   - `maxAttempts = 3` (1 lần ban đầu + tối đa 2 lần retry)
   - `initialDelayMs = 1000L`
@@ -33,13 +33,13 @@ Data D2.1 đã triển khai hoàn tất **Resilience & Retry Engine** cho tầng
 - **Validation:** Bắt buộc `maxAttempts >= 1`, `initialDelayMs >= 0`, `maxDelayMs >= initialDelayMs`, `factor >= 1.0`.
 
 ### 2.2 `RetryClassifier`
-- **File:** [`RetryClassifier.kt`](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryClassifier.kt)
+- **File:** [`RetryClassifier.kt`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryClassifier.kt)
 - **Phân loại:**
   - **Retryable (true):** `SocketTimeoutException`, `ConnectException`, `UnknownHostException`, `SocketException`, `IOException` tạm thời, `HttpException` (HTTP 500, 502, 503, 504, 5xx).
   - **Non-retryable (false):** `HttpException` (HTTP 400, 401, 403, 404, 4xx), `SerializationException` (lỗi decode JSON), `CancellationException` (không bao giờ nuốt cancellation coroutine), `IllegalArgumentException`, `IllegalStateException`, `SQLiteException`.
 
 ### 2.3 `RetryExecutor`
-- **File:** [`RetryExecutor.kt`](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryExecutor.kt)
+- **File:** [`RetryExecutor.kt`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryExecutor.kt)
 - **Công thức Backoff:**
   $$\text{baseDelay} = \min\left(\text{maxDelayMs}, \left(\text{initialDelayMs} \times \text{factor}^{\text{attempt} - 1}\right).\text{toLong()}\right)$$
   $$\text{jitteredDelay} = \text{baseDelay} \times (0.5 + 0.5 \times \text{random})$$
@@ -49,7 +49,7 @@ Data D2.1 đã triển khai hoàn tất **Resilience & Retry Engine** cho tầng
   - Khi hết lượt thử (exhausted): ném exception gốc ra ngoài để caller xử lý.
 
 ### 2.4 Tích hợp `DataSyncEngine`
-- **File:** [`DataSyncEngine.kt`](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/DataSyncEngine.kt)
+- **File:** [`DataSyncEngine.kt`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/DataSyncEngine.kt)
 - Bọc các hàm `matchApi.getMatches`, `oddsApi.getOddsHistory`, `rankingApi.getSeasonRanking` qua `retryExecutor.execute { ... }`.
 - Nếu retry cạn kiệt, transaction của trang hiện tại chưa được bắt đầu hoặc bị rollback hoàn toàn, bảo toàn tính toàn vẹn của Room DB và trả về `SyncResult.Failure`.
 
@@ -61,10 +61,10 @@ Data D2.1 đã triển khai hoàn tất **Resilience & Retry Engine** cho tầng
 
 | Test Suite | Số lượng Test | Trọng tâm kiểm thử | Kết quả |
 | :--- | :---: | :--- | :---: |
-| [`RetryPolicyTest.kt`](../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryPolicyTest.kt) | 6 | Defaults, custom configs, invalid inputs validation | **PASS** |
-| [`RetryClassifierTest.kt`](../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryClassifierTest.kt) | 10 | Timeouts, connection errors, HTTP 5xx vs 4xx, serialization, cancellation | **PASS** |
-| [`RetryExecutorTest.kt`](../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryExecutorTest.kt) | 7 | Attempts count, exponential backoff, max delay cap, jitter bounds, failure stop | **PASS** |
-| [`DataSyncEngineResilienceTest.kt`](../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/DataSyncEngineResilienceTest.kt) | 6 | Integration test cho Match/Odds/Ranking API retries, HTTP 404 stop, DB consistency | **PASS** |
+| [`RetryPolicyTest.kt`](../../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryPolicyTest.kt) | 6 | Defaults, custom configs, invalid inputs validation | **PASS** |
+| [`RetryClassifierTest.kt`](../../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryClassifierTest.kt) | 10 | Timeouts, connection errors, HTTP 5xx vs 4xx, serialization, cancellation | **PASS** |
+| [`RetryExecutorTest.kt`](../../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/retry/RetryExecutorTest.kt) | 7 | Attempts count, exponential backoff, max delay cap, jitter bounds, failure stop | **PASS** |
+| [`DataSyncEngineResilienceTest.kt`](../../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/crawler/DataSyncEngineResilienceTest.kt) | 6 | Integration test cho Match/Odds/Ranking API retries, HTTP 404 stop, DB consistency | **PASS** |
 
 ### Tổng hợp Full Regression:
 - `:core:algorithm`: **122 / 122 PASS**

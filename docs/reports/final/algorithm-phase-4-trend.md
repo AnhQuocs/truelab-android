@@ -17,12 +17,12 @@ Triển khai thuật toán **Đường trung bình động (Moving Average)** nh
 ## 2. Scope
 
 ### 2.1. In-Scope
-- Interface contract: [MovingAverageCalculator.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/trend/MovingAverageCalculator.kt).
-- Lớp hiện thực: [SimpleMovingAverageCalculator.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/trend/SimpleMovingAverageCalculator.kt).
+- Interface contract: [MovingAverageCalculator.kt](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/trend/MovingAverageCalculator.kt).
+- Lớp hiện thực: [SimpleMovingAverageCalculator.kt](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/trend/SimpleMovingAverageCalculator.kt).
 - Thuật toán cốt lõi: **Simple Moving Average (SMA)** với kỹ thuật Rolling Sum $\mathcal{O}(n)$.
 - Generic Selector API: Hỗ trợ tính toán trực tiếp trên các entity tùy biến thông qua selector lambda `(T) -> Double`.
 - Xử lý biên (Edge cases) và tuân thủ chuẩn số thực IEEE-754 (quản lý trạng thái `NaN`, `+Infinity`, `-Infinity`).
-- Bộ Unit Test toàn diện: [MovingAverageAlgorithmsTest.kt](../../core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/trend/MovingAverageAlgorithmsTest.kt).
+- Bộ Unit Test toàn diện: [MovingAverageAlgorithmsTest.kt](../../../core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/trend/MovingAverageAlgorithmsTest.kt).
 
 ### 2.2. Non-Scope
 - **Exponential Moving Average (EMA)**: Dành cho extension trong các phase nâng cao tiếp theo.
@@ -92,7 +92,7 @@ Thuật toán khai triển qua kỹ thuật đệ quy cửa sổ trượt (Rolli
 
 ## 6. Implementation Architecture
 
-Triển khai tại [SimpleMovingAverageCalculator.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/trend/SimpleMovingAverageCalculator.kt) sử dụng mô hình quản lý trạng thái phân tách số thực hữu hạn và số thực đặc biệt theo $\mathcal{O}(1)$:
+Triển khai tại [SimpleMovingAverageCalculator.kt](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/trend/SimpleMovingAverageCalculator.kt) sử dụng mô hình quản lý trạng thái phân tách số thực hữu hạn và số thực đặc biệt theo $\mathcal{O}(1)$:
 
 ```kotlin
 var finiteSum = 0.0
@@ -245,7 +245,7 @@ $$\text{Initial Implementation} \longrightarrow \text{Code Review} \longrightarr
 
 ## 14. Testing & Verification
 
-Suite kiểm thử toàn diện được tổ chức tại [MovingAverageAlgorithmsTest.kt](../../core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/trend/MovingAverageAlgorithmsTest.kt):
+Suite kiểm thử toàn diện được tổ chức tại [MovingAverageAlgorithmsTest.kt](../../../core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/trend/MovingAverageAlgorithmsTest.kt):
 
 - **Tổng số test cases**: **21 tests** (100% passed).
 - **Phân nhóm kiểm thử**:

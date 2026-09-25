@@ -65,9 +65,9 @@ Presentation Layer (MatchList, SearchScreen, StandingsScreen, TeamPicker)
 ## 3. Chi tiết Triển khai D3.1 — Search Integration (Phase 1: Searching)
 
 ### 3.1. `SearchMatchesUseCase`
-- **File nguồn**: [`SearchMatchesUseCase.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SearchMatchesUseCase.kt)
-- **File kiểm thử**: [`SearchMatchesUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SearchMatchesUseCaseTest.kt) (12 tests)
-- **Algorithm Dependency**: [`LinearSearch<Match, String>`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/searching/LinearSearch.kt).
+- **File nguồn**: [`SearchMatchesUseCase.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SearchMatchesUseCase.kt)
+- **File kiểm thử**: [`SearchMatchesUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SearchMatchesUseCaseTest.kt) (12 tests)
+- **Algorithm Dependency**: [`LinearSearch<Match, String>`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/searching/LinearSearch.kt).
 - **Contract & Signature**:
   ```kotlin
   class SearchMatchesUseCase(
@@ -93,12 +93,12 @@ Presentation Layer (MatchList, SearchScreen, StandingsScreen, TeamPicker)
 ---
 
 ### 3.2. `SearchTeamsUseCase`
-- **File nguồn**: [`SearchTeamsUseCase.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SearchTeamsUseCase.kt)
-- **File kiểm thử**: [`SearchTeamsUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SearchTeamsUseCaseTest.kt) (23 tests)
+- **File nguồn**: [`SearchTeamsUseCase.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SearchTeamsUseCase.kt)
+- **File kiểm thử**: [`SearchTeamsUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SearchTeamsUseCaseTest.kt) (23 tests)
 - **Algorithm Dependencies**:
   - `LinearSearch<TeamSummary, String>` (cho tìm kiếm theo tên)
   - `SearchAlgorithm<TeamSummary, Int>` (cho tra cứu ID tuyến tính)
-  - `SearchAlgorithm<TeamSummary, Int>` (mặc định [`BinarySearch`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/searching/BinarySearch.kt) cho tra cứu ID nhị phân)
+  - `SearchAlgorithm<TeamSummary, Int>` (mặc định [`BinarySearch`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/searching/BinarySearch.kt) cho tra cứu ID nhị phân)
 - **Contract & Signature**:
   ```kotlin
   class SearchTeamsUseCase(
@@ -128,10 +128,10 @@ Presentation Layer (MatchList, SearchScreen, StandingsScreen, TeamPicker)
 ## 4. Chi tiết Triển khai D3.2 — Sort Integration (Phase 2: Sorting)
 
 ### 4.1. `SortMatchesUseCase`
-- **File model**: [`MatchSortCriteria.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/match/model/MatchSortCriteria.kt)
-- **File nguồn**: [`SortMatchesUseCase.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SortMatchesUseCase.kt)
-- **File kiểm thử**: [`SortMatchesUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SortMatchesUseCaseTest.kt) (12 tests)
-- **Algorithm Dependency**: [`SortAlgorithm<Match>`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/sorting/SortAlgorithm.kt) (mặc định [`MergeSort<Match>()`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/sorting/MergeSort.kt)).
+- **File model**: [`MatchSortCriteria.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/match/model/MatchSortCriteria.kt)
+- **File nguồn**: [`SortMatchesUseCase.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SortMatchesUseCase.kt)
+- **File kiểm thử**: [`SortMatchesUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SortMatchesUseCaseTest.kt) (12 tests)
+- **Algorithm Dependency**: [`SortAlgorithm<Match>`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/sorting/SortAlgorithm.kt) (mặc định [`MergeSort<Match>()`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/sorting/MergeSort.kt)).
 - **Contract & Signature**:
   ```kotlin
   enum class MatchSortCriteria {
@@ -168,10 +168,10 @@ Presentation Layer (MatchList, SearchScreen, StandingsScreen, TeamPicker)
 ---
 
 ### 4.2. `SortSeasonRankingUseCase`
-- **File model**: [`StandingsSortCriteria.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/model/StandingsSortCriteria.kt)
-- **File nguồn**: [`SortSeasonRankingUseCase.kt`](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SortSeasonRankingUseCase.kt)
-- **File kiểm thử**: [`SortSeasonRankingUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SortSeasonRankingUseCaseTest.kt) (15 tests)
-- **Algorithm Dependency**: [`SortAlgorithm<SeasonRanking>`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/sorting/SortAlgorithm.kt) (mặc định [`MergeSort<SeasonRanking>()`](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/sorting/MergeSort.kt)).
+- **File model**: [`StandingsSortCriteria.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/model/StandingsSortCriteria.kt)
+- **File nguồn**: [`SortSeasonRankingUseCase.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SortSeasonRankingUseCase.kt)
+- **File kiểm thử**: [`SortSeasonRankingUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SortSeasonRankingUseCaseTest.kt) (15 tests)
+- **Algorithm Dependency**: [`SortAlgorithm<SeasonRanking>`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/sorting/SortAlgorithm.kt) (mặc định [`MergeSort<SeasonRanking>()`](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/sorting/MergeSort.kt)).
 - **Contract & Signature**:
   ```kotlin
   enum class StandingsSortCriteria {
@@ -233,10 +233,10 @@ Kiểm thử được thực thi với task tái chạy toàn diện:
 
 | STT | Test Suite Class | File | Số Tests | Trạng thái | Nội dung Kiểm thử Trọng tâm |
 |:---:|---|---|:---:|:---:|---|
-| **1** | `SearchMatchesUseCaseTest` | [`SearchMatchesUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SearchMatchesUseCaseTest.kt) | 12 | **PASS 100%** | Khớp theo Home team, Away team, cả hai đội, không phân biệt hoa thường (`ignoreCase`), tìm kiếm substring, cắt tỉa khoảng trắng (`trim`), query rỗng/blank trả về toàn bộ input (`assertSame`), không tìm thấy, input rỗng, immutability, custom delegation injection. |
-| **2** | `SearchTeamsUseCaseTest` | [`SearchTeamsUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SearchTeamsUseCaseTest.kt) | 23 | **PASS 100%** | `searchByName`: Khớp chính xác, chuỗi con, hoa thường, query blank/rỗng, input rỗng, immutability.<br>`findById`: Fallback LinearSearch khi `isSortedById = false` (đầu, giữa, cuối, không tồn tại, rỗng); BinarySearch tối ưu khi `isSortedById = true` (đầu, giữa, cuối, ngoài biên trái/phải, lỗ hổng ID, rỗng); xác thực chuyển mạch delegation giữa LinearSearch và BinarySearch. |
-| **3** | `SortMatchesUseCaseTest` | [`SortMatchesUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SortMatchesUseCaseTest.kt) | 12 | **PASS 100%** | Default criteria (`START_TIME_ASC`), thời gian tăng/giảm dần, tổng bàn thắng giảm dần, **Signed Goal Difference** (+3 > +1 > 0 > -1 > -2, khẳng định `+1` trước `-2`), ID tăng dần, MergeSort stability khi bằng giá trị, xử lý tỷ số null an toàn, empty/singleton list, immutability, custom delegation. |
-| **4** | `SortSeasonRankingUseCaseTest` | [`SortSeasonRankingUseCaseTest.kt`](../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SortSeasonRankingUseCaseTest.kt) | 15 | **PASS 100%** | Default criteria (`POSITION_ASC`), Position ASC, GD DESC, Wins DESC, Losses ASC, Points DESC khi điểm khác nhau, Tie-breaker 1 (GD DESC khi điểm bằng), Tie-breaker 2 (Wins DESC khi điểm & GD bằng), Tie-breaker 3 (Position ASC khi điểm, GD & Wins bằng), Kịch bản phân cấp tổng hợp 5 đội bóng, MergeSort stability khi bằng tuyệt đối (kiểm thử 2 chiều), empty/singleton, immutability, delegation. |
+| **1** | `SearchMatchesUseCaseTest` | [`SearchMatchesUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SearchMatchesUseCaseTest.kt) | 12 | **PASS 100%** | Khớp theo Home team, Away team, cả hai đội, không phân biệt hoa thường (`ignoreCase`), tìm kiếm substring, cắt tỉa khoảng trắng (`trim`), query rỗng/blank trả về toàn bộ input (`assertSame`), không tìm thấy, input rỗng, immutability, custom delegation injection. |
+| **2** | `SearchTeamsUseCaseTest` | [`SearchTeamsUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SearchTeamsUseCaseTest.kt) | 23 | **PASS 100%** | `searchByName`: Khớp chính xác, chuỗi con, hoa thường, query blank/rỗng, input rỗng, immutability.<br>`findById`: Fallback LinearSearch khi `isSortedById = false` (đầu, giữa, cuối, không tồn tại, rỗng); BinarySearch tối ưu khi `isSortedById = true` (đầu, giữa, cuối, ngoài biên trái/phải, lỗ hổng ID, rỗng); xác thực chuyển mạch delegation giữa LinearSearch và BinarySearch. |
+| **3** | `SortMatchesUseCaseTest` | [`SortMatchesUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/match/usecase/SortMatchesUseCaseTest.kt) | 12 | **PASS 100%** | Default criteria (`START_TIME_ASC`), thời gian tăng/giảm dần, tổng bàn thắng giảm dần, **Signed Goal Difference** (+3 > +1 > 0 > -1 > -2, khẳng định `+1` trước `-2`), ID tăng dần, MergeSort stability khi bằng giá trị, xử lý tỷ số null an toàn, empty/singleton list, immutability, custom delegation. |
+| **4** | `SortSeasonRankingUseCaseTest` | [`SortSeasonRankingUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/team/usecase/SortSeasonRankingUseCaseTest.kt) | 15 | **PASS 100%** | Default criteria (`POSITION_ASC`), Position ASC, GD DESC, Wins DESC, Losses ASC, Points DESC khi điểm khác nhau, Tie-breaker 1 (GD DESC khi điểm bằng), Tie-breaker 2 (Wins DESC khi điểm & GD bằng), Tie-breaker 3 (Position ASC khi điểm, GD & Wins bằng), Kịch bản phân cấp tổng hợp 5 đội bóng, MergeSort stability khi bằng tuyệt đối (kiểm thử 2 chiều), empty/singleton, immutability, delegation. |
 | **Tổng** | **4 Suites mới của D3** | | **62** | **PASS 100%** | **Toàn bộ 62/62 tests mới hoàn thành xuất sắc.** |
 
 ---
@@ -325,7 +325,7 @@ Toàn bộ giai đoạn D3 được triển khai và đưa lên remote qua 2 ato
 - [x] **Tổng số Test Domain Đạt Chuẩn**: 156/156 Tests của `:core:domain` PASS 100%.
 - [x] **Bảo tồn Tuyệt đối Legacy Code**: Không gây bất kỳ breaking change nào cho hệ thống dự đoán và các UseCase cũ.
 - [x] **Commits Chuẩn Conventional**: Hai commits D3.1 (`3802535`) và D3.2 (`294a52f`) đã được đẩy thành công lên `origin/main`.
-- [x] **Báo cáo Hoàn thành Đầy đủ**: Tài liệu `docs/reports/domain-d3-search-sort.md` phản ánh trung thực mã nguồn thực tế và đã được lưu trữ trên disk.
+- [x] **Báo cáo Hoàn thành Đầy đủ**: Tài liệu `docs/reports/final/domain-d3-final.md` phản ánh trung thực mã nguồn thực tế và đã được lưu trữ trên disk.
 
 ---
 

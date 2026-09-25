@@ -168,11 +168,11 @@ interface RatingCalculator {
 
 Các thành phần được triển khai tại package `dev.anhquocs.truelab.core.algorithm.rating`:
 
-1. [RatingMatchResult.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/RatingMatchResult.kt):
+1. [RatingMatchResult.kt](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/RatingMatchResult.kt):
    - Data class bất biến chứa kết quả cập nhật Elo cho cả hai đội sau một trận đấu.
-2. [RatingCalculator.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/RatingCalculator.kt):
+2. [RatingCalculator.kt](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/RatingCalculator.kt):
    - Interface contract định nghĩa các hàm tính toán xác suất kỳ vọng và cập nhật điểm số thông qua method overloading.
-3. [EloRatingCalculator.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/EloRatingCalculator.kt):
+3. [EloRatingCalculator.kt](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/EloRatingCalculator.kt):
    - Lớp hiện thực Standard Elo Rating System.
    - Nhận `defaultKFactor` tại constructor (mặc định là `DEFAULT_K = 32.0`), validate giá trị ngay tại `init` block.
    - Cài đặt các overload không có `kFactor` ủy quyền trực tiếp cho `defaultKFactor`.
@@ -231,7 +231,7 @@ data class RatingMatchResult(
 
 ## 10. Testing
 
-Bộ Unit Test toàn diện tại [EloRatingAlgorithmsTest.kt](../../core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/rating/EloRatingAlgorithmsTest.kt):
+Bộ Unit Test toàn diện tại [EloRatingAlgorithmsTest.kt](../../../core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/rating/EloRatingAlgorithmsTest.kt):
 
 - **Số test Phase 6**: **22 / 22 tests PASSED (100%)**
 - **Toàn bộ module `:core:algorithm`**: **95 / 95 tests PASSED (100%)**
