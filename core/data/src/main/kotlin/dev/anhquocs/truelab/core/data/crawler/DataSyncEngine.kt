@@ -31,7 +31,7 @@ import javax.inject.Inject
  * Adheres to the multi-level dependency order:
  * Leagues/Seasons -> Teams -> Matches -> Rankings/Odds -> Metadata Hook
  */
-class DataSyncEngine @Inject constructor(
+class DataSyncEngine(
     private val matchApi: MatchApi,
     private val oddsApi: OddsApi,
     private val rankingApi: RankingApi,
@@ -41,7 +41,7 @@ class DataSyncEngine @Inject constructor(
     private val retryExecutor: RetryExecutor = RetryExecutor(),
     private val cacheFreshnessChecker: CacheFreshnessChecker = DefaultCacheFreshnessChecker(),
     private val freshnessPolicy: DataFreshnessPolicy = DataFreshnessPolicy(),
-    private val timeProvider: () -> Long = { System.currentTimeMillis() }
+    internal var timeProvider: () -> Long = { System.currentTimeMillis() }
 ) {
 
     /**
@@ -145,6 +145,8 @@ class DataSyncEngine @Inject constructor(
                     timestamp = timestamp
                 )
             )
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             SyncResult.Failure(e)
         }
@@ -168,6 +170,8 @@ class DataSyncEngine @Inject constructor(
                 }
             }
             SyncResult.Success(leagues.size + seasons.size)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             SyncResult.Failure(e)
         }
@@ -194,6 +198,8 @@ class DataSyncEngine @Inject constructor(
         try {
             syncOddsInternal(matchId)
             Result.success(Unit)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -206,6 +212,8 @@ class DataSyncEngine @Inject constructor(
         try {
             syncRankingInternal(matchId)
             Result.success(Unit)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
