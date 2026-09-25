@@ -158,6 +158,12 @@
     <string name="benchmark_run_btn">Chạy Bộ đo Hiệu năng</string>
     <string name="benchmark_dataset_size">Kích thước tập dữ liệu: %1$d mục</string>
     <string name="benchmark_exec_time">Thời gian thực thi: %1$.3f ms</string>
+    <string name="benchmark_speedup_format">%1$s nhanh hơn %2$.1fx</string>
+    <string name="benchmark_equal_speed">Tốc độ thực thi tương đương</string>
+    <string name="benchmark_running_status">Đang đo lường hiệu năng (%1$d mục)...</string>
+    <string name="benchmark_idle_hint">Nhấn nút bên dưới để bắt đầu đo lường hiệu năng thuật toán.</string>
+    <string name="benchmark_error_default">Đã xảy ra lỗi trong quá trình đo lường hiệu năng.</string>
+    <string name="benchmark_last_run">Lần đo gần nhất: %1$s</string>
 
     <!-- Setting Screen -->
     <string name="setting_title">Cài đặt</string>
