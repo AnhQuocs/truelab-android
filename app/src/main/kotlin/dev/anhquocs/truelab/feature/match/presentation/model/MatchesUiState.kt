@@ -1,5 +1,6 @@
 package dev.anhquocs.truelab.feature.match.presentation.model
 
+import dev.anhquocs.truelab.core.domain.league.model.League
 import dev.anhquocs.truelab.core.domain.match.model.MatchSortCriteria
 import dev.anhquocs.truelab.core.ui.utils.UiText
 
@@ -23,10 +24,18 @@ sealed interface MatchesUiState {
         val rawMatchesCount: Int,
         val searchQuery: String,
         val selectedSort: MatchSortCriteria,
-        val selectedStatusFilter: MatchStatusFilter
+        val selectedStatusFilter: MatchStatusFilter,
+        val leagues: List<League> = emptyList(),
+        val selectedLeagueId: Int? = null,
+        val selectedSeason: String? = null
     ) : MatchesUiState
 
-    data class Empty(val message: UiText) : MatchesUiState
+    data class Empty(
+        val message: UiText,
+        val leagues: List<League> = emptyList(),
+        val selectedLeagueId: Int? = null,
+        val selectedSeason: String? = null
+    ) : MatchesUiState
 
     data class Error(val message: UiText) : MatchesUiState
 }

@@ -20,38 +20,44 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.Dimen
+import dev.anhquocs.truelab.core.ui.theme.SpacingXXS
+import dev.anhquocs.truelab.core.ui.theme.TopBarHeight
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s20
 import dev.anhquocs.truelab.feature.home.presentation.components.AlgorithmProgressCard
 import dev.anhquocs.truelab.feature.home.presentation.components.AnalysisToolsSection
 import dev.anhquocs.truelab.feature.home.presentation.components.DatasetOverviewCard
+import dev.anhquocs.truelab.feature.home.presentation.viewmodel.HomeViewModel
 import dev.anhquocs.truelab.navigation.TrueLabMainLayout
-
-private val TOP_BAR_HEIGHT = 70.dp
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = hiltViewModel(),
     onNavigate: (String) -> Unit = {},
     onSetting: () -> Unit = {}
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     TrueLabMainLayout(
         modifier = modifier,
-        headerHeight = TOP_BAR_HEIGHT,
+        headerHeight = TopBarHeight,
         header = {
             HomeHeader(
                 onSetting = onSetting,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(TOP_BAR_HEIGHT)
+                    .height(TopBarHeight)
             )
         }
     ) { contentModifier ->
@@ -67,7 +73,7 @@ fun HomeScreen(
         ) {
             // Section 1: Dataset Overview
             item {
-                DatasetOverviewCard()
+                DatasetOverviewCard(uiState = uiState)
             }
 
             // Section 2: Analysis Tools (Prediction & Benchmark only)
@@ -103,7 +109,7 @@ private fun HomeHeader(
                 style = MaterialTheme.typography.s20.bold(),
                 color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(SpacingXXS))
             Text(
                 text = stringResource(R.string.home_subtitle),
                 style = MaterialTheme.typography.s12,

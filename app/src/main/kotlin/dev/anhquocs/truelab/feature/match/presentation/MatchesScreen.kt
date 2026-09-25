@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,60 +11,42 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.match.model.MatchSortCriteria
 import dev.anhquocs.truelab.core.ui.theme.Dimen
-import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
-import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.core.ui.theme.TopBarHeight
 import dev.anhquocs.truelab.core.ui.utils.bold
-import dev.anhquocs.truelab.core.ui.utils.medium
-import dev.anhquocs.truelab.core.ui.utils.s10
-import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.s20
-import dev.anhquocs.truelab.core.ui.utils.semiBold
+import dev.anhquocs.truelab.feature.match.presentation.components.DatasetFilterChips
+import dev.anhquocs.truelab.feature.match.presentation.components.DatasetSearchField
+import dev.anhquocs.truelab.feature.match.presentation.components.DatasetSortSection
+import dev.anhquocs.truelab.feature.match.presentation.components.LeagueFilterChips
 import dev.anhquocs.truelab.feature.match.presentation.components.MatchDataCard
 import dev.anhquocs.truelab.feature.match.presentation.components.MatchDetailBottomSheet
+import dev.anhquocs.truelab.feature.match.presentation.components.MatchesFeedbackCard
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchDetailUiState
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchStatusFilter
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchesUiState
 import dev.anhquocs.truelab.feature.match.presentation.viewmodel.MatchesViewModel
 import dev.anhquocs.truelab.navigation.TrueLabMainLayout
-
-private val TOP_BAR_HEIGHT = 75.dp
 
 @Composable
 fun MatchesScreen(
@@ -79,6 +60,8 @@ fun MatchesScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val currentSort by viewModel.sortCriteria.collectAsStateWithLifecycle()
     val currentFilter by viewModel.statusFilter.collectAsStateWithLifecycle()
+    val leagues by viewModel.leagues.collectAsStateWithLifecycle()
+    val selectedLeagueId by viewModel.selectedLeagueId.collectAsStateWithLifecycle()
 
     val filterOptions = listOf(
         MatchStatusFilter.ALL to stringResource(R.string.matches_filter_all),
@@ -94,7 +77,7 @@ fun MatchesScreen(
 
     TrueLabMainLayout(
         modifier = modifier,
-        headerHeight = TOP_BAR_HEIGHT,
+        headerHeight = TopBarHeight,
         header = { MatchesHeader() }
     ) { contentModifier ->
         LazyColumn(
@@ -102,7 +85,7 @@ fun MatchesScreen(
                 .fillMaxSize()
                 .padding(horizontal = Dimen.PaddingM),
             verticalArrangement = Arrangement.spacedBy(Dimen.PaddingM),
-            contentPadding = PaddingValues(bottom = 100.dp)
+            contentPadding = PaddingValues(bottom = Dimen.PaddingUltra)
         ) {
             // Search Input Field
             item {
@@ -111,6 +94,17 @@ fun MatchesScreen(
                     searchQuery = searchQuery,
                     onSearchQueryChange = { viewModel.onSearchQueryChanged(it) }
                 )
+            }
+
+            // League Filter Chips
+            if (leagues.isNotEmpty()) {
+                item {
+                    LeagueFilterChips(
+                        leagues = leagues,
+                        selectedLeagueId = selectedLeagueId,
+                        onSelectLeague = { viewModel.onLeagueSelected(it) }
+                    )
+                }
             }
 
             // Status Filter Chips
@@ -138,12 +132,12 @@ fun MatchesScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp),
+                                .height(Dimen.SizeUltra),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(36.dp)
+                                modifier = Modifier.size(Dimen.SizeXL)
                             )
                         }
                     }
@@ -223,172 +217,8 @@ private fun MatchesHeader() {
             style = MaterialTheme.typography.s14,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 2,
-            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis
         )
         Spacer(modifier = Modifier.height(SpacingS))
-    }
-}
-
-@Composable
-private fun DatasetSearchField(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit
-) {
-    OutlinedTextField(
-        value = searchQuery,
-        onValueChange = onSearchQueryChange,
-        placeholder = {
-            Text(
-                text = stringResource(R.string.matches_search_hint),
-                style = MaterialTheme.typography.s14,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            )
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search",
-                tint = MaterialTheme.colorScheme.primary
-            )
-        },
-        trailingIcon = {
-            if (searchQuery.isNotEmpty()) {
-                IconButton(onClick = { onSearchQueryChange("") }) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Clear",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        },
-        singleLine = true,
-        shape = RoundedCornerShape(RadiusLarge),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surface,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-        ),
-        modifier = Modifier.fillMaxWidth()
-    )
-}
-
-@Composable
-private fun DatasetFilterChips(
-    filterOptions: List<Pair<MatchStatusFilter, String>>,
-    selectedFilter: MatchStatusFilter,
-    onSelectFilter: (MatchStatusFilter) -> Unit
-) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingS),
-        contentPadding = PaddingValues(vertical = Dimen.PaddingXXS)
-    ) {
-        items(filterOptions) { (filter, label) ->
-            FilterChip(
-                selected = selectedFilter == filter,
-                onClick = { onSelectFilter(filter) },
-                shape = RoundedCornerShape(RadiusMedium),
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                label = {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.s12.semiBold()
-                    )
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun DatasetSortSection(
-    sortOptions: List<Pair<MatchSortCriteria, String>>,
-    selectedSort: MatchSortCriteria,
-    onSelectSort: (MatchSortCriteria) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingS)
-    ) {
-        Icon(
-            imageVector = Icons.Default.Tune,
-            contentDescription = "Sort",
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(Dimen.SizeS)
-        )
-        Text(
-            text = stringResource(R.string.matches_sort_label),
-            style = MaterialTheme.typography.s12.semiBold(),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXS)
-        ) {
-            items(sortOptions) { (criteria, label) ->
-                FilterChip(
-                    selected = selectedSort == criteria,
-                    onClick = { onSelectSort(criteria) },
-                    shape = RoundedCornerShape(RadiusMedium),
-                    label = {
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.s10.medium()
-                        )
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun MatchesFeedbackCard(
-    icon: ImageVector,
-    iconTint: Color,
-    title: String,
-    message: String,
-    containerColor: Color,
-    titleColor: Color,
-    messageColor: Color
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Dimen.PaddingL),
-        shape = RoundedCornerShape(RadiusLarge),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimen.PaddingXL),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(40.dp)
-            )
-            Spacer(modifier = Modifier.height(Dimen.PaddingS))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.s14.semiBold(),
-                color = titleColor
-            )
-            Spacer(modifier = Modifier.height(SpacingXS))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.s12,
-                color = messageColor,
-                textAlign = TextAlign.Center
-            )
-        }
     }
 }

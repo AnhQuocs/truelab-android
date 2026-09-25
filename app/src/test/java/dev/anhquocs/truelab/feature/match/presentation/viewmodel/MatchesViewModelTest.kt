@@ -1,22 +1,21 @@
 package dev.anhquocs.truelab.feature.match.presentation.viewmodel
 
 import dev.anhquocs.truelab.R
+import dev.anhquocs.truelab.core.domain.league.model.League
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.match.model.MatchSortCriteria
 import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
 import dev.anhquocs.truelab.core.domain.match.model.TeamSummary
-import dev.anhquocs.truelab.core.domain.match.repository.MatchRepository
 import dev.anhquocs.truelab.core.domain.match.usecase.SearchMatchesUseCase
 import dev.anhquocs.truelab.core.domain.match.usecase.SortMatchesUseCase
 import dev.anhquocs.truelab.core.ui.utils.UiText
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchDetailUiState
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchStatusFilter
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchesUiState
+import dev.anhquocs.truelab.feature.match.presentation.viewmodel.fakes.FakeLeagueRepository
+import dev.anhquocs.truelab.feature.match.presentation.viewmodel.fakes.FakeMatchRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -25,7 +24,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -34,7 +33,8 @@ import org.junit.Test
 class MatchesViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var fakeRepository: FakeMatchRepository
+    private lateinit var fakeMatchRepository: FakeMatchRepository
+    private lateinit var fakeLeagueRepository: FakeLeagueRepository
     private lateinit var searchMatchesUseCase: SearchMatchesUseCase
     private lateinit var sortMatchesUseCase: SortMatchesUseCase
     private lateinit var viewModel: MatchesViewModel
@@ -44,6 +44,9 @@ class MatchesViewModelTest {
     private val liverpool = TeamSummary(id = 3, name = "Liverpool")
     private val manCity = TeamSummary(id = 4, name = "Man City")
 
+    private val premierLeague = League(id = 1, name = "Premier League")
+    private val laLiga = League(id = 2, name = "La Liga")
+
     private val match1 = Match(
         id = 101L,
         homeTeam = arsenal,
@@ -51,7 +54,9 @@ class MatchesViewModelTest {
         homeScore = 2,
         awayScore = 1,
         startTimeDate = "2026-03-01T15:00:00",
-        status = MatchStatus.ENDED
+        status = MatchStatus.ENDED,
+        leagueId = 1,
+        season = "2025-2026"
     )
 
     private val match2 = Match(
@@ -61,7 +66,9 @@ class MatchesViewModelTest {
         homeScore = 3,
         awayScore = 3,
         startTimeDate = "2026-03-05T20:00:00",
-        status = MatchStatus.ENDED
+        status = MatchStatus.ENDED,
+        leagueId = 1,
+        season = "2025-2026"
     )
 
     private val match3 = Match(
@@ -71,7 +78,9 @@ class MatchesViewModelTest {
         homeScore = null,
         awayScore = null,
         startTimeDate = "2026-03-10T17:30:00",
-        status = MatchStatus.SCHEDULED
+        status = MatchStatus.SCHEDULED,
+        leagueId = 2,
+        season = "2025-2026"
     )
 
     private val sampleMatches = listOf(match1, match2, match3)
@@ -79,11 +88,13 @@ class MatchesViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        fakeRepository = FakeMatchRepository()
+        fakeMatchRepository = FakeMatchRepository()
+        fakeLeagueRepository = FakeLeagueRepository()
         searchMatchesUseCase = SearchMatchesUseCase()
         sortMatchesUseCase = SortMatchesUseCase()
         viewModel = MatchesViewModel(
-            matchRepository = fakeRepository,
+            matchRepository = fakeMatchRepository,
+            leagueRepository = fakeLeagueRepository,
             searchMatchesUseCase = searchMatchesUseCase,
             sortMatchesUseCase = sortMatchesUseCase
         )
@@ -103,7 +114,7 @@ class MatchesViewModelTest {
     fun test2_repositoryEmitsMatches_updatesUiStateToSuccess() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.uiState.collect {} }
 
-        fakeRepository.emit(sampleMatches)
+        fakeMatchRepository.emit(sampleMatches)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -117,7 +128,7 @@ class MatchesViewModelTest {
     fun test3_emptyRepository_updatesUiStateToEmpty() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.uiState.collect {} }
 
-        fakeRepository.emit(emptyList())
+        fakeMatchRepository.emit(emptyList())
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -130,7 +141,7 @@ class MatchesViewModelTest {
     fun test4_searchQuery_filtersMatchesCorrectly() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.uiState.collect {} }
 
-        fakeRepository.emit(sampleMatches)
+        fakeMatchRepository.emit(sampleMatches)
         advanceUntilIdle()
 
         viewModel.onSearchQueryChanged("Arsenal")
@@ -146,14 +157,13 @@ class MatchesViewModelTest {
     fun test5_sortCriteria_ordersMatchesByTotalGoals() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.uiState.collect {} }
 
-        fakeRepository.emit(sampleMatches)
+        fakeMatchRepository.emit(sampleMatches)
         advanceUntilIdle()
 
         viewModel.onSortCriteriaChanged(MatchSortCriteria.TOTAL_GOALS_DESC)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value as MatchesUiState.Success
-        // match2: 6 goals, match1: 3 goals, match3: 0 goals
         assertEquals("102", state.matches[0].id)
         assertEquals("101", state.matches[1].id)
         assertEquals("103", state.matches[2].id)
@@ -163,7 +173,7 @@ class MatchesViewModelTest {
     fun test6_statusFilter_ALL_includesAllMatches() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.uiState.collect {} }
 
-        fakeRepository.emit(sampleMatches)
+        fakeMatchRepository.emit(sampleMatches)
         viewModel.onStatusFilterChanged(MatchStatusFilter.ALL)
         advanceUntilIdle()
 
@@ -175,7 +185,7 @@ class MatchesViewModelTest {
     fun test7_statusFilter_ENDED_includesOnlyEndedMatches() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.uiState.collect {} }
 
-        fakeRepository.emit(sampleMatches)
+        fakeMatchRepository.emit(sampleMatches)
         viewModel.onStatusFilterChanged(MatchStatusFilter.ENDED)
         advanceUntilIdle()
 
@@ -188,7 +198,7 @@ class MatchesViewModelTest {
     fun test8_statusFilter_SCHEDULED_includesOnlyScheduledMatches() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.uiState.collect {} }
 
-        fakeRepository.emit(sampleMatches)
+        fakeMatchRepository.emit(sampleMatches)
         viewModel.onStatusFilterChanged(MatchStatusFilter.SCHEDULED)
         advanceUntilIdle()
 
@@ -202,8 +212,8 @@ class MatchesViewModelTest {
     fun test9_repositoryError_updatesUiStateToError() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.uiState.collect {} }
 
-        fakeRepository.errorToThrow = RuntimeException("Database query failed")
-        fakeRepository.emit(sampleMatches)
+        fakeMatchRepository.errorToThrow = RuntimeException("Database query failed")
+        fakeMatchRepository.emit(sampleMatches)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -218,14 +228,13 @@ class MatchesViewModelTest {
         backgroundScope.launch { viewModel.uiState.collect {} }
 
         val originalList = ArrayList(sampleMatches)
-        fakeRepository.emit(originalList)
+        fakeMatchRepository.emit(originalList)
         advanceUntilIdle()
 
         viewModel.onSortCriteriaChanged(MatchSortCriteria.TOTAL_GOALS_DESC)
         viewModel.onSearchQueryChanged("Liverpool")
         advanceUntilIdle()
 
-        // Original list retains its initial items and order
         assertEquals(3, originalList.size)
         assertEquals(match1, originalList[0])
         assertEquals(match2, originalList[1])
@@ -236,7 +245,7 @@ class MatchesViewModelTest {
     fun test11_searchQueryWithNoResults_updatesUiStateToEmpty() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.uiState.collect {} }
 
-        fakeRepository.emit(sampleMatches)
+        fakeMatchRepository.emit(sampleMatches)
         advanceUntilIdle()
 
         viewModel.onSearchQueryChanged("Real Madrid")
@@ -252,7 +261,7 @@ class MatchesViewModelTest {
     fun test12_onMatchClicked_loadsAndEmitsSuccessWithCorrectDetails() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.matchDetailState.collect {} }
 
-        fakeRepository.emit(sampleMatches)
+        fakeMatchRepository.emit(sampleMatches)
         advanceUntilIdle()
 
         viewModel.onMatchClicked(101L)
@@ -269,14 +278,14 @@ class MatchesViewModelTest {
         assertEquals(MatchStatus.ENDED, successState.match.status)
         assertEquals(3, successState.match.totalGoals)
         assertTrue(successState.match.isHomeWin)
-        assertEquals(101L, fakeRepository.lastRequestedMatchId)
+        assertEquals(101L, fakeMatchRepository.lastRequestedMatchId)
     }
 
     @Test
     fun test13_onMatchClicked_nonExistentMatch_emitsEmpty() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.matchDetailState.collect {} }
 
-        fakeRepository.emit(sampleMatches)
+        fakeMatchRepository.emit(sampleMatches)
         advanceUntilIdle()
 
         viewModel.onMatchClicked(999L)
@@ -285,15 +294,15 @@ class MatchesViewModelTest {
         val state = viewModel.matchDetailState.value
         assertTrue("Expected Empty state when match not found", state is MatchDetailUiState.Empty)
         assertEquals(UiText.StringResource(R.string.match_detail_empty), (state as MatchDetailUiState.Empty).message)
-        assertEquals(999L, fakeRepository.lastRequestedMatchId)
+        assertEquals(999L, fakeMatchRepository.lastRequestedMatchId)
     }
 
     @Test
     fun test14_onMatchClicked_repositoryError_emitsError() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.matchDetailState.collect {} }
 
-        fakeRepository.emit(sampleMatches)
-        fakeRepository.errorToThrow = RuntimeException("Database error")
+        fakeMatchRepository.emit(sampleMatches)
+        fakeMatchRepository.errorToThrow = RuntimeException("Database error")
         advanceUntilIdle()
 
         viewModel.onMatchClicked(101L)
@@ -310,7 +319,7 @@ class MatchesViewModelTest {
     fun test15_onDismissMatchDetail_resetsStateToIdle() = runTest(testDispatcher) {
         backgroundScope.launch { viewModel.matchDetailState.collect {} }
 
-        fakeRepository.emit(sampleMatches)
+        fakeMatchRepository.emit(sampleMatches)
         advanceUntilIdle()
 
         viewModel.onMatchClicked(101L)
@@ -322,39 +331,5 @@ class MatchesViewModelTest {
 
         val state = viewModel.matchDetailState.value
         assertTrue("Expected Idle state after dismiss", state is MatchDetailUiState.Idle)
-    }
-
-    /**
-     * Fake implementation of MatchRepository for deterministic testing.
-     */
-    private class FakeMatchRepository : MatchRepository {
-        private val matchesFlow = MutableStateFlow<List<Match>>(emptyList())
-        var errorToThrow: Throwable? = null
-        var lastRequestedMatchId: Long? = null
-
-        fun emit(matches: List<Match>) {
-            matchesFlow.value = matches
-        }
-
-        override fun getMatches(date: String): Flow<List<Match>> = flow {
-            errorToThrow?.let { throw it }
-            matchesFlow.collect { emit(it) }
-        }
-
-        override fun getMatchDetail(matchId: Long): Flow<Match?> = flow {
-            lastRequestedMatchId = matchId
-            errorToThrow?.let { throw it }
-            emit(matchesFlow.value.find { it.id == matchId })
-        }
-
-        override fun getRecentMatchesForTeam(teamId: Int, limit: Int): Flow<List<Match>> = flow {
-            errorToThrow?.let { throw it }
-            emit(matchesFlow.value.filter { it.homeTeam.id == teamId || it.awayTeam.id == teamId }.take(limit))
-        }
-
-        override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<Match>> = flow {
-            errorToThrow?.let { throw it }
-            emit(matchesFlow.value.filter { it.leagueId == leagueId && it.season == season })
-        }
     }
 }

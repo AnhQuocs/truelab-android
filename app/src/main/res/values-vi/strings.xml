@@ -40,6 +40,7 @@
     <string name="matches_subtitle">380 Mẫu dữ liệu • Odds Đa nguồn • Đặc trưng Thuật toán</string>
     <string name="matches_search_hint">Tìm Đội bóng, Mã trận (#M-xxx) hoặc Giải đấu…</string>
     <string name="matches_filter_all">Tất cả</string>
+    <string name="matches_filter_all_leagues">Tất cả giải đấu</string>
     <string name="matches_filter_ended">Đã kết thúc</string>
     <string name="matches_filter_scheduled">Sắp diễn ra</string>
     <string name="matches_empty_title">Không có trận đấu nào</string>

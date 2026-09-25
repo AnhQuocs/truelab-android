@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.anhquocs.truelab.R
+import dev.anhquocs.truelab.core.domain.league.model.League
+import dev.anhquocs.truelab.core.domain.league.repository.LeagueRepository
 import dev.anhquocs.truelab.core.domain.match.model.MatchSortCriteria
 import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
 import dev.anhquocs.truelab.core.domain.match.repository.MatchRepository
@@ -31,12 +33,13 @@ import javax.inject.Inject
  * ViewModel managing Unidirectional Data Flow for MatchesScreen.
  *
  * Pipeline:
- * Raw Matches -> Status Filter -> SearchMatchesUseCase -> SortMatchesUseCase -> MatchUiMapper -> UI State
+ * Raw Matches -> League Filter -> Status Filter -> SearchMatchesUseCase -> SortMatchesUseCase -> MatchUiMapper -> UI State
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class MatchesViewModel @Inject constructor(
     private val matchRepository: MatchRepository,
+    private val leagueRepository: LeagueRepository,
     private val searchMatchesUseCase: SearchMatchesUseCase,
     private val sortMatchesUseCase: SortMatchesUseCase
 ) : ViewModel() {
@@ -50,6 +53,12 @@ class MatchesViewModel @Inject constructor(
     private val _statusFilter = MutableStateFlow(MatchStatusFilter.ALL)
     val statusFilter: StateFlow<MatchStatusFilter> = _statusFilter.asStateFlow()
 
+    private val _selectedLeagueId = MutableStateFlow<Int?>(null)
+    val selectedLeagueId: StateFlow<Int?> = _selectedLeagueId.asStateFlow()
+
+    private val _selectedSeason = MutableStateFlow<String?>(null)
+    val selectedSeason: StateFlow<String?> = _selectedSeason.asStateFlow()
+
     private val _selectedDate = MutableStateFlow("")
     val selectedDate: StateFlow<String> = _selectedDate.asStateFlow()
 
@@ -58,42 +67,105 @@ class MatchesViewModel @Inject constructor(
 
     private var matchDetailJob: Job? = null
 
+    val leagues: StateFlow<List<League>> = leagueRepository.getLeagues()
+        .catch { emit(emptyList()) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+
+    private val rawMatchesFlow = combine(
+        _selectedDate,
+        _selectedLeagueId,
+        _selectedSeason
+    ) { date, leagueId, season ->
+        Triple(date, leagueId, season)
+    }.flatMapLatest { (date, leagueId, season) ->
+        if (leagueId != null && season != null) {
+            matchRepository.getMatchesByLeagueAndSeason(leagueId, season)
+        } else {
+            matchRepository.getMatches(date)
+        }
+    }
+
     val uiState: StateFlow<MatchesUiState> = combine(
-        _selectedDate.flatMapLatest { date -> matchRepository.getMatches(date) },
+        rawMatchesFlow,
+        leagueRepository.getLeagues().catch { emit(emptyList()) },
         _searchQuery,
         _sortCriteria,
-        _statusFilter
-    ) { rawMatches, query, sort, filter ->
+        combine(
+            _statusFilter,
+            _selectedLeagueId,
+            _selectedSeason
+        ) { status, leagueId, season ->
+            Triple(status, leagueId, season)
+        }
+    ) { rawMatches, leaguesList, query, sort, (status, leagueId, season) ->
         if (rawMatches.isEmpty()) {
-            MatchesUiState.Empty(UiText.StringResource(R.string.matches_empty_no_data))
+            MatchesUiState.Empty(
+                message = UiText.StringResource(R.string.matches_empty_no_data),
+                leagues = leaguesList,
+                selectedLeagueId = leagueId,
+                selectedSeason = season
+            )
         } else {
-            // Pipeline Step 1: Status Filter
-            val statusFiltered = when (filter) {
-                MatchStatusFilter.ALL -> rawMatches
-                MatchStatusFilter.ENDED -> rawMatches.filter { it.isEnded }
-                MatchStatusFilter.SCHEDULED -> rawMatches.filter { it.status == MatchStatus.SCHEDULED }
+            // Pipeline Step 1: League Filter (when season is null and leagueId is specified)
+            val leagueFiltered = if (leagueId != null && season == null) {
+                rawMatches.filter { it.leagueId == leagueId }
+            } else {
+                rawMatches
             }
 
-            if (statusFiltered.isEmpty()) {
-                MatchesUiState.Empty(UiText.StringResource(R.string.matches_empty_filter))
+            if (leagueFiltered.isEmpty()) {
+                MatchesUiState.Empty(
+                    message = UiText.StringResource(R.string.matches_empty_filter),
+                    leagues = leaguesList,
+                    selectedLeagueId = leagueId,
+                    selectedSeason = season
+                )
             } else {
-                // Pipeline Step 2: Search via SearchMatchesUseCase (LinearSearch O(n))
-                val searched = searchMatchesUseCase(statusFiltered, query)
+                // Pipeline Step 2: Status Filter
+                val statusFiltered = when (status) {
+                    MatchStatusFilter.ALL -> leagueFiltered
+                    MatchStatusFilter.ENDED -> leagueFiltered.filter { it.isEnded }
+                    MatchStatusFilter.SCHEDULED -> leagueFiltered.filter { it.status == MatchStatus.SCHEDULED }
+                }
 
-                if (searched.isEmpty()) {
-                    MatchesUiState.Empty(UiText.StringResource(R.string.matches_empty_search, query))
-                } else {
-                    // Pipeline Step 3: Sort via SortMatchesUseCase (MergeSort O(n log n))
-                    val sorted = sortMatchesUseCase(searched, sort)
-
-                    // Pipeline Step 4: Map to UI Presentation Model
-                    MatchesUiState.Success(
-                        matches = sorted.map { it.toUiRecord() },
-                        rawMatchesCount = rawMatches.size,
-                        searchQuery = query,
-                        selectedSort = sort,
-                        selectedStatusFilter = filter
+                if (statusFiltered.isEmpty()) {
+                    MatchesUiState.Empty(
+                        message = UiText.StringResource(R.string.matches_empty_filter),
+                        leagues = leaguesList,
+                        selectedLeagueId = leagueId,
+                        selectedSeason = season
                     )
+                } else {
+                    // Pipeline Step 3: Search via SearchMatchesUseCase (LinearSearch O(n))
+                    val searched = searchMatchesUseCase(statusFiltered, query)
+
+                    if (searched.isEmpty()) {
+                        MatchesUiState.Empty(
+                            message = UiText.StringResource(R.string.matches_empty_search, query),
+                            leagues = leaguesList,
+                            selectedLeagueId = leagueId,
+                            selectedSeason = season
+                        )
+                    } else {
+                        // Pipeline Step 4: Sort via SortMatchesUseCase (MergeSort O(n log n))
+                        val sorted = sortMatchesUseCase(searched, sort)
+
+                        // Pipeline Step 5: Map to UI Presentation Model
+                        MatchesUiState.Success(
+                            matches = sorted.map { it.toUiRecord() },
+                            rawMatchesCount = rawMatches.size,
+                            searchQuery = query,
+                            selectedSort = sort,
+                            selectedStatusFilter = status,
+                            leagues = leaguesList,
+                            selectedLeagueId = leagueId,
+                            selectedSeason = season
+                        )
+                    }
                 }
             }
         }
@@ -106,6 +178,21 @@ class MatchesViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = MatchesUiState.Loading
     )
+
+    fun onLeagueSelected(leagueId: Int?) {
+        _selectedLeagueId.value = leagueId
+    }
+
+    fun onSeasonSelected(season: String?) {
+        _selectedSeason.value = season
+    }
+
+    fun onClearFilters() {
+        _selectedLeagueId.value = null
+        _selectedSeason.value = null
+        _statusFilter.value = MatchStatusFilter.ALL
+        _searchQuery.value = ""
+    }
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
