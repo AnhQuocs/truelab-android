@@ -158,6 +158,12 @@
     <string name="benchmark_run_btn">Run Benchmark Suite</string>
     <string name="benchmark_dataset_size">Dataset Size: %1$d items</string>
     <string name="benchmark_exec_time">Execution Time: %1$.3f ms</string>
+    <string name="benchmark_speedup_format">%1$s is %2$.1fx faster</string>
+    <string name="benchmark_equal_speed">Execution speeds are equal</string>
+    <string name="benchmark_running_status">Running benchmark (%1$d items)...</string>
+    <string name="benchmark_idle_hint">Press the button below to start benchmarking algorithm performance.</string>
+    <string name="benchmark_error_default">An error occurred while running the benchmark.</string>
+    <string name="benchmark_last_run">Last benchmark run: %1$s</string>
 
     <!-- Setting Screen -->
     <string name="setting_title">Settings</string>

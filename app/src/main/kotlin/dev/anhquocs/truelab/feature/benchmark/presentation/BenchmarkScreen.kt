@@ -1,6 +1,8 @@
 package dev.anhquocs.truelab.feature.benchmark.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,116 +19,208 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.ButtonHeightMedium
 import dev.anhquocs.truelab.core.ui.theme.Dimen
-import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
 import dev.anhquocs.truelab.core.ui.theme.SpacingL
 import dev.anhquocs.truelab.core.ui.theme.SpacingM
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXL
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.core.ui.utils.s12
+import dev.anhquocs.truelab.feature.benchmark.presentation.components.AlgorithmBenchmarkCard
+import dev.anhquocs.truelab.feature.benchmark.presentation.components.DatasetSizeSelector
+import dev.anhquocs.truelab.feature.benchmark.presentation.model.BenchmarkUiState
+import dev.anhquocs.truelab.feature.benchmark.presentation.viewmodel.BenchmarkViewModel
 import dev.anhquocs.truelab.navigation.TrueLabMainLayout
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun BenchmarkScreen(
     modifier: Modifier = Modifier,
+    viewModel: BenchmarkViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {}
 ) {
-    var selectedDatasetSizeIndex by remember { mutableIntStateOf(1) }
-    val datasetSizes = listOf(1_000, 10_000, 50_000)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     TrueLabMainLayout(
         modifier = modifier,
         header = {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimen.PaddingS),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-                Spacer(modifier = Modifier.width(Dimen.PaddingS))
-                Text(
-                    text = stringResource(R.string.benchmark_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+            BenchmarkHeader(onNavigateBack = onNavigateBack)
         }
     ) { contentModifier ->
-        LazyColumn(
+        BenchmarkContent(
+            uiState = uiState,
+            onSelectDatasetSize = viewModel::onSelectDatasetSize,
+            onRunBenchmark = viewModel::runBenchmark,
             modifier = contentModifier
-                .fillMaxSize()
-                .padding(horizontal = SpacingL),
-            verticalArrangement = Arrangement.spacedBy(SpacingM),
-            contentPadding = PaddingValues(bottom = SpacingXL)
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(SpacingS))
-                DatasetSizeSelector(
-                    sizes = datasetSizes,
-                    selectedIndex = selectedDatasetSizeIndex,
-                    onSelectIndex = { selectedDatasetSizeIndex = it }
-                )
-            }
+        )
+    }
+}
 
-            item {
-                AlgorithmBenchmarkCard(
-                    title = stringResource(R.string.benchmark_search_title),
-                    algo1Name = "Linear Search",
-                    algo1Time = "1.420 ms",
-                    algo1Complexity = "O(N)",
-                    algo2Name = "Binary Search",
-                    algo2Time = "0.015 ms",
-                    algo2Complexity = "O(log N)"
-                )
-            }
+@Composable
+private fun BenchmarkHeader(
+    onNavigateBack: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimen.PaddingS),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onNavigateBack) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+        Spacer(modifier = Modifier.width(Dimen.PaddingS))
+        Text(
+            text = stringResource(R.string.benchmark_title),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+}
 
-            item {
-                AlgorithmBenchmarkCard(
-                    title = stringResource(R.string.benchmark_sort_title),
-                    algo1Name = "QuickSort (In-Place)",
-                    algo1Time = "8.350 ms",
-                    algo1Complexity = "O(N log N)",
-                    algo2Name = "MergeSort",
-                    algo2Time = "11.210 ms",
-                    algo2Complexity = "O(N log N)"
-                )
-            }
+@Composable
+private fun BenchmarkContent(
+    uiState: BenchmarkUiState,
+    onSelectDatasetSize: (Int) -> Unit,
+    onRunBenchmark: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isRunning = uiState is BenchmarkUiState.Running
+    val successState = uiState as? BenchmarkUiState.Success
+    val errorState = uiState as? BenchmarkUiState.Error
 
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = SpacingL),
+        verticalArrangement = Arrangement.spacedBy(SpacingM),
+        contentPadding = PaddingValues(bottom = SpacingXL)
+    ) {
+        // 1. Dataset Size Selector
+        item {
+            Spacer(modifier = Modifier.height(SpacingS))
+            DatasetSizeSelector(
+                sizes = BenchmarkUiState.AVAILABLE_SIZES,
+                selectedSize = uiState.selectedDatasetSize,
+                enabled = !isRunning,
+                onSelectSize = onSelectDatasetSize
+            )
+        }
+
+        // 2. Searching Benchmark Card (Linear vs Binary Search)
+        item {
+            AlgorithmBenchmarkCard(
+                title = stringResource(R.string.benchmark_search_title),
+                comparison = successState?.searchResult,
+                algo1Name = "Linear Search",
+                algo1Complexity = "O(N)",
+                algo2Name = "Binary Search",
+                algo2Complexity = "O(log N)",
+                isRunning = isRunning
+            )
+        }
+
+        // 3. Sorting Benchmark Card (QuickSort vs MergeSort)
+        item {
+            AlgorithmBenchmarkCard(
+                title = stringResource(R.string.benchmark_sort_title),
+                comparison = successState?.sortResult,
+                algo1Name = "QuickSort (In-Place)",
+                algo1Complexity = "O(N log N)",
+                algo2Name = "MergeSort",
+                algo2Complexity = "O(N log N)",
+                isRunning = isRunning
+            )
+        }
+
+        // 4. Status / Error Message
+        if (errorState != null) {
             item {
-                Button(
-                    onClick = {},
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(ButtonHeightMedium),
-                    shape = RoundedCornerShape(RadiusMedium)
+                        .clip(RoundedCornerShape(RadiusMedium))
+                        .background(MaterialTheme.colorScheme.errorContainer)
+                        .padding(Dimen.PaddingM)
                 ) {
+                    Text(
+                        text = errorState.message.asString(),
+                        style = MaterialTheme.typography.s12,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
+        }
+
+        // 5. Execution Timestamp / Idle Hint
+        item {
+            val statusText = when {
+                isRunning -> stringResource(R.string.benchmark_running_status, uiState.selectedDatasetSize)
+                successState != null -> {
+                    val formatted = SimpleDateFormat("dd/MM/yyyy • HH:mm:ss", Locale.getDefault())
+                        .format(Date(successState.timestamp))
+                    stringResource(R.string.benchmark_last_run, formatted)
+                }
+                else -> stringResource(R.string.benchmark_idle_hint)
+            }
+
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.s12,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        // 6. Run Benchmark Button
+        item {
+            Button(
+                onClick = onRunBenchmark,
+                enabled = !isRunning,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(ButtonHeightMedium),
+                shape = RoundedCornerShape(RadiusMedium)
+            ) {
+                if (isRunning) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(SpacingS))
+                    Text(
+                        text = stringResource(R.string.benchmark_running_status, uiState.selectedDatasetSize),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                } else {
                     Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null)
                     Spacer(modifier = Modifier.padding(horizontal = SpacingXS))
                     Text(
@@ -134,112 +229,6 @@ fun BenchmarkScreen(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun DatasetSizeSelector(
-    sizes: List<Int>,
-    selectedIndex: Int,
-    onSelectIndex: (Int) -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = "Dataset Size (Matches / Entities):",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(SpacingXS))
-        Row(horizontalArrangement = Arrangement.spacedBy(SpacingS)) {
-            sizes.forEachIndexed { index, size ->
-                FilterChip(
-                    selected = selectedIndex == index,
-                    onClick = { onSelectIndex(index) },
-                    label = { Text("%,d items".format(size)) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun AlgorithmBenchmarkCard(
-    title: String,
-    algo1Name: String,
-    algo1Time: String,
-    algo1Complexity: String,
-    algo2Name: String,
-    algo2Time: String,
-    algo2Complexity: String
-) {
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(RadiusLarge)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SpacingL),
-            verticalArrangement = Arrangement.spacedBy(SpacingM)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            AlgoResultRow(name = algo1Name, time = algo1Time, complexity = algo1Complexity)
-            AlgoResultRow(name = algo2Name, time = algo2Time, complexity = algo2Complexity)
-        }
-    }
-}
-
-@Composable
-private fun AlgoResultRow(
-    name: String,
-    time: String,
-    complexity: String
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(RadiusMedium),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SpacingM),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = time,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            SuggestionChip(
-                onClick = {},
-                label = {
-                    Text(
-                        text = complexity,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
-            )
         }
     }
 }
