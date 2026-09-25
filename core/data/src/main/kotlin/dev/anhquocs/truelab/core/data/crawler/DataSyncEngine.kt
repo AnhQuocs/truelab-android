@@ -12,6 +12,7 @@ import dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.toMatchEntity
 import dev.anhquocs.truelab.core.data.match.remote.api.MatchApi
 import dev.anhquocs.truelab.core.data.odds.remote.api.OddsApi
 import dev.anhquocs.truelab.core.data.ranking.remote.api.RankingApi
+import dev.anhquocs.truelab.core.domain.metadata.repository.DatasetMetadataRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -28,7 +29,8 @@ class DataSyncEngine @Inject constructor(
     private val oddsApi: OddsApi,
     private val rankingApi: RankingApi,
     private val database: TrueLabDatabase,
-    private val json: Json
+    private val json: Json,
+    private val metadataRepository: DatasetMetadataRepository? = null
 ) {
 
     /**
@@ -91,8 +93,12 @@ class DataSyncEngine @Inject constructor(
 
             val timestamp = System.currentTimeMillis()
 
-            // 6. Metadata Hook execution (D1.3 boundary)
-            onMetadataHook?.invoke(timestamp, totalMatchesSynced, totalTeamsSynced)
+            // 6. Metadata Hook execution
+            if (onMetadataHook != null) {
+                onMetadataHook(timestamp, totalMatchesSynced, totalTeamsSynced)
+            } else {
+                metadataRepository?.refreshSnapshot(timestamp)
+            }
 
             SyncResult.Success(
                 SyncSummary(

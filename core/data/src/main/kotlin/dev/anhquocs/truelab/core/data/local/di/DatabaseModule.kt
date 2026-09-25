@@ -12,6 +12,7 @@ import dev.anhquocs.truelab.core.data.league.local.dao.SeasonDao
 import dev.anhquocs.truelab.core.data.local.database.MIGRATION_1_2
 import dev.anhquocs.truelab.core.data.local.database.TrueLabDatabase
 import dev.anhquocs.truelab.core.data.match.local.dao.MatchDao
+import dev.anhquocs.truelab.core.data.metadata.local.dao.DatasetMetadataDao
 import dev.anhquocs.truelab.core.data.odds.local.dao.OddsDao
 import dev.anhquocs.truelab.core.data.prediction.local.dao.PredictionDao
 import dev.anhquocs.truelab.core.data.ranking.local.dao.RankingDao
@@ -66,4 +67,8 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideSeasonDao(database: TrueLabDatabase): SeasonDao = database.seasonDao()
+
+    @Provides
+    @Singleton
+    fun provideDatasetMetadataDao(database: TrueLabDatabase): DatasetMetadataDao = database.datasetMetadataDao()
 }

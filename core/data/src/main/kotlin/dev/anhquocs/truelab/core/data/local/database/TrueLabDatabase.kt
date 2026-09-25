@@ -8,6 +8,7 @@ import dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity
 import dev.anhquocs.truelab.core.data.league.local.entity.SeasonEntity
 import dev.anhquocs.truelab.core.data.match.local.dao.MatchDao
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchEntity
+import dev.anhquocs.truelab.core.data.metadata.local.dao.DatasetMetadataDao
 import dev.anhquocs.truelab.core.data.metadata.local.entity.DatasetMetadataEntity
 import dev.anhquocs.truelab.core.data.odds.local.dao.OddsDao
 import dev.anhquocs.truelab.core.data.odds.local.entity.OddsEntity
@@ -40,4 +41,5 @@ abstract class TrueLabDatabase : RoomDatabase() {
     abstract fun predictionDao(): PredictionDao
     abstract fun leagueDao(): LeagueDao
     abstract fun seasonDao(): SeasonDao
+    abstract fun datasetMetadataDao(): DatasetMetadataDao
 }

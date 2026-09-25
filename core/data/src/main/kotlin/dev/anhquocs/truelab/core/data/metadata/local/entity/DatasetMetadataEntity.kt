@@ -2,11 +2,12 @@ package dev.anhquocs.truelab.core.data.metadata.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import dev.anhquocs.truelab.core.domain.metadata.model.DatasetMetadata
 
 @Entity(tableName = "dataset_metadata")
 data class DatasetMetadataEntity(
     @PrimaryKey
-    val key: String = "PRIMARY_DATASET",
+    val key: String = DatasetMetadata.DEFAULT_KEY,
     val lastSyncTimestamp: Long,
     val totalMatches: Int,
     val totalTeams: Int,
@@ -15,5 +16,5 @@ data class DatasetMetadataEntity(
     val totalSeasons: Int,
     val earliestMatchDate: String? = null,
     val latestMatchDate: String? = null,
-    val schemaVersion: Int = 2
+    val schemaVersion: Int = DatasetMetadata.CURRENT_SCHEMA_VERSION
 )
