@@ -9,6 +9,7 @@ import dev.anhquocs.truelab.core.domain.team.model.SeasonRanking
 import dev.anhquocs.truelab.core.domain.team.model.StandingsSortCriteria
 import dev.anhquocs.truelab.core.domain.team.model.TeamDetail
 import dev.anhquocs.truelab.core.domain.team.repository.TeamRepository
+import dev.anhquocs.truelab.core.domain.team.usecase.CalculateHomeAwaySplitsUseCase
 import dev.anhquocs.truelab.core.domain.team.usecase.CalculateTeamFormUseCase
 import dev.anhquocs.truelab.core.domain.team.usecase.SearchTeamsUseCase
 import dev.anhquocs.truelab.core.domain.team.usecase.SortSeasonRankingUseCase
@@ -40,6 +41,7 @@ class TeamsViewModelTest {
     private lateinit var searchTeamsUseCase: SearchTeamsUseCase
     private lateinit var sortSeasonRankingUseCase: SortSeasonRankingUseCase
     private lateinit var calculateTeamFormUseCase: CalculateTeamFormUseCase
+    private lateinit var calculateHomeAwaySplitsUseCase: CalculateHomeAwaySplitsUseCase
     private lateinit var viewModel: TeamsViewModel
 
     private val manCityDetail = TeamDetail(id = 1, name = "Manchester City", leagueName = "Premier League", eloRating = 1980.0)
@@ -79,6 +81,7 @@ class TeamsViewModelTest {
         searchTeamsUseCase = SearchTeamsUseCase()
         sortSeasonRankingUseCase = SortSeasonRankingUseCase()
         calculateTeamFormUseCase = CalculateTeamFormUseCase()
+        calculateHomeAwaySplitsUseCase = CalculateHomeAwaySplitsUseCase()
 
         fakeTeamRepository.setTeams(listOf(manCityDetail, arsenalDetail, liverpoolDetail))
         fakeTeamRepository.setRankings(listOf(manCityRanking, arsenalRanking, liverpoolRanking))
@@ -89,7 +92,8 @@ class TeamsViewModelTest {
             matchRepository = fakeMatchRepository,
             searchTeamsUseCase = searchTeamsUseCase,
             sortSeasonRankingUseCase = sortSeasonRankingUseCase,
-            calculateTeamFormUseCase = calculateTeamFormUseCase
+            calculateTeamFormUseCase = calculateTeamFormUseCase,
+            calculateHomeAwaySplitsUseCase = calculateHomeAwaySplitsUseCase
         )
     }
 
@@ -284,6 +288,39 @@ class TeamsViewModelTest {
     }
 
     @Test
+    fun `home and away splits are computed via CalculateHomeAwaySplitsUseCase and mapped accurately`() = runTest {
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is TeamsUiState.Success)
+        val successState = state as TeamsUiState.Success
+
+        // Man City: 1 home win (2-1 vs Arsenal) -> 1W-0D-0L, 100% win rate; 1 away win (2-0 vs Liverpool) -> 1W-0D-0L, 100% win rate
+        val manCity = successState.teams.first { it.id == "1" }
+        assertEquals(100.0, manCity.homeWinRate)
+        assertEquals("1W-0D-0L", manCity.homeRecord)
+        assertEquals(100.0, manCity.awayWinRate)
+        assertEquals("1W-0D-0L", manCity.awayRecord)
+
+        // Arsenal: 0 home matches -> 0W-0D-0L, 0% win rate; 1 away loss (1-2 vs Man City) -> 0W-0D-1L, 0% win rate
+        val arsenal = successState.teams.first { it.id == "2" }
+        assertEquals(0.0, arsenal.homeWinRate)
+        assertEquals("0W-0D-0L", arsenal.homeRecord)
+        assertEquals(0.0, arsenal.awayWinRate)
+        assertEquals("0W-0D-1L", arsenal.awayRecord)
+
+        // Liverpool: 1 home loss (0-2 vs Man City) -> 0W-0D-1L, 0% win rate; 0 away matches -> 0W-0D-0L, 0% win rate
+        val liverpool = successState.teams.first { it.id == "3" }
+        assertEquals(0.0, liverpool.homeWinRate)
+        assertEquals("0W-0D-1L", liverpool.homeRecord)
+        assertEquals(0.0, liverpool.awayWinRate)
+        assertEquals("0W-0D-0L", liverpool.awayRecord)
+
+        collectJob.cancel()
+    }
+
+    @Test
     fun `repository error emits Error state with UiText`() = runTest {
         fakeTeamRepository.shouldThrowError = true
 
@@ -292,7 +329,8 @@ class TeamsViewModelTest {
             matchRepository = fakeMatchRepository,
             searchTeamsUseCase = searchTeamsUseCase,
             sortSeasonRankingUseCase = sortSeasonRankingUseCase,
-            calculateTeamFormUseCase = calculateTeamFormUseCase
+            calculateTeamFormUseCase = calculateTeamFormUseCase,
+            calculateHomeAwaySplitsUseCase = calculateHomeAwaySplitsUseCase
         )
 
         val collectJob = launch { errorViewModel.uiState.collect {} }

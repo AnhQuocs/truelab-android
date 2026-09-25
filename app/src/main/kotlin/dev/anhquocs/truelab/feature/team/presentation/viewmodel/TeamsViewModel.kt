@@ -8,6 +8,7 @@ import dev.anhquocs.truelab.core.domain.match.model.TeamSummary
 import dev.anhquocs.truelab.core.domain.match.repository.MatchRepository
 import dev.anhquocs.truelab.core.domain.team.model.StandingsSortCriteria
 import dev.anhquocs.truelab.core.domain.team.repository.TeamRepository
+import dev.anhquocs.truelab.core.domain.team.usecase.CalculateHomeAwaySplitsUseCase
 import dev.anhquocs.truelab.core.domain.team.usecase.CalculateTeamFormUseCase
 import dev.anhquocs.truelab.core.domain.team.usecase.SearchTeamsUseCase
 import dev.anhquocs.truelab.core.domain.team.usecase.SortSeasonRankingUseCase
@@ -28,7 +29,8 @@ class TeamsViewModel @Inject constructor(
     private val matchRepository: MatchRepository,
     private val searchTeamsUseCase: SearchTeamsUseCase,
     private val sortSeasonRankingUseCase: SortSeasonRankingUseCase,
-    private val calculateTeamFormUseCase: CalculateTeamFormUseCase
+    private val calculateTeamFormUseCase: CalculateTeamFormUseCase,
+    private val calculateHomeAwaySplitsUseCase: CalculateHomeAwaySplitsUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -64,21 +66,24 @@ class TeamsViewModel @Inject constructor(
                 val rankedRecords = matchedRankings.mapNotNull { ranking ->
                     teamsById[ranking.teamId]?.let { team ->
                         val formScore = calculateTeamFormUseCase(team.id, allMatches, windowSize = 5)
-                        TeamUiMapper.toRecord(team, ranking, formScore)
+                        val splits = calculateHomeAwaySplitsUseCase(team.id, allMatches)
+                        TeamUiMapper.toRecord(team, ranking, formScore, splits)
                     }
                 }
 
                 val rankedIds = matchedRankings.map { it.teamId }.toSet()
                 val unrankedRecords = filteredTeams.filter { it.id !in rankedIds }.map { team ->
                     val formScore = calculateTeamFormUseCase(team.id, allMatches, windowSize = 5)
-                    TeamUiMapper.toRecord(team, null, formScore)
+                    val splits = calculateHomeAwaySplitsUseCase(team.id, allMatches)
+                    TeamUiMapper.toRecord(team, null, formScore, splits)
                 }
 
                 rankedRecords + unrankedRecords
             } else {
                 filteredTeams.map { team ->
                     val formScore = calculateTeamFormUseCase(team.id, allMatches, windowSize = 5)
-                    TeamUiMapper.toRecord(team, null, formScore)
+                    val splits = calculateHomeAwaySplitsUseCase(team.id, allMatches)
+                    TeamUiMapper.toRecord(team, null, formScore, splits)
                 }
             }
 
