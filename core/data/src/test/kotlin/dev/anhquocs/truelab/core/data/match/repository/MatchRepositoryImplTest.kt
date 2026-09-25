@@ -116,4 +116,104 @@ class MatchRepositoryImplTest {
         assertEquals(39, epl2024[0].leagueId)
         assertEquals("2023-2024", epl2024[0].season)
     }
+
+    @Test
+    fun getMatchesByLeagueAndSeason_noMatchesFound_returnsEmptyList() = runTest {
+        val dao = FakeMatchDao()
+        val repo = MatchRepositoryImpl(dao)
+
+        val result = repo.getMatchesByLeagueAndSeason(999, "2023-2024").first()
+        org.junit.Assert.assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun getMatches_byDate_returnsMappedMatches() = runTest {
+        val dao = FakeMatchDao()
+        val repo = MatchRepositoryImpl(dao)
+
+        val teamA = TeamEntity(id = 1, name = "Arsenal", logo = null, leagueName = "EPL")
+        val teamB = TeamEntity(id = 2, name = "Chelsea", logo = null, leagueName = "EPL")
+        dao.matches.add(
+            MatchWithTeams(
+                match = MatchEntity(
+                    id = 101L,
+                    homeTeamId = 1,
+                    awayTeamId = 2,
+                    homeScore = 2,
+                    awayScore = 0,
+                    startTimeDate = "2024-05-01 15:00:00",
+                    status = "8"
+                ),
+                homeTeam = teamA,
+                awayTeam = teamB
+            )
+        )
+
+        val matches = repo.getMatches("2024-05-01").first()
+        assertEquals(1, matches.size)
+        assertEquals(101L, matches[0].id)
+        assertEquals("Arsenal", matches[0].homeTeam.name)
+    }
+
+    @Test
+    fun getMatchDetail_returnsSingleMappedMatch() = runTest {
+        val dao = FakeMatchDao()
+        val repo = MatchRepositoryImpl(dao)
+
+        val teamA = TeamEntity(id = 1, name = "Arsenal", logo = null, leagueName = "EPL")
+        val teamB = TeamEntity(id = 2, name = "Chelsea", logo = null, leagueName = "EPL")
+        dao.matches.add(
+            MatchWithTeams(
+                match = MatchEntity(
+                    id = 101L,
+                    homeTeamId = 1,
+                    awayTeamId = 2,
+                    homeScore = 2,
+                    awayScore = 0,
+                    startTimeDate = "2024-05-01 15:00:00",
+                    status = "8"
+                ),
+                homeTeam = teamA,
+                awayTeam = teamB
+            )
+        )
+
+        val match = repo.getMatchDetail(101L).first()
+        org.junit.Assert.assertNotNull(match)
+        assertEquals(101L, match?.id)
+
+        val notFound = repo.getMatchDetail(999L).first()
+        org.junit.Assert.assertNull(notFound)
+    }
+
+    @Test
+    fun getRecentMatchesForTeam_returnsTeamMatchesUpToLimit() = runTest {
+        val dao = FakeMatchDao()
+        val repo = MatchRepositoryImpl(dao)
+
+        val teamA = TeamEntity(id = 1, name = "Arsenal", logo = null, leagueName = "EPL")
+        val teamB = TeamEntity(id = 2, name = "Chelsea", logo = null, leagueName = "EPL")
+
+        for (i in 1..10) {
+            dao.matches.add(
+                MatchWithTeams(
+                    match = MatchEntity(
+                        id = i.toLong(),
+                        homeTeamId = 1,
+                        awayTeamId = 2,
+                        homeScore = 1,
+                        awayScore = 0,
+                        startTimeDate = "2024-05-0$i 15:00:00",
+                        status = "8"
+                    ),
+                    homeTeam = teamA,
+                    awayTeam = teamB
+                )
+            )
+        }
+
+        val recentMatches = repo.getRecentMatchesForTeam(1, limit = 5).first()
+        assertEquals(5, recentMatches.size)
+    }
 }
+

@@ -40,19 +40,11 @@ class DataSyncEngineTest {
 
     private class FakeTeamDao : TeamDao {
         val teams = mutableMapOf<Int, TeamEntity>()
-
         override fun insertTeams(teams: List<TeamEntity>): LongArray {
-            teams.forEach { team ->
-                // IGNORE strategy simulation: only put if absent to protect Elo/Form
-                if (!this.teams.containsKey(team.id)) {
-                    this.teams[team.id] = team
-                }
-            }
+            teams.forEach { team -> if (!this.teams.containsKey(team.id)) this.teams[team.id] = team }
             return LongArray(teams.size) { (it + 1).toLong() }
         }
-
         override fun getTeamById(teamId: Int): Flow<TeamEntity?> = flowOf(teams[teamId])
-
         override fun searchTeams(query: String): Flow<List<TeamEntity>> =
             flowOf(teams.values.filter { it.name.contains(query, ignoreCase = true) })
     }
@@ -121,29 +113,20 @@ class DataSyncEngineTest {
     private class FakeMatchApi : MatchApi {
         var responseToReturn: BaseResponse<MatchInfoDetailResponseBase>? = null
         var errorToThrow: Throwable? = null
-
-        override suspend fun getMatches(
-            date: String, status: Int, page: Int, pageSize: Int, sort: String
-        ): BaseResponse<MatchInfoDetailResponseBase> {
+        override suspend fun getMatches(date: String, status: Int, page: Int, pageSize: Int, sort: String): BaseResponse<MatchInfoDetailResponseBase> {
             errorToThrow?.let { throw it }
-            return responseToReturn ?: BaseResponse(
-                statusCode = 200, message = "OK",
-                data = MatchInfoDetailResponseBase(data = emptyList(), meta = MetaResponse(currentPage = 1, totalPage = 1))
-            )
+            return responseToReturn ?: BaseResponse(statusCode = 200, message = "OK", data = MatchInfoDetailResponseBase(data = emptyList(), meta = MetaResponse(1, 1)))
         }
     }
 
     private class FakeOddsApi : OddsApi {
-        override suspend fun getOdds(matchId: Long): BaseResponse<List<OddsRecord>> =
-            BaseResponse(statusCode = 200, message = "OK", data = emptyList())
-
+        override suspend fun getOdds(matchId: Long): BaseResponse<List<OddsRecord>> = BaseResponse(200, "OK", emptyList())
         override suspend fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?): BaseResponse<OddsHistoryResponse> =
-            BaseResponse(statusCode = 200, message = "OK", data = OddsHistoryResponse(data = emptyList()))
+            BaseResponse(200, "OK", OddsHistoryResponse(emptyList()))
     }
 
     private class FakeRankingApi : RankingApi {
-        override suspend fun getSeasonRanking(matchId: Long): BaseResponse<List<SeasonRankResponse>> =
-            BaseResponse(statusCode = 200, message = "OK", data = emptyList())
+        override suspend fun getSeasonRanking(matchId: Long): BaseResponse<List<SeasonRankResponse>> = BaseResponse(200, "OK", emptyList())
     }
 
     private class TestTrueLabDatabase(
@@ -163,10 +146,8 @@ class DataSyncEngineTest {
         override fun predictionDao(): dev.anhquocs.truelab.core.data.prediction.local.dao.PredictionDao = throw NotImplementedError()
         override fun datasetMetadataDao(): dev.anhquocs.truelab.core.data.metadata.local.dao.DatasetMetadataDao = throw NotImplementedError()
         override fun clearAllTables() {}
-        override fun createInvalidationTracker(): androidx.room.InvalidationTracker =
-            androidx.room.InvalidationTracker(this, "teams", "matches")
-        override fun createOpenHelper(config: androidx.room.DatabaseConfiguration): androidx.sqlite.db.SupportSQLiteOpenHelper =
-            throw UnsupportedOperationException()
+        override fun createInvalidationTracker(): androidx.room.InvalidationTracker = androidx.room.InvalidationTracker(this, "teams", "matches")
+        override fun createOpenHelper(config: androidx.room.DatabaseConfiguration): androidx.sqlite.db.SupportSQLiteOpenHelper = throw UnsupportedOperationException()
         override fun runInTransaction(body: Runnable) { body.run() }
         override fun <V : Any?> runInTransaction(body: java.util.concurrent.Callable<V>): V = body.call()
     }
@@ -381,4 +362,25 @@ class DataSyncEngineTest {
 
         assertTrue(result.isSuccess)
     }
+
+    @Test
+    fun syncFullPipelineForDate_batchFailure_doesNotTriggerMetadataRefresh() = runTest {
+        val fakeRepo = FakeDatasetMetadataRepository()
+        fakeMatchApi.errorToThrow = RuntimeException("API error 500")
+
+        val engineWithRepo = DataSyncEngine(
+            matchApi = fakeMatchApi,
+            oddsApi = fakeOddsApi,
+            rankingApi = fakeRankingApi,
+            database = testDatabase,
+            json = json,
+            metadataRepository = fakeRepo
+        )
+
+        val result = engineWithRepo.syncFullPipelineForDate("2024-05-10")
+
+        assertTrue(result is SyncResult.Failure)
+        org.junit.Assert.assertNull(fakeRepo.refreshedTimestamp)
+    }
 }
+

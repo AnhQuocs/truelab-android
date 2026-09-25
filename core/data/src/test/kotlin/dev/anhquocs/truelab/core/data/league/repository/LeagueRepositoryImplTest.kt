@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LeagueRepositoryImplTest {
@@ -102,4 +103,15 @@ class LeagueRepositoryImplTest {
         assertEquals("2023-2024", eplSeasons[0].name)
         assertEquals("2022-2023", eplSeasons[1].name)
     }
+
+    @Test
+    fun getSeasons_emptyLeague_returnsEmptyList() = runTest {
+        val leagueDao = FakeLeagueDao()
+        val seasonDao = FakeSeasonDao()
+        val repo = LeagueRepositoryImpl(leagueDao, seasonDao)
+
+        val seasons = repo.getSeasons(999).first()
+        assertTrue(seasons.isEmpty())
+    }
 }
+
