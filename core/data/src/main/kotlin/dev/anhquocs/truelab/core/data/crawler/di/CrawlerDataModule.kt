@@ -4,6 +4,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.anhquocs.truelab.core.data.crawler.cache.CacheFreshnessChecker
+import dev.anhquocs.truelab.core.data.crawler.cache.DefaultCacheFreshnessChecker
 import dev.anhquocs.truelab.core.data.crawler.retry.DefaultRetryClassifier
 import dev.anhquocs.truelab.core.data.crawler.retry.RetryClassifier
 import javax.inject.Singleton
@@ -17,4 +19,10 @@ abstract class CrawlerDataModule {
     abstract fun bindRetryClassifier(
         defaultRetryClassifier: DefaultRetryClassifier
     ): RetryClassifier
+
+    @Binds
+    @Singleton
+    abstract fun bindCacheFreshnessChecker(
+        defaultCacheFreshnessChecker: DefaultCacheFreshnessChecker
+    ): CacheFreshnessChecker
 }
