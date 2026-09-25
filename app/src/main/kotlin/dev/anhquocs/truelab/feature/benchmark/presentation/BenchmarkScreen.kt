@@ -3,7 +3,6 @@ package dev.anhquocs.truelab.feature.benchmark.presentation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,9 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.anhquocs.truelab.R
@@ -44,7 +41,11 @@ import dev.anhquocs.truelab.core.ui.theme.SpacingM
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXL
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.s12
+import dev.anhquocs.truelab.core.ui.utils.s14
+import dev.anhquocs.truelab.core.ui.utils.s20
+import dev.anhquocs.truelab.core.ui.utils.semiBold
 import dev.anhquocs.truelab.feature.benchmark.presentation.components.AlgorithmBenchmarkCard
 import dev.anhquocs.truelab.feature.benchmark.presentation.components.DatasetSizeSelector
 import dev.anhquocs.truelab.feature.benchmark.presentation.model.BenchmarkUiState
@@ -97,8 +98,7 @@ private fun BenchmarkHeader(
         Spacer(modifier = Modifier.width(Dimen.PaddingS))
         Text(
             text = stringResource(R.string.benchmark_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.s20.bold(),
             color = MaterialTheme.colorScheme.primary
         )
     }
@@ -211,21 +211,21 @@ private fun BenchmarkContent(
             ) {
                 if (isRunning) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(Dimen.SizeS2),
+                        strokeWidth = Dimen.PaddingXXS,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.width(SpacingS))
                     Text(
                         text = stringResource(R.string.benchmark_running_status, uiState.selectedDatasetSize),
-                        fontWeight = FontWeight.SemiBold
+                        style = MaterialTheme.typography.s14.semiBold()
                     )
                 } else {
                     Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null)
                     Spacer(modifier = Modifier.padding(horizontal = SpacingXS))
                     Text(
                         text = stringResource(R.string.benchmark_run_btn),
-                        fontWeight = FontWeight.SemiBold
+                        style = MaterialTheme.typography.s14.semiBold()
                     )
                 }
             }

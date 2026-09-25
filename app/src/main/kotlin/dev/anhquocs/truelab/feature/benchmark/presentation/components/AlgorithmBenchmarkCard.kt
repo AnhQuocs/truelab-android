@@ -5,9 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,10 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.benchmark.model.ComparisonBenchmarkResult
 import dev.anhquocs.truelab.core.ui.theme.Dimen
@@ -38,6 +33,9 @@ import dev.anhquocs.truelab.core.ui.theme.SpacingL
 import dev.anhquocs.truelab.core.ui.theme.SpacingM
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.s12
+import dev.anhquocs.truelab.core.ui.utils.s14
+import dev.anhquocs.truelab.core.ui.utils.s16
+import dev.anhquocs.truelab.core.ui.utils.semiBold
 import java.util.Locale
 
 /**
@@ -86,8 +84,7 @@ fun AlgorithmBenchmarkCard(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.s16.bold(),
                 color = MaterialTheme.colorScheme.onSurface
             )
 
@@ -124,13 +121,11 @@ private fun AlgoResultRow(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.s14.semiBold()
                 )
                 Text(
                     text = time,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.s16.bold(),
                     color = MaterialTheme.colorScheme.primary
                 )
             }
@@ -140,8 +135,7 @@ private fun AlgoResultRow(
                 label = {
                     Text(
                         text = complexity,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.s12.bold()
                     )
                 }
             )
@@ -164,8 +158,16 @@ private fun SpeedupBanner(
         stringResource(R.string.benchmark_equal_speed)
     }
 
-    val bannerBg = if (isFaster) Color(0xFF10B981).copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant
-    val textColor = if (isFaster) Color(0xFF059669) else MaterialTheme.colorScheme.onSurfaceVariant
+    val bannerBg = if (isFaster) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    val textColor = if (isFaster) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
 
     Box(
         modifier = Modifier
@@ -184,7 +186,7 @@ private fun SpeedupBanner(
                     imageVector = Icons.Default.Bolt,
                     contentDescription = null,
                     tint = textColor,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(Dimen.SizeS)
                 )
             }
             Text(

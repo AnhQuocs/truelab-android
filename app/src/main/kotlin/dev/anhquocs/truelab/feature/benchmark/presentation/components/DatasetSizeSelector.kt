@@ -15,6 +15,8 @@ import androidx.compose.ui.res.stringResource
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.core.ui.utils.s12
+import dev.anhquocs.truelab.core.ui.utils.s14
 
 /**
  * Component lựa chọn kích thước tập dữ liệu đo lường hiệu năng.
@@ -35,7 +37,7 @@ fun DatasetSizeSelector(
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(R.string.benchmark_dataset_size, selectedSize),
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.s12,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(SpacingXS))
@@ -45,7 +47,12 @@ fun DatasetSizeSelector(
                     selected = selectedSize == size,
                     onClick = { onSelectSize(size) },
                     enabled = enabled,
-                    label = { Text("%,d items".format(size)) }
+                    label = {
+                        Text(
+                            text = "%,d items".format(size),
+                            style = MaterialTheme.typography.s14
+                        )
+                    }
                 )
             }
         }

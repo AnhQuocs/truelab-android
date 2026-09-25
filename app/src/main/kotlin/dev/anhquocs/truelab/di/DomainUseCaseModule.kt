@@ -10,6 +10,7 @@ import dev.anhquocs.truelab.core.domain.match.usecase.SortMatchesUseCase
 import dev.anhquocs.truelab.core.domain.odds.usecase.AnalyzeOddsTrendUseCase
 import dev.anhquocs.truelab.core.domain.prediction.usecase.PredictMatchOutcomeUseCase
 import dev.anhquocs.truelab.core.domain.team.usecase.CalculateEloRatingUseCase
+import dev.anhquocs.truelab.core.domain.team.usecase.CalculateHomeAwaySplitsUseCase
 import dev.anhquocs.truelab.core.domain.team.usecase.CalculateTeamFormUseCase
 import dev.anhquocs.truelab.core.domain.team.usecase.GetTeamStatisticsUseCase
 import dev.anhquocs.truelab.core.domain.team.usecase.SearchTeamsUseCase
@@ -65,4 +66,8 @@ object DomainUseCaseModule {
     @Provides
     @Singleton
     fun provideRunAlgorithmBenchmarkUseCase(): RunAlgorithmBenchmarkUseCase = RunAlgorithmBenchmarkUseCase()
+
+    @Provides
+    @Singleton
+    fun provideCalculateHomeAwaySplitsUseCase(): CalculateHomeAwaySplitsUseCase = CalculateHomeAwaySplitsUseCase()
 }

@@ -27,9 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
@@ -55,7 +54,7 @@ fun TeamAnalyticsCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.PaddingXXS / 2)
     ) {
         Column(
             modifier = Modifier
@@ -102,7 +101,7 @@ fun TeamAnalyticsCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(RadiusPill))
-                        .background(Color(0xFFF59E0B).copy(alpha = 0.15f))
+                        .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f))
                         .padding(horizontal = Dimen.PaddingS, vertical = Dimen.PaddingXXS)
                 ) {
                     Row(
@@ -112,13 +111,13 @@ fun TeamAnalyticsCard(
                         Icon(
                             imageVector = Icons.Default.Bolt,
                             contentDescription = null,
-                            tint = Color(0xFFD97706),
-                            modifier = Modifier.size(14.dp)
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(Dimen.SizeS)
                         )
                         Text(
                             text = "${team.eloRating} Elo",
                             style = MaterialTheme.typography.s12.bold(),
-                            color = Color(0xFFD97706)
+                            color = MaterialTheme.colorScheme.tertiary
                         )
                     }
                 }
@@ -161,17 +160,29 @@ fun TeamAnalyticsCard(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top // Căn trên thay vì Center để các block không bị lệch
+                verticalAlignment = Alignment.Top
             ) {
                 // Home Stats
                 Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXXS)) {
-                        Icon(imageVector = Icons.Default.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(12.dp))
-                        Text(text = stringResource(R.string.teams_home_stats), style = MaterialTheme.typography.s10, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXXS)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Home,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(Dimen.PaddingSM)
+                        )
+                        Text(
+                            text = stringResource(R.string.teams_home_stats),
+                            style = MaterialTheme.typography.s10,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
                     Text(
-                        text = team.homeWinRate?.let { "$it%" } ?: "—",
+                        text = team.homeWinRate?.let { "${it.toInt()}%" } ?: "—",
                         style = MaterialTheme.typography.s12.semiBold(),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -184,13 +195,25 @@ fun TeamAnalyticsCard(
 
                 // Away Stats
                 Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXXS)) {
-                        Icon(imageVector = Icons.Default.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(12.dp))
-                        Text(text = stringResource(R.string.teams_away_stats), style = MaterialTheme.typography.s10, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXXS)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Shield,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(Dimen.PaddingSM)
+                        )
+                        Text(
+                            text = stringResource(R.string.teams_away_stats),
+                            style = MaterialTheme.typography.s10,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
                     Text(
-                        text = team.awayWinRate?.let { "$it%" } ?: "—",
+                        text = team.awayWinRate?.let { "${it.toInt()}%" } ?: "—",
                         style = MaterialTheme.typography.s12.semiBold(),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -203,16 +226,20 @@ fun TeamAnalyticsCard(
 
                 // H2H
                 Column(
-                    modifier = Modifier.weight(1.5f), // Cho H2H nhiều không gian hơn vì text dài
+                    modifier = Modifier.weight(1.5f),
                     horizontalAlignment = Alignment.End
                 ) {
-                    Text(text = stringResource(R.string.teams_h2h_highlight), style = MaterialTheme.typography.s10, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        text = stringResource(R.string.teams_h2h_highlight),
+                        style = MaterialTheme.typography.s10,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
                     Text(
                         text = team.h2hHighlight,
                         style = MaterialTheme.typography.s12.bold(),
-                        color = Color(0xFF10B981),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.End
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.End
                     )
                 }
             }
@@ -223,9 +250,9 @@ fun TeamAnalyticsCard(
 @Composable
 private fun FormPillBadge(res: Char) {
     val (bgColor, textColor) = when (res) {
-        'W' -> Color(0xFF10B981) to Color.White
-        'D' -> Color(0xFFF59E0B) to Color.White
-        else -> Color(0xFFEF4444) to Color.White
+        'W' -> MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
+        'D' -> MaterialTheme.colorScheme.tertiary to MaterialTheme.colorScheme.onTertiary
+        else -> MaterialTheme.colorScheme.error to MaterialTheme.colorScheme.onError
     }
 
     Box(
