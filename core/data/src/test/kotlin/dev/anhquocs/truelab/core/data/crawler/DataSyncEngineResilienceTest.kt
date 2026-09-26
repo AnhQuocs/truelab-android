@@ -103,7 +103,7 @@ class DataSyncEngineResilienceTest {
 
         override suspend fun getMatches(
             date: String,
-            status: Int,
+            status: Int?,
             page: Int,
             pageSize: Int,
             sort: String

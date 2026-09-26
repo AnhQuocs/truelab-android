@@ -113,7 +113,7 @@ class DataSyncEngineTest {
     private class FakeMatchApi : MatchApi {
         var responseToReturn: BaseResponse<MatchInfoDetailResponseBase>? = null
         var errorToThrow: Throwable? = null
-        override suspend fun getMatches(date: String, status: Int, page: Int, pageSize: Int, sort: String): BaseResponse<MatchInfoDetailResponseBase> {
+        override suspend fun getMatches(date: String, status: Int?, page: Int, pageSize: Int, sort: String): BaseResponse<MatchInfoDetailResponseBase> {
             errorToThrow?.let { throw it }
             return responseToReturn ?: BaseResponse(statusCode = 200, message = "OK", data = MatchInfoDetailResponseBase(data = emptyList(), meta = MetaResponse(1, 1)))
         }

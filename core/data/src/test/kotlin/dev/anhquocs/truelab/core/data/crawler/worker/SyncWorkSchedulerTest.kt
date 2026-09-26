@@ -1,7 +1,9 @@
 package dev.anhquocs.truelab.core.data.crawler.worker
 
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
+import dev.anhquocs.truelab.core.data.crawler.cache.DatasetCategory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -10,9 +12,26 @@ import org.junit.Test
 class SyncWorkSchedulerTest {
 
     private class FakeSyncWorkScheduler : SyncWorkScheduler {
+        var lastInitialForceRefresh: Boolean? = null
+        var lastInitialExistingWorkPolicy: ExistingWorkPolicy? = null
+        var isInitialCancelled: Boolean = false
+
         var lastIntervalMinutes: Long? = null
         var lastExistingWorkPolicy: ExistingPeriodicWorkPolicy? = null
         var isCancelled: Boolean = false
+
+        override fun scheduleInitialSync(
+            forceRefresh: Boolean,
+            existingWorkPolicy: ExistingWorkPolicy
+        ) {
+            lastInitialForceRefresh = forceRefresh
+            lastInitialExistingWorkPolicy = existingWorkPolicy
+            isInitialCancelled = false
+        }
+
+        override fun cancelInitialSync() {
+            isInitialCancelled = true
+        }
 
         override fun schedulePeriodicSync(
             intervalMinutes: Long,
@@ -27,6 +46,54 @@ class SyncWorkSchedulerTest {
             isCancelled = true
         }
     }
+
+    // --- Initial Sync Tests ---
+
+    @Test
+    fun `createInitialWorkRequest configures NetworkType CONNECTED and default input data`() {
+        val request = DefaultSyncWorkScheduler.createInitialWorkRequest(forceRefresh = false)
+        assertNotNull(request)
+
+        val constraints = request.workSpec.constraints
+        assertEquals(NetworkType.CONNECTED, constraints.requiredNetworkType)
+
+        val inputData = request.workSpec.input
+        assertEquals(false, inputData.getBoolean(DataSyncWorker.KEY_FORCE_REFRESH, true))
+        assertEquals(DatasetCategory.SCHEDULED_MATCHES.name, inputData.getString(DataSyncWorker.KEY_DATASET_CATEGORY))
+    }
+
+    @Test
+    fun `createInitialWorkRequest configures forceRefresh true correctly`() {
+        val request = DefaultSyncWorkScheduler.createInitialWorkRequest(forceRefresh = true)
+        assertNotNull(request)
+
+        val inputData = request.workSpec.input
+        assertEquals(true, inputData.getBoolean(DataSyncWorker.KEY_FORCE_REFRESH, false))
+    }
+
+    @Test
+    fun `fakeScheduler records initial schedule and cancel parameters correctly`() {
+        val fakeScheduler = FakeSyncWorkScheduler()
+
+        fakeScheduler.scheduleInitialSync(
+            forceRefresh = true,
+            existingWorkPolicy = ExistingWorkPolicy.KEEP
+        )
+
+        assertEquals(true, fakeScheduler.lastInitialForceRefresh)
+        assertEquals(ExistingWorkPolicy.KEEP, fakeScheduler.lastInitialExistingWorkPolicy)
+        assertEquals(false, fakeScheduler.isInitialCancelled)
+
+        fakeScheduler.cancelInitialSync()
+        assertEquals(true, fakeScheduler.isInitialCancelled)
+    }
+
+    @Test
+    fun `initial sync work name constant matches specification`() {
+        assertEquals("TrueLabInitialDataSyncWork", SyncWorkScheduler.INITIAL_SYNC_WORK_NAME)
+    }
+
+    // --- Periodic Sync Tests ---
 
     @Test
     fun `createPeriodicWorkRequest configures NetworkType CONNECTED and requiresBatteryNotLow constraints`() {

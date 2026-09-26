@@ -1,21 +1,40 @@
 package dev.anhquocs.truelab.core.data.crawler.worker
 
-import android.content.Context
 import androidx.work.Constraints
+import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.anhquocs.truelab.core.data.crawler.cache.DatasetCategory
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Interface responsible for scheduling periodic background data synchronization via WorkManager.
+ * Interface responsible for scheduling background data synchronization via WorkManager.
  */
 interface SyncWorkScheduler {
+
+    /**
+     * Enqueues unique one-time initial background sync with network constraint.
+     *
+     * @param forceRefresh Whether to force remote refresh bypassing cache TTL (default: false).
+     * @param existingWorkPolicy Policy to handle existing work with the same unique name (default: KEEP).
+     */
+    fun scheduleInitialSync(
+        forceRefresh: Boolean = false,
+        existingWorkPolicy: ExistingWorkPolicy = ExistingWorkPolicy.KEEP
+    )
+
+    /**
+     * Cancels any active initial synchronization work.
+     */
+    fun cancelInitialSync()
 
     /**
      * Enqueues unique periodic background sync with network and battery constraints.
@@ -34,6 +53,7 @@ interface SyncWorkScheduler {
     fun cancelPeriodicSync()
 
     companion object {
+        const val INITIAL_SYNC_WORK_NAME = "TrueLabInitialDataSyncWork"
         const val PERIODIC_SYNC_WORK_NAME = "TrueLabPeriodicDataSyncWork"
         const val DEFAULT_PERIODIC_INTERVAL_MINUTES = 60L
         const val MINIMUM_PERIODIC_INTERVAL_MINUTES = 15L
@@ -47,6 +67,23 @@ interface SyncWorkScheduler {
 class DefaultSyncWorkScheduler @Inject constructor(
     private val workManager: WorkManager
 ) : SyncWorkScheduler {
+
+    override fun scheduleInitialSync(
+        forceRefresh: Boolean,
+        existingWorkPolicy: ExistingWorkPolicy
+    ) {
+        val initialWorkRequest = createInitialWorkRequest(forceRefresh)
+
+        workManager.enqueueUniqueWork(
+            SyncWorkScheduler.INITIAL_SYNC_WORK_NAME,
+            existingWorkPolicy,
+            initialWorkRequest
+        )
+    }
+
+    override fun cancelInitialSync() {
+        workManager.cancelUniqueWork(SyncWorkScheduler.INITIAL_SYNC_WORK_NAME)
+    }
 
     override fun schedulePeriodicSync(
         intervalMinutes: Long,
@@ -66,6 +103,25 @@ class DefaultSyncWorkScheduler @Inject constructor(
     }
 
     companion object {
+        /**
+         * Builds a configured [OneTimeWorkRequest] for initial sync with network constraint.
+         */
+        fun createInitialWorkRequest(forceRefresh: Boolean = false): OneTimeWorkRequest {
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val inputData = Data.Builder()
+                .putBoolean(DataSyncWorker.KEY_FORCE_REFRESH, forceRefresh)
+                .putString(DataSyncWorker.KEY_DATASET_CATEGORY, DatasetCategory.SCHEDULED_MATCHES.name)
+                .build()
+
+            return OneTimeWorkRequestBuilder<DataSyncWorker>()
+                .setConstraints(constraints)
+                .setInputData(inputData)
+                .build()
+        }
+
         /**
          * Builds a configured [PeriodicWorkRequest] with appropriate constraints and intervals.
          */

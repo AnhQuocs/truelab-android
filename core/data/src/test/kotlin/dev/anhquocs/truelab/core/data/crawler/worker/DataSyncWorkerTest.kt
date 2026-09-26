@@ -83,7 +83,7 @@ class DataSyncWorkerTest {
         var errorToThrow: Throwable? = null
 
         override suspend fun getMatches(
-            date: String, status: Int, page: Int, pageSize: Int, sort: String
+            date: String, status: Int?, page: Int, pageSize: Int, sort: String
         ): BaseResponse<MatchInfoDetailResponseBase> {
             callCount++
             lastRequestedDate = date
