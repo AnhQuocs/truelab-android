@@ -24,5 +24,6 @@ class TrueLabApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         syncWorkScheduler.scheduleInitialSync()
+        syncWorkScheduler.schedulePeriodicSync()
     }
 }
