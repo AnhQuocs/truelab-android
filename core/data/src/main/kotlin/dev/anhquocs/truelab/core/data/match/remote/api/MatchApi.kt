@@ -9,7 +9,7 @@ interface MatchApi {
     @GET("/sport/v1.0/matches")
     suspend fun getMatches(
         @Query("date") date: String,
-        @Query("status") status: Int = 8,
+        @Query("status") status: Int? = null,
         @Query("page") page: Int = 1,
         @Query("page_size") pageSize: Int = 50,
         @Query("sort") sort: String = "time_asc"
