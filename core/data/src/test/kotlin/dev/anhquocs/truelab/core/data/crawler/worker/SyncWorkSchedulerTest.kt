@@ -141,9 +141,27 @@ class SyncWorkSchedulerTest {
     }
 
     @Test
-    fun `periodic sync work name constant matches specification`() {
+    fun `periodic sync work name constant matches specification and differs from initial sync`() {
         assertEquals("TrueLabPeriodicDataSyncWork", SyncWorkScheduler.PERIODIC_SYNC_WORK_NAME)
+        assertEquals("TrueLabInitialDataSyncWork", SyncWorkScheduler.INITIAL_SYNC_WORK_NAME)
+        assertTrue(SyncWorkScheduler.PERIODIC_SYNC_WORK_NAME != SyncWorkScheduler.INITIAL_SYNC_WORK_NAME)
         assertEquals(60L, SyncWorkScheduler.DEFAULT_PERIODIC_INTERVAL_MINUTES)
         assertEquals(15L, SyncWorkScheduler.MINIMUM_PERIODIC_INTERVAL_MINUTES)
+    }
+
+    @Test
+    fun `fakeScheduler supports independent initial and periodic sync scheduling concurrently`() {
+        val fakeScheduler = FakeSyncWorkScheduler()
+
+        fakeScheduler.scheduleInitialSync()
+        fakeScheduler.schedulePeriodicSync()
+
+        assertEquals(false, fakeScheduler.lastInitialForceRefresh)
+        assertEquals(ExistingWorkPolicy.KEEP, fakeScheduler.lastInitialExistingWorkPolicy)
+        assertEquals(false, fakeScheduler.isInitialCancelled)
+
+        assertEquals(60L, fakeScheduler.lastIntervalMinutes)
+        assertEquals(ExistingPeriodicWorkPolicy.KEEP, fakeScheduler.lastExistingWorkPolicy)
+        assertEquals(false, fakeScheduler.isCancelled)
     }
 }
