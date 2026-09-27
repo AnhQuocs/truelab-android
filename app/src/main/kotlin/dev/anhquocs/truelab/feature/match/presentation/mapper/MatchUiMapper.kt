@@ -1,6 +1,7 @@
 package dev.anhquocs.truelab.feature.match.presentation.mapper
 
 import dev.anhquocs.truelab.core.domain.match.model.Match
+import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchDataRecord
 
 /**
@@ -11,6 +12,8 @@ import dev.anhquocs.truelab.feature.match.presentation.model.MatchDataRecord
  */
 fun Match.toUiRecord(): MatchDataRecord {
     val resultStr = when {
+        status == MatchStatus.IN_PROGRESS -> "LIVE"
+        status == MatchStatus.CANCELLED -> "CANCELLED"
         !isEnded -> "SCHEDULED"
         isHomeWin -> "HOME_WIN"
         isAwayWin -> "AWAY_WIN"
@@ -27,11 +30,11 @@ fun Match.toUiRecord(): MatchDataRecord {
         homeScore = homeScore ?: 0,
         awayScore = awayScore ?: 0,
         actualResult = resultStr,
-        avgHomeOdds = 0.0,
-        avgDrawOdds = 0.0,
-        avgAwayOdds = 0.0,
+        avgHomeOdds = null,
+        avgDrawOdds = null,
+        avgAwayOdds = null,
         providerCount = 0,
-        eloDiff = 0,
+        eloDiff = null,
         totalGoals = totalGoals,
         isNormalized = true,
         predictedProb = "—"

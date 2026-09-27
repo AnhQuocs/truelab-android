@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.anhquocs.truelab.R
@@ -31,7 +32,6 @@ import dev.anhquocs.truelab.core.domain.match.model.MatchSortCriteria
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
-import dev.anhquocs.truelab.core.ui.theme.TopBarHeight
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.s20
@@ -47,6 +47,8 @@ import dev.anhquocs.truelab.feature.match.presentation.model.MatchStatusFilter
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchesUiState
 import dev.anhquocs.truelab.feature.match.presentation.viewmodel.MatchesViewModel
 import dev.anhquocs.truelab.navigation.TrueLabMainLayout
+
+private val TOP_BAR_HEIGHT = 75.dp
 
 @Composable
 fun MatchesScreen(
@@ -77,7 +79,7 @@ fun MatchesScreen(
 
     TrueLabMainLayout(
         modifier = modifier,
-        headerHeight = TopBarHeight,
+        headerHeight = TOP_BAR_HEIGHT,
         header = { MatchesHeader() }
     ) { contentModifier ->
         LazyColumn(

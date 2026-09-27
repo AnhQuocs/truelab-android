@@ -15,6 +15,8 @@ data class TeamAnalyticsRecord(
     val draws: Int = 0,
     val losses: Int = 0,
     val form: List<Char> = emptyList(),
+    val formPoints: Int = 0,
+    val maxFormPoints: Int = 15,
     val formScore: Int = 0,
     val homeWinRate: Double? = null,
     val homeRecord: String = "—",

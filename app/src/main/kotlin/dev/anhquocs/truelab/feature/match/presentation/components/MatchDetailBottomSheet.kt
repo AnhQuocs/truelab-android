@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -241,7 +242,7 @@ private fun MatchDetailContent(
                     modifier = Modifier.padding(horizontal = SpacingS),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (match.isEnded) {
+                    if (match.isEnded || match.status == MatchStatus.IN_PROGRESS || match.homeScore != null) {
                         Text(
                             text = "${match.homeScore ?: 0} - ${match.awayScore ?: 0}",
                             style = MaterialTheme.typography.s24.bold(),
@@ -254,14 +255,17 @@ private fun MatchDetailContent(
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
+                    val statusLabel = when (match.status) {
+                        MatchStatus.ENDED -> stringResource(R.string.matches_filter_ended)
+                        MatchStatus.IN_PROGRESS -> stringResource(R.string.matches_result_live)
+                        MatchStatus.SCHEDULED -> stringResource(R.string.matches_filter_scheduled)
+                        MatchStatus.CANCELLED -> stringResource(R.string.matches_result_cancelled)
+                        MatchStatus.UNKNOWN -> stringResource(R.string.matches_result_scheduled)
+                    }
                     Text(
-                        text = if (match.isEnded) {
-                            stringResource(R.string.matches_filter_ended)
-                        } else {
-                            stringResource(R.string.matches_filter_scheduled)
-                        },
+                        text = statusLabel,
                         style = MaterialTheme.typography.s12.medium(),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (match.status == MatchStatus.IN_PROGRESS) Color(0xFFDC2626) else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -319,9 +323,9 @@ private fun MatchDetailContent(
                     value = when (match.status) {
                         MatchStatus.ENDED -> stringResource(R.string.matches_filter_ended)
                         MatchStatus.SCHEDULED -> stringResource(R.string.matches_filter_scheduled)
-                        MatchStatus.IN_PROGRESS -> "In Progress"
-                        MatchStatus.CANCELLED -> "Cancelled"
-                        MatchStatus.UNKNOWN -> "Unknown"
+                        MatchStatus.IN_PROGRESS -> stringResource(R.string.matches_result_live)
+                        MatchStatus.CANCELLED -> stringResource(R.string.matches_result_cancelled)
+                        MatchStatus.UNKNOWN -> stringResource(R.string.matches_result_scheduled)
                     }
                 )
                 if (match.isEnded) {

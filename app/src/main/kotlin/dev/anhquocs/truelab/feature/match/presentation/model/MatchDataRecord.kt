@@ -11,13 +11,13 @@ data class MatchDataRecord(
     val awayTeam: String,
     val homeScore: Int,
     val awayScore: Int,
-    val actualResult: String, // "HOME_WIN", "DRAW", "AWAY_WIN", "SCHEDULED"
-    val avgHomeOdds: Double,
-    val avgDrawOdds: Double,
-    val avgAwayOdds: Double,
-    val providerCount: Int,
-    val eloDiff: Int,
+    val actualResult: String, // "LIVE", "HOME_WIN", "DRAW", "AWAY_WIN", "SCHEDULED", "CANCELLED"
+    val avgHomeOdds: Double? = null,
+    val avgDrawOdds: Double? = null,
+    val avgAwayOdds: Double? = null,
+    val providerCount: Int = 0,
+    val eloDiff: Int? = null,
     val totalGoals: Int,
-    val isNormalized: Boolean,
-    val predictedProb: String
+    val isNormalized: Boolean = true,
+    val predictedProb: String = "—"
 )

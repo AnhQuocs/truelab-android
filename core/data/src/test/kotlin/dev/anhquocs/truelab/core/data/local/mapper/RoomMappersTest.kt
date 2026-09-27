@@ -130,4 +130,32 @@ class RoomMappersTest {
         assertEquals(39, domain.leagueId)
         assertEquals("2023-2024", domain.season)
     }
+
+    @Test
+    fun matchWithTeams_toDomain_mapsStringStatusesCorrectly() {
+        val homeTeam = TeamEntity(id = 1, name = "Arsenal", logo = "arsenal.png", leagueName = "EPL")
+        val awayTeam = TeamEntity(id = 2, name = "Chelsea", logo = "chelsea.png", leagueName = "EPL")
+
+        val endedMatch = MatchEntity(
+            id = 1002L, homeTeamId = 1, awayTeamId = 2, homeScore = 1, awayScore = 0,
+            startTimeDate = "2026-09-26 13:00:00", status = "ended"
+        )
+        val liveMatch = MatchEntity(
+            id = 1003L, homeTeamId = 1, awayTeamId = 2, homeScore = 0, awayScore = 0,
+            startTimeDate = "2026-09-26 14:00:00", status = "live"
+        )
+        val scheduledMatch = MatchEntity(
+            id = 1004L, homeTeamId = 1, awayTeamId = 2, homeScore = null, awayScore = null,
+            startTimeDate = "2026-09-26 18:00:00", status = "scheduled"
+        )
+        val determinedMatch = MatchEntity(
+            id = 1005L, homeTeamId = 1, awayTeamId = 2, homeScore = 3, awayScore = 2,
+            startTimeDate = "2026-09-26 10:00:00", status = "determined"
+        )
+
+        assertEquals(MatchStatus.ENDED, MatchWithTeams(endedMatch, homeTeam, awayTeam).toDomain().status)
+        assertEquals(MatchStatus.IN_PROGRESS, MatchWithTeams(liveMatch, homeTeam, awayTeam).toDomain().status)
+        assertEquals(MatchStatus.SCHEDULED, MatchWithTeams(scheduledMatch, homeTeam, awayTeam).toDomain().status)
+        assertEquals(MatchStatus.ENDED, MatchWithTeams(determinedMatch, homeTeam, awayTeam).toDomain().status)
+    }
 }

@@ -47,8 +47,14 @@ fun DescriptiveStatsCard(
 
     val meanStr = if (hasData) String.format(Locale.US, "%.2f", stats!!.mean) else "—"
     val medianStr = if (hasData) String.format(Locale.US, "%.2f", stats!!.median) else "—"
-    val stdDevStr = if (hasData) String.format(Locale.US, "±%.2f", stats!!.sampleStandardDeviation) else "—"
-    val varianceStr = if (hasData) String.format(Locale.US, "%.2f", stats!!.sampleVariance) else "—"
+    val stdDevStr = if (hasData) {
+        val s = stats!!.sampleStandardDeviation
+        if (!s.isNaN()) String.format(Locale.US, "±%.2f", s) else "±0.00"
+    } else "—"
+    val varianceStr = if (hasData) {
+        val v = stats!!.sampleVariance
+        if (!v.isNaN()) String.format(Locale.US, "%.2f", v) else "0.00"
+    } else "—"
     val minMaxStr = if (hasData) "${stats!!.min.toInt()} - ${stats.max.toInt()}" else "—"
     val skewnessStr = if (hasData) String.format(Locale.US, "%+.2f", stats!!.skewness) else "—"
 

@@ -21,6 +21,7 @@
     <string name="home_stat_matches">Trận đấu</string>
     <string name="home_stat_teams">Đội bóng</string>
     <string name="home_stat_providers">Nhà cung cấp</string>
+    <string name="home_stat_odds_records">Bản ghi kèo</string>
     <string name="home_stat_algorithms">Thuật toán</string>
     <string name="home_dataset_section_title">Tổng quan dữ liệu</string>
     <string name="home_dataset_last_updated">Cập nhật lần cuối: %1$s</string>
@@ -47,7 +48,11 @@
     <string name="matches_empty_desc">Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc.</string>
     <string name="matches_error_title">Lỗi khi tải dữ liệu trận đấu</string>
     <string name="matches_result_scheduled">Sắp diễn ra</string>
-    <string name="matches_filter_with_odds">Có dữ liệu Odds</string>
+    <string name="matches_result_live">Trực tiếp</string>
+    <string name="matches_result_home_win">Chủ nhà Thắng</string>
+    <string name="matches_result_draw">Hòa</string>
+    <string name="matches_result_away_win">Đội khách Thắng</string>
+    <string name="matches_result_cancelled">Đã hủy</string>
     <string name="matches_filter_cleaned">Đã chuẩn hóa</string>
     <string name="matches_filter_backtested">Đã kiểm thử</string>
     <string name="matches_sort_label">Sắp xếp theo:</string>
@@ -60,6 +65,7 @@
     <string name="matches_empty_filter">Không tìm thấy trận đấu nào phù hợp với bộ lọc.</string>
     <string name="matches_empty_search">Không tìm thấy trận đấu nào khớp với từ khóa \"%1$s\".</string>
     <string name="matches_error_default">Đã xảy ra lỗi khi tải dữ liệu trận đấu.</string>
+    <string name="matches_no_prediction">Chưa dự đoán</string>
 
     <!-- Match Detail BottomSheet -->
     <string name="match_detail_title">Chi tiết trận đấu</string>

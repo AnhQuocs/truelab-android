@@ -14,8 +14,8 @@ interface OddsDao {
     fun insertOdds(odds: List<OddsEntity>): LongArray
 
     @Query("""
-        SELECT * FROM odds 
-        WHERE matchId = :matchId 
+        SELECT * FROM odds
+        WHERE matchId = :matchId
           AND (:companyId IS NULL OR companyId = :companyId)
           AND (:oddsType IS NULL OR oddsType = :oddsType)
         ORDER BY changeTime DESC
@@ -23,10 +23,16 @@ interface OddsDao {
     fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?): Flow<List<OddsEntity>>
 
     @Query("""
-        SELECT * FROM odds 
-        WHERE matchId = :matchId 
-        GROUP BY companyId, oddsType 
-        HAVING changeTime = MAX(changeTime)
+        SELECT * FROM odds
+        WHERE matchId = :matchId
+          AND id IN (
+              SELECT id FROM (
+                  SELECT id, MAX(changeTime)
+                  FROM odds
+                  WHERE matchId = :matchId
+                  GROUP BY companyId, oddsType
+              )
+          )
     """)
     fun getLatestOddsForMatch(matchId: Long): Flow<List<OddsEntity>>
 }

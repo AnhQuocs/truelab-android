@@ -34,11 +34,11 @@ enum class MatchStatus {
 
     companion object {
         fun fromCode(code: String): MatchStatus {
-            return when (code) {
-                "8" -> ENDED
-                "1" -> IN_PROGRESS
-                "0" -> SCHEDULED
-                "-1" -> CANCELLED
+            return when (code.trim().lowercase()) {
+                "8", "ended", "determined", "finished", "ft", "aet", "pen" -> ENDED
+                "1", "live", "in_progress", "playing", "1h", "2h", "ht", "et" -> IN_PROGRESS
+                "0", "scheduled", "fixture", "pending", "not_started", "ns" -> SCHEDULED
+                "-1", "cancelled", "postponed", "abandoned", "canc", "pst", "abd" -> CANCELLED
                 else -> UNKNOWN
             }
         }

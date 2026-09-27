@@ -138,7 +138,7 @@ fun TeamAnalyticsCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "${team.formScore}/15 pts (${(team.formScore * 100) / 15}%)",
+                        text = "${team.formPoints}/${team.maxFormPoints} pts (${team.formScore}%)",
                         style = MaterialTheme.typography.s13.bold(),
                         color = MaterialTheme.colorScheme.primary
                     )

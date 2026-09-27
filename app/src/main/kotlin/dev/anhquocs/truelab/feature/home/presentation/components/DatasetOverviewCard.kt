@@ -88,7 +88,7 @@ fun DatasetOverviewCard(
                     modifier = Modifier.weight(1f)
                 )
                 StatMetricItem(
-                    label = stringResource(R.string.home_stat_providers),
+                    label = stringResource(R.string.home_stat_odds_records),
                     value = oddsText,
                     modifier = Modifier.weight(1f)
                 )
