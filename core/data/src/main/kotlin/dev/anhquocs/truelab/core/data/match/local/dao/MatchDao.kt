@@ -33,8 +33,8 @@ interface MatchDao {
 
     @Transaction
     @Query("""
-        SELECT * FROM matches 
-        WHERE (homeTeamId = :teamAId AND awayTeamId = :teamBId) 
+        SELECT * FROM matches
+        WHERE (homeTeamId = :teamAId AND awayTeamId = :teamBId)
            OR (homeTeamId = :teamBId AND awayTeamId = :teamAId)
         ORDER BY startTimeDate DESC
     """)
@@ -42,9 +42,9 @@ interface MatchDao {
 
     @Transaction
     @Query("""
-        SELECT * FROM matches 
-        WHERE (homeTeamId = :teamId OR awayTeamId = :teamId) 
-          AND status = '8' 
+        SELECT * FROM matches
+        WHERE (homeTeamId = :teamId OR awayTeamId = :teamId)
+          AND status IN ('8', 'ended', 'determined', 'finished', 'ft', 'aet', 'pen')
         ORDER BY startTimeDate DESC LIMIT :limit
     """)
     fun getRecentMatchesForTeam(teamId: Int, limit: Int = 5): Flow<List<MatchWithTeams>>

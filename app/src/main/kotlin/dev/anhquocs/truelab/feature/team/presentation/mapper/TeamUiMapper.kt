@@ -27,6 +27,12 @@ object TeamUiMapper {
             item.trim().firstOrNull()?.uppercaseChar()
         } ?: emptyList()
 
+        val formPoints = formScore?.totalPoints?.roundToInt() ?: 0
+        val maxFormPoints = if (formScore != null && formScore.maxPoints > 0) {
+            formScore.maxPoints.roundToInt()
+        } else {
+            15
+        }
         val calculatedScore = formScore?.score?.roundToInt() ?: 0
 
         val homeWinRate = splits?.let { (it.homeSplit.winRate * 100).roundToInt().toDouble() }
@@ -46,6 +52,8 @@ object TeamUiMapper {
             draws = ranking?.draw ?: 0,
             losses = ranking?.loss ?: 0,
             form = formBadges,
+            formPoints = formPoints,
+            maxFormPoints = maxFormPoints,
             formScore = calculatedScore,
             homeWinRate = homeWinRate,
             homeRecord = homeRecord,

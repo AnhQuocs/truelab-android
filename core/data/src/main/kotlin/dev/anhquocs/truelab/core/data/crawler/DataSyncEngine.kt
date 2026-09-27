@@ -220,34 +220,48 @@ class DataSyncEngine(
     }
 
     private suspend fun syncOddsInternal(matchId: Long): Int {
-        val response = retryExecutor.execute {
-            oddsApi.getOddsHistory(matchId)
-        }
-        val oddsRecords = response.data.data
-
-        if (oddsRecords.isNotEmpty()) {
-            val oddsEntities = oddsRecords.map { it.toEntity(matchId) }
-            database.runInTransaction {
-                database.oddsDao().insertOdds(oddsEntities)
+        return try {
+            val response = retryExecutor.execute {
+                oddsApi.getOddsHistory(matchId)
             }
-            return oddsEntities.size
+            val oddsRecords = response.data.data
+
+            if (oddsRecords.isNotEmpty()) {
+                val oddsEntities = oddsRecords.map { it.toEntity(matchId) }
+                database.runInTransaction {
+                    database.oddsDao().insertOdds(oddsEntities)
+                }
+                oddsEntities.size
+            } else {
+                0
+            }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            0
         }
-        return 0
     }
 
     private suspend fun syncRankingInternal(matchId: Long): Int {
-        val response = retryExecutor.execute {
-            rankingApi.getSeasonRanking(matchId)
-        }
-        val rankRecords = response.data
-
-        if (rankRecords.isNotEmpty()) {
-            val rankEntities = rankRecords.map { it.toEntity(matchId, json) }
-            database.runInTransaction {
-                database.rankingDao().insertRankings(rankEntities)
+        return try {
+            val response = retryExecutor.execute {
+                rankingApi.getSeasonRanking(matchId)
             }
-            return rankEntities.size
+            val rankRecords = response.data
+
+            if (rankRecords.isNotEmpty()) {
+                val rankEntities = rankRecords.map { it.toEntity(matchId, json) }
+                database.runInTransaction {
+                    database.rankingDao().insertRankings(rankEntities)
+                }
+                rankEntities.size
+            } else {
+                0
+            }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            0
         }
-        return 0
     }
 }

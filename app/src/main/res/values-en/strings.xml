@@ -21,6 +21,7 @@
     <string name="home_stat_matches">Matches</string>
     <string name="home_stat_teams">Teams</string>
     <string name="home_stat_providers">Providers</string>
+    <string name="home_stat_odds_records">Odds Records</string>
     <string name="home_stat_algorithms">Algorithms</string>
     <string name="home_dataset_section_title">Dataset Overview</string>
     <string name="home_dataset_last_updated">Last updated: %1$s</string>
@@ -47,7 +48,11 @@
     <string name="matches_empty_desc">No matches match the selected criteria.</string>
     <string name="matches_error_title">Failed to Load Matches</string>
     <string name="matches_result_scheduled">Scheduled</string>
-    <string name="matches_filter_with_odds">With Odds</string>
+    <string name="matches_result_live">Live</string>
+    <string name="matches_result_home_win">Home Win</string>
+    <string name="matches_result_draw">Draw</string>
+    <string name="matches_result_away_win">Away Win</string>
+    <string name="matches_result_cancelled">Cancelled</string>
     <string name="matches_filter_cleaned">Normalized</string>
     <string name="matches_filter_backtested">Backtested</string>
     <string name="matches_sort_label">Sort By:</string>
@@ -60,6 +65,7 @@
     <string name="matches_empty_filter">No matches match the selected filter.</string>
     <string name="matches_empty_search">No matches match the keyword \"%1$s\".</string>
     <string name="matches_error_default">An error occurred while loading matches.</string>
+    <string name="matches_no_prediction">No prediction</string>
 
     <!-- Match Detail BottomSheet -->
     <string name="match_detail_title">Match Details</string>

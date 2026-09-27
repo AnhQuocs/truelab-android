@@ -32,6 +32,7 @@ class DataSyncWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val targetDate = inputData.getString(KEY_TARGET_DATE) ?: getTodayDateString()
         val forceRefresh = inputData.getBoolean(KEY_FORCE_REFRESH, false)
+        val syncOddsAndRankings = inputData.getBoolean(KEY_SYNC_ODDS_AND_RANKINGS, true)
         val categoryName = inputData.getString(KEY_DATASET_CATEGORY)
         val category = categoryName?.let {
             try {
@@ -44,7 +45,7 @@ class DataSyncWorker @AssistedInject constructor(
         return try {
             when (val syncResult = dataSyncEngine.syncFullPipelineForDate(
                 date = targetDate,
-                syncOddsAndRankings = false,
+                syncOddsAndRankings = syncOddsAndRankings,
                 forceRefresh = forceRefresh,
                 category = category
             )) {
@@ -76,6 +77,7 @@ class DataSyncWorker @AssistedInject constructor(
         const val KEY_TARGET_DATE = "target_date"
         const val KEY_FORCE_REFRESH = "force_refresh"
         const val KEY_DATASET_CATEGORY = "dataset_category"
+        const val KEY_SYNC_ODDS_AND_RANKINGS = "sync_odds_and_rankings"
         const val DATE_FORMAT = "yyyy-MM-dd"
     }
 }

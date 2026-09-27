@@ -29,9 +29,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
@@ -163,6 +165,17 @@ fun MatchDataCard(
             Spacer(modifier = Modifier.height(Dimen.PaddingS))
 
             // 4. Algorithm Features & Insights Chips
+            val hasEloDiff = record.eloDiff != null && record.eloDiff != 0
+            val eloLabel = when {
+                record.eloDiff == null -> "Elo —"
+                record.eloDiff > 0 -> "Elo +${record.eloDiff}"
+                record.eloDiff < 0 -> "Elo ${record.eloDiff}"
+                else -> "Elo —"
+            }
+
+            val hasPrediction = record.predictedProb != "—" && record.predictedProb.isNotBlank()
+            val predLabel = if (hasPrediction) record.predictedProb else stringResource(R.string.matches_no_prediction)
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXSPlus),
@@ -170,8 +183,8 @@ fun MatchDataCard(
             ) {
                 FeaturePill(
                     icon = Icons.Default.Bolt,
-                    label = "Elo +${record.eloDiff}",
-                    tint = Color(0xFFF59E0B)
+                    label = eloLabel,
+                    tint = if (hasEloDiff) Color(0xFFF59E0B) else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 FeaturePill(
                     icon = Icons.Default.SportsSoccer,
@@ -181,8 +194,8 @@ fun MatchDataCard(
                 Spacer(modifier = Modifier.weight(1f))
                 FeaturePill(
                     icon = Icons.Default.AutoGraph,
-                    label = record.predictedProb,
-                    tint = MaterialTheme.colorScheme.primary
+                    label = predLabel,
+                    tint = if (hasPrediction) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -209,9 +222,9 @@ private fun TeamAvatar(name: String) {
 
 @Composable
 private fun OddsMarketBar(
-    homeOdds: Double,
-    drawOdds: Double,
-    awayOdds: Double
+    homeOdds: Double?,
+    drawOdds: Double?,
+    awayOdds: Double?
 ) {
     Row(
         modifier = Modifier
@@ -231,7 +244,8 @@ private fun OddsMarketBar(
 }
 
 @Composable
-private fun OddsCell(label: String, value: Double) {
+private fun OddsCell(label: String, value: Double?) {
+    val hasValue = value != null && value > 0.0
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXS)
@@ -242,9 +256,9 @@ private fun OddsCell(label: String, value: Double) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            text = "%.2f".format(value),
+            text = if (hasValue) "%.2f".format(value) else "—",
             style = MaterialTheme.typography.s12.bold(),
-            color = MaterialTheme.colorScheme.primary
+            color = if (hasValue) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -280,10 +294,36 @@ private fun FeaturePill(
 @Composable
 private fun ResultBadge(result: String) {
     val (label, bgColor, textColor) = when (result) {
-        "HOME_WIN" -> Triple("Chủ nhà Thắng", Color(0xFF10B981).copy(alpha = 0.15f), Color(0xFF059669))
-        "DRAW" -> Triple("Hòa", Color(0xFFF59E0B).copy(alpha = 0.15f), Color(0xFFD97706))
-        "AWAY_WIN" -> Triple("Đội khách Thắng", Color(0xFF3B82F6).copy(alpha = 0.15f), Color(0xFF2563EB))
-        else -> Triple("Sắp diễn ra", Color(0xFF6B7280).copy(alpha = 0.15f), Color(0xFF4B5563))
+        "LIVE", "IN_PROGRESS" -> Triple(
+            stringResource(R.string.matches_result_live),
+            Color(0xFFEF4444).copy(alpha = 0.15f),
+            Color(0xFFDC2626)
+        )
+        "HOME_WIN" -> Triple(
+            stringResource(R.string.matches_result_home_win),
+            Color(0xFF10B981).copy(alpha = 0.15f),
+            Color(0xFF059669)
+        )
+        "DRAW" -> Triple(
+            stringResource(R.string.matches_result_draw),
+            Color(0xFFF59E0B).copy(alpha = 0.15f),
+            Color(0xFFD97706)
+        )
+        "AWAY_WIN" -> Triple(
+            stringResource(R.string.matches_result_away_win),
+            Color(0xFF3B82F6).copy(alpha = 0.15f),
+            Color(0xFF2563EB)
+        )
+        "CANCELLED" -> Triple(
+            stringResource(R.string.matches_result_cancelled),
+            Color(0xFF6B7280).copy(alpha = 0.15f),
+            Color(0xFF4B5563)
+        )
+        else -> Triple(
+            stringResource(R.string.matches_result_scheduled),
+            Color(0xFF6B7280).copy(alpha = 0.15f),
+            Color(0xFF4B5563)
+        )
     }
 
     Box(
