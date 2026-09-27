@@ -115,19 +115,39 @@ class DataSyncWorkerTest {
             lastRefreshedTimestamp = timestamp
             val updated = DatasetMetadata(
                 lastSyncTimestamp = timestamp,
-                totalMatches = 10,
-                totalTeams = 20,
-                totalOddsRecords = 50,
-                totalLeagues = 5,
-                totalSeasons = 5
+                totalMatches = 10, totalTeams = 20, totalOddsRecords = 50,
+                totalLeagues = 5, totalSeasons = 5
             )
             metadataFlow.value = updated
             return Result.success(updated)
         }
     }
 
+    private class WorkerTestOddsDao : OddsDao {
+        val odds = mutableListOf<dev.anhquocs.truelab.core.data.odds.local.entity.OddsEntity>()
+        override fun insertOdds(odds: List<dev.anhquocs.truelab.core.data.odds.local.entity.OddsEntity>): LongArray {
+            this.odds.addAll(odds)
+            return LongArray(odds.size) { (it + 1).toLong() }
+        }
+        override fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?) = throw NotImplementedError()
+        override fun getLatestOddsForMatch(matchId: Long) = throw NotImplementedError()
+    }
+
+    private class WorkerTestRankingDao : RankingDao {
+        val rankings = mutableListOf<dev.anhquocs.truelab.core.data.ranking.local.entity.SeasonRankingEntity>()
+        override fun insertRankings(rankings: List<dev.anhquocs.truelab.core.data.ranking.local.entity.SeasonRankingEntity>): LongArray {
+            this.rankings.addAll(rankings)
+            return LongArray(rankings.size) { (it + 1).toLong() }
+        }
+        override fun getRankingsForMatch(matchId: Long) = throw NotImplementedError()
+        override fun getLatestRankingForTeam(teamId: Int) = throw NotImplementedError()
+        override fun getLatestSeasonRankings() = throw NotImplementedError()
+    }
+
     private lateinit var teamDao: WorkerTestTeamDao
     private lateinit var matchDao: WorkerTestMatchDao
+    private lateinit var oddsDao: WorkerTestOddsDao
+    private lateinit var rankingDao: WorkerTestRankingDao
     private lateinit var matchApi: WorkerTestMatchApi
     private lateinit var oddsApi: WorkerTestOddsApi
     private lateinit var rankingApi: WorkerTestRankingApi
@@ -138,6 +158,8 @@ class DataSyncWorkerTest {
     fun setUp() {
         teamDao = WorkerTestTeamDao()
         matchDao = WorkerTestMatchDao()
+        oddsDao = WorkerTestOddsDao()
+        rankingDao = WorkerTestRankingDao()
         matchApi = WorkerTestMatchApi()
         oddsApi = WorkerTestOddsApi()
         rankingApi = WorkerTestRankingApi()
@@ -146,14 +168,14 @@ class DataSyncWorkerTest {
         testDatabase = object : TrueLabDatabase() {
             override fun matchDao(): MatchDao = matchDao
             override fun teamDao(): TeamDao = teamDao
-            override fun oddsDao() = throw NotImplementedError()
-            override fun rankingDao() = throw NotImplementedError()
-            override fun leagueDao() = throw NotImplementedError()
-            override fun seasonDao() = throw NotImplementedError()
-            override fun datasetMetadataDao() = throw NotImplementedError()
-            override fun predictionDao() = throw NotImplementedError()
+            override fun oddsDao(): OddsDao = oddsDao
+            override fun rankingDao(): RankingDao = rankingDao
+            override fun leagueDao(): dev.anhquocs.truelab.core.data.league.local.dao.LeagueDao = throw NotImplementedError()
+            override fun seasonDao(): dev.anhquocs.truelab.core.data.league.local.dao.SeasonDao = throw NotImplementedError()
+            override fun datasetMetadataDao(): dev.anhquocs.truelab.core.data.metadata.local.dao.DatasetMetadataDao = throw NotImplementedError()
+            override fun predictionDao(): dev.anhquocs.truelab.core.data.prediction.local.dao.PredictionDao = throw NotImplementedError()
             override fun clearAllTables() {}
-            override fun createInvalidationTracker() = androidx.room.InvalidationTracker(this, "teams", "matches")
+            override fun createInvalidationTracker() = androidx.room.InvalidationTracker(this, "teams", "matches", "odds", "season_rankings")
             override fun createOpenHelper(config: androidx.room.DatabaseConfiguration) = throw UnsupportedOperationException()
             override fun <T> runInTransaction(body: java.util.concurrent.Callable<T>): T = body.call()
             override fun runInTransaction(body: Runnable) = body.run()
@@ -161,9 +183,7 @@ class DataSyncWorkerTest {
     }
 
     private fun createWorkerParameters(data: Data = Data.EMPTY): WorkerParameters {
-        val constructor = WorkerParameters::class.java.declaredConstructors[0]
-        constructor.isAccessible = true
-        val params = arrayOfNulls<Any>(constructor.parameterTypes.size)
+        val constructor = WorkerParameters::class.java.declaredConstructors[0].apply { isAccessible = true }
         val dummyFuture = object : com.google.common.util.concurrent.ListenableFuture<Void?> {
             override fun cancel(mayInterruptIfRunning: Boolean) = false
             override fun isCancelled() = false
@@ -172,21 +192,20 @@ class DataSyncWorkerTest {
             override fun get(t: Long, u: java.util.concurrent.TimeUnit): Void? = null
             override fun addListener(r: Runnable, e: java.util.concurrent.Executor) = r.run()
         }
-        for (i in constructor.parameterTypes.indices) {
-            val type = constructor.parameterTypes[i]
-            params[i] = when {
-                type == UUID::class.java -> UUID.randomUUID()
-                type == Data::class.java -> data
-                type == java.util.Collection::class.java || type == Set::class.java || type == List::class.java -> emptySet<String>()
-                type == WorkerParameters.RuntimeExtras::class.java -> WorkerParameters.RuntimeExtras()
-                type == Int::class.javaPrimitiveType -> 1
-                type == java.util.concurrent.Executor::class.java -> java.util.concurrent.Executors.newSingleThreadExecutor()
-                type == kotlin.coroutines.CoroutineContext::class.java -> kotlinx.coroutines.Dispatchers.Unconfined
-                type == androidx.work.WorkerFactory::class.java -> object : androidx.work.WorkerFactory() {
+        val params = Array(constructor.parameterTypes.size) { i ->
+            when (val type = constructor.parameterTypes[i]) {
+                UUID::class.java -> UUID.randomUUID()
+                Data::class.java -> data
+                java.util.Collection::class.java, Set::class.java, List::class.java -> emptySet<String>()
+                WorkerParameters.RuntimeExtras::class.java -> WorkerParameters.RuntimeExtras()
+                Int::class.javaPrimitiveType -> 1
+                java.util.concurrent.Executor::class.java -> java.util.concurrent.Executors.newSingleThreadExecutor()
+                kotlin.coroutines.CoroutineContext::class.java -> kotlinx.coroutines.Dispatchers.Unconfined
+                androidx.work.WorkerFactory::class.java -> object : androidx.work.WorkerFactory() {
                     override fun createWorker(appContext: android.content.Context, workerClassName: String, workerParameters: WorkerParameters) = null
                 }
-                type == androidx.work.ProgressUpdater::class.java -> androidx.work.ProgressUpdater { _, _, _ -> dummyFuture }
-                type == androidx.work.ForegroundUpdater::class.java -> androidx.work.ForegroundUpdater { _, _, _ -> dummyFuture }
+                androidx.work.ProgressUpdater::class.java -> androidx.work.ProgressUpdater { _, _, _ -> dummyFuture }
+                androidx.work.ForegroundUpdater::class.java -> androidx.work.ForegroundUpdater { _, _, _ -> dummyFuture }
                 else -> null
             }
         }
@@ -195,23 +214,29 @@ class DataSyncWorkerTest {
 
     private class FakeContext : android.content.ContextWrapper(null)
 
-    @Test
-    fun `worker returns success when data sync succeeds`() = runTest {
-        val syncEngine = DataSyncEngine(
+    private fun createSyncEngine(retryExecutor: RetryExecutor = RetryExecutor()): DataSyncEngine {
+        return DataSyncEngine(
             matchApi = matchApi,
             oddsApi = oddsApi,
             rankingApi = rankingApi,
             database = testDatabase,
             json = json,
-            metadataRepository = metadataRepo
+            metadataRepository = metadataRepo,
+            retryExecutor = retryExecutor
         )
+    }
 
-        val worker = DataSyncWorker(
+    private fun createWorker(syncEngine: DataSyncEngine, data: Data = Data.EMPTY): DataSyncWorker {
+        return DataSyncWorker(
             appContext = FakeContext(),
-            workerParams = createWorkerParameters(),
+            workerParams = createWorkerParameters(data),
             dataSyncEngine = syncEngine
         )
+    }
 
+    @Test
+    fun `worker returns success when data sync succeeds`() = runTest {
+        val worker = createWorker(createSyncEngine())
         val result = worker.doWork()
 
         assertEquals(ListenableWorker.Result.success(), result)
@@ -222,77 +247,29 @@ class DataSyncWorkerTest {
     @Test
     fun `worker returns retry on retryable failure`() = runTest {
         matchApi.errorToThrow = SocketTimeoutException("Connection timed out")
-
-        val syncEngine = DataSyncEngine(
-            matchApi = matchApi,
-            oddsApi = oddsApi,
-            rankingApi = rankingApi,
-            database = testDatabase,
-            json = json,
-            metadataRepository = metadataRepo,
-            retryExecutor = RetryExecutor(
-                classifier = DefaultRetryClassifier(),
-                defaultPolicy = RetryPolicy(maxAttempts = 1)
-            )
+        val syncEngine = createSyncEngine(
+            RetryExecutor(classifier = DefaultRetryClassifier(), defaultPolicy = RetryPolicy(maxAttempts = 1))
         )
+        val worker = createWorker(syncEngine)
 
-        val worker = DataSyncWorker(
-            appContext = FakeContext(),
-            workerParams = createWorkerParameters(),
-            dataSyncEngine = syncEngine
-        )
-
-        val result = worker.doWork()
-
-        assertEquals(ListenableWorker.Result.retry(), result)
+        assertEquals(ListenableWorker.Result.retry(), worker.doWork())
     }
 
     @Test
     fun `worker returns failure on non-retryable failure`() = runTest {
         matchApi.errorToThrow = IllegalArgumentException("Bad request parameter")
-
-        val syncEngine = DataSyncEngine(
-            matchApi = matchApi,
-            oddsApi = oddsApi,
-            rankingApi = rankingApi,
-            database = testDatabase,
-            json = json,
-            metadataRepository = metadataRepo,
-            retryExecutor = RetryExecutor(
-                classifier = DefaultRetryClassifier(),
-                defaultPolicy = RetryPolicy(maxAttempts = 1)
-            )
+        val syncEngine = createSyncEngine(
+            RetryExecutor(classifier = DefaultRetryClassifier(), defaultPolicy = RetryPolicy(maxAttempts = 1))
         )
+        val worker = createWorker(syncEngine)
 
-        val worker = DataSyncWorker(
-            appContext = FakeContext(),
-            workerParams = createWorkerParameters(),
-            dataSyncEngine = syncEngine
-        )
-
-        val result = worker.doWork()
-
-        assertEquals(ListenableWorker.Result.failure(), result)
+        assertEquals(ListenableWorker.Result.failure(), worker.doWork())
     }
 
     @Test
     fun `worker rethrows CancellationException and does not swallow`() = runTest {
         matchApi.errorToThrow = CancellationException("Job was cancelled")
-
-        val syncEngine = DataSyncEngine(
-            matchApi = matchApi,
-            oddsApi = oddsApi,
-            rankingApi = rankingApi,
-            database = testDatabase,
-            json = json,
-            metadataRepository = metadataRepo
-        )
-
-        val worker = DataSyncWorker(
-            appContext = FakeContext(),
-            workerParams = createWorkerParameters(),
-            dataSyncEngine = syncEngine
-        )
+        val worker = createWorker(createSyncEngine())
 
         try {
             worker.doWork()
@@ -304,80 +281,32 @@ class DataSyncWorkerTest {
 
     @Test
     fun `worker reads input data parameters correctly`() = runTest {
-        val syncEngine = DataSyncEngine(
-            matchApi = matchApi,
-            oddsApi = oddsApi,
-            rankingApi = rankingApi,
-            database = testDatabase,
-            json = json,
-            metadataRepository = metadataRepo
-        )
-
         val inputData = Data.Builder()
             .putString(DataSyncWorker.KEY_TARGET_DATE, "2024-06-20")
             .putBoolean(DataSyncWorker.KEY_FORCE_REFRESH, true)
             .putString(DataSyncWorker.KEY_DATASET_CATEGORY, DatasetCategory.LIVE_MATCHES.name)
             .build()
+        val worker = createWorker(createSyncEngine(), inputData)
 
-        val worker = DataSyncWorker(
-            appContext = FakeContext(),
-            workerParams = createWorkerParameters(inputData),
-            dataSyncEngine = syncEngine
-        )
-
-        val result = worker.doWork()
-
-        assertEquals(ListenableWorker.Result.success(), result)
+        assertEquals(ListenableWorker.Result.success(), worker.doWork())
         assertEquals("2024-06-20", matchApi.lastRequestedDate)
     }
 
     @Test
     fun `worker falls back to SCHEDULED_MATCHES when category name is invalid`() = runTest {
-        val syncEngine = DataSyncEngine(
-            matchApi = matchApi,
-            oddsApi = oddsApi,
-            rankingApi = rankingApi,
-            database = testDatabase,
-            json = json,
-            metadataRepository = metadataRepo
-        )
-
         val inputData = Data.Builder()
             .putString(DataSyncWorker.KEY_DATASET_CATEGORY, "INVALID_CATEGORY_NAME")
             .build()
+        val worker = createWorker(createSyncEngine(), inputData)
 
-        val worker = DataSyncWorker(
-            appContext = FakeContext(),
-            workerParams = createWorkerParameters(inputData),
-            dataSyncEngine = syncEngine
-        )
-
-        val result = worker.doWork()
-
-        assertEquals(ListenableWorker.Result.success(), result)
+        assertEquals(ListenableWorker.Result.success(), worker.doWork())
     }
 
     @Test
     fun `worker uses default date format when target_date is not provided`() = runTest {
-        val syncEngine = DataSyncEngine(
-            matchApi = matchApi,
-            oddsApi = oddsApi,
-            rankingApi = rankingApi,
-            database = testDatabase,
-            json = json,
-            metadataRepository = metadataRepo
-        )
+        val worker = createWorker(createSyncEngine())
 
-        val worker = DataSyncWorker(
-            appContext = FakeContext(),
-            workerParams = createWorkerParameters(),
-            dataSyncEngine = syncEngine
-        )
-
-        val result = worker.doWork()
-
-        assertEquals(ListenableWorker.Result.success(), result)
-        // Verify last requested date matches yyyy-MM-dd pattern
+        assertEquals(ListenableWorker.Result.success(), worker.doWork())
         val datePattern = Regex("""\d{4}-\d{2}-\d{2}""")
         val requestedDate = matchApi.lastRequestedDate
         org.junit.Assert.assertNotNull(requestedDate)

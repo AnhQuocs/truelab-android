@@ -9,21 +9,24 @@ import dev.anhquocs.truelab.core.data.crawler.model.SyncSummary
 import dev.anhquocs.truelab.core.data.crawler.retry.RetryExecutor
 import dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity
 import dev.anhquocs.truelab.core.data.league.local.entity.SeasonEntity
+import dev.anhquocs.truelab.core.data.league.remote.api.CompetitionApi
 import dev.anhquocs.truelab.core.data.local.database.TrueLabDatabase
 import dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.toAwayTeamEntity
 import dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.toEntity
 import dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.toHomeTeamEntity
+import dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.toLeagueEntity
 import dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.toMatchEntity
+import dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.toSeasonEntity
 import dev.anhquocs.truelab.core.data.match.remote.api.MatchApi
 import dev.anhquocs.truelab.core.data.odds.remote.api.OddsApi
 import dev.anhquocs.truelab.core.data.ranking.remote.api.RankingApi
 import dev.anhquocs.truelab.core.domain.metadata.model.DatasetMetadata
 import dev.anhquocs.truelab.core.domain.metadata.repository.DatasetMetadataRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import javax.inject.Inject
 
 /**
  * DataSyncEngine provides an idempotent, deterministic data synchronization foundation.
@@ -35,6 +38,7 @@ class DataSyncEngine(
     private val matchApi: MatchApi,
     private val oddsApi: OddsApi,
     private val rankingApi: RankingApi,
+    private val competitionApi: CompetitionApi? = null,
     private val database: TrueLabDatabase,
     private val json: Json,
     private val metadataRepository: DatasetMetadataRepository? = null,
@@ -47,14 +51,16 @@ class DataSyncEngine(
     /**
      * Đồng bộ đầy đủ danh sách trận đấu và dữ liệu liên quan theo ngày với thứ tự phụ thuộc xác định:
      * 0. Kiểm tra Cache Freshness (nếu forceRefresh = false và cache còn fresh -> bỏ qua remote sync)
-     * 1. Teams (Deduplicated & Inserted with IGNORE to preserve Elo/Form)
-     * 2. Matches (Batch inserted with REPLACE)
-     * 3. Rankings & Odds (Optional per match)
-     * 4. Metadata Hook
+     * 1. Leagues & Seasons (Bootstrap từ Remote API nếu có)
+     * 2. Teams (Deduplicated & Inserted with IGNORE to preserve Elo/Form)
+     * 3. Matches (Batch inserted with REPLACE, linked with leagueId)
+     * 4. Rankings & Odds (Optional per match)
+     * 5. Metadata Hook
      */
     suspend fun syncFullPipelineForDate(
         date: String,
         syncOddsAndRankings: Boolean = false,
+        syncLeaguesAndSeasons: Boolean = true,
         forceRefresh: Boolean = false,
         category: DatasetCategory = DatasetCategory.DEFAULT,
         onMetadataHook: (suspend (timestamp: Long, matchesSynced: Int, teamsSynced: Int) -> Unit)? = null
@@ -80,6 +86,11 @@ class DataSyncEngine(
                 }
             }
 
+            // 1. Optional League & Season Bootstrap from Remote
+            if (syncLeaguesAndSeasons && competitionApi != null) {
+                syncLeaguesAndSeasonsFromRemoteInternal(maxPages = 2, syncSeasons = true)
+            }
+
             var currentPage = 1
             var totalPages = 1
             var totalMatchesSynced = 0
@@ -88,7 +99,7 @@ class DataSyncEngine(
             var totalRankingsSynced = 0
 
             while (currentPage <= totalPages) {
-                // 1. Fetch remote matches page with retry
+                // 2. Fetch remote matches page with retry
                 val response = retryExecutor.execute {
                     matchApi.getMatches(date = date, page = currentPage)
                 }
@@ -96,15 +107,21 @@ class DataSyncEngine(
 
                 if (matchRecords.isEmpty()) break
 
-                // 2. Map & Deduplicate Teams per batch
+                // 3. Extract and save Leagues from match records (to satisfy Foreign Key constraints)
+                val matchLeagues = matchRecords.mapNotNull { it.toLeagueEntity() }.distinctBy { it.id }
+
+                // 4. Map & Deduplicate Teams per batch
                 val teams = matchRecords.flatMap {
                     listOf(it.toHomeTeamEntity(), it.toAwayTeamEntity())
                 }.distinctBy { it.id }
 
                 val matches = matchRecords.map { it.toMatchEntity() }
 
-                // 3. Atomic Transaction per page (Teams -> Matches)
+                // 5. Atomic Transaction per page (Leagues -> Teams -> Matches)
                 database.runInTransaction {
+                    if (matchLeagues.isNotEmpty()) {
+                        database.leagueDao().insertLeagues(matchLeagues)
+                    }
                     database.teamDao().insertTeams(teams)
                     database.matchDao().insertMatches(matches)
                 }
@@ -112,7 +129,7 @@ class DataSyncEngine(
                 totalMatchesSynced += matches.size
                 totalTeamsSynced += teams.size
 
-                // 4. Optional secondary synchronization (Rankings & Odds per match)
+                // 6. Optional secondary synchronization (Rankings & Odds per match)
                 if (syncOddsAndRankings) {
                     for (match in matches) {
                         val oddsCount = syncOddsInternal(match.id)
@@ -122,14 +139,14 @@ class DataSyncEngine(
                     }
                 }
 
-                // 5. Update pagination state
+                // 7. Update pagination state
                 totalPages = response.data.meta?.totalPage ?: 1
                 currentPage++
             }
 
             val timestamp = timeProvider()
 
-            // 6. Metadata Hook execution
+            // 8. Metadata Hook execution
             if (onMetadataHook != null) {
                 onMetadataHook(timestamp, totalMatchesSynced, totalTeamsSynced)
             } else {
@@ -145,11 +162,82 @@ class DataSyncEngine(
                     timestamp = timestamp
                 )
             )
-        } catch (e: kotlinx.coroutines.CancellationException) {
+        } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             SyncResult.Failure(e)
         }
+    }
+
+    /**
+     * Đồng bộ danh mục Leagues & Seasons từ Remote API.
+     */
+    suspend fun syncLeaguesAndSeasonsFromRemote(
+        maxPages: Int = 2,
+        syncSeasons: Boolean = true
+    ): SyncResult<Int> = withContext(Dispatchers.IO) {
+        if (competitionApi == null) {
+            return@withContext SyncResult.Success(0)
+        }
+        try {
+            val totalCount = syncLeaguesAndSeasonsFromRemoteInternal(maxPages, syncSeasons)
+            metadataRepository?.refreshSnapshot(timeProvider())
+            SyncResult.Success(totalCount)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            SyncResult.Failure(e)
+        }
+    }
+
+    private suspend fun syncLeaguesAndSeasonsFromRemoteInternal(
+        maxPages: Int,
+        syncSeasons: Boolean
+    ): Int {
+        val api = competitionApi ?: return 0
+        var page = 1
+        var lastPage = 1
+        var totalSynced = 0
+
+        while (page <= lastPage && page <= maxPages) {
+            val compResponse = retryExecutor.execute {
+                api.getCompetitionsList(page = page, pageSize = 50)
+            }
+            val compDtos = compResponse.data.data
+            if (compDtos.isEmpty()) break
+
+            val leagueEntities = compDtos.map { it.toLeagueEntity() }
+            database.runInTransaction {
+                database.leagueDao().insertLeagues(leagueEntities)
+            }
+            totalSynced += leagueEntities.size
+
+            if (syncSeasons) {
+                for (comp in compDtos) {
+                    try {
+                        val seasonResponse = retryExecutor.execute {
+                            api.getCompetitionSeasons(comp.id.toLong())
+                        }
+                        val seasonDtos = seasonResponse.data
+                        if (seasonDtos.isNotEmpty()) {
+                            val seasonEntities = seasonDtos.map { it.toSeasonEntity() }
+                            database.runInTransaction {
+                                database.seasonDao().insertSeasons(seasonEntities)
+                            }
+                            totalSynced += seasonEntities.size
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        // Non-fatal per competition season failure
+                    }
+                }
+            }
+
+            lastPage = compResponse.data.meta?.lastPage ?: 1
+            page++
+        }
+        return totalSynced
     }
 
     /**
@@ -170,7 +258,7 @@ class DataSyncEngine(
                 }
             }
             SyncResult.Success(leagues.size + seasons.size)
-        } catch (e: kotlinx.coroutines.CancellationException) {
+        } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             SyncResult.Failure(e)
@@ -198,7 +286,7 @@ class DataSyncEngine(
         try {
             syncOddsInternal(matchId)
             Result.success(Unit)
-        } catch (e: kotlinx.coroutines.CancellationException) {
+        } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             Result.failure(e)
@@ -212,7 +300,7 @@ class DataSyncEngine(
         try {
             syncRankingInternal(matchId)
             Result.success(Unit)
-        } catch (e: kotlinx.coroutines.CancellationException) {
+        } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             Result.failure(e)
@@ -235,7 +323,7 @@ class DataSyncEngine(
             } else {
                 0
             }
-        } catch (e: kotlinx.coroutines.CancellationException) {
+        } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             0
@@ -258,7 +346,7 @@ class DataSyncEngine(
             } else {
                 0
             }
-        } catch (e: kotlinx.coroutines.CancellationException) {
+        } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             0

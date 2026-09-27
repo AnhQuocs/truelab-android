@@ -18,7 +18,17 @@ data class MatchRecord(
     @SerialName("home_score") val homeScore: Int,
     @SerialName("away_score") val awayScore: Int,
     @SerialName("start_time_date") val startTimeDate: String,
-    @SerialName("status") val status: String
+    @SerialName("status") val status: String,
+    @SerialName("competition_id") val competitionId: Int? = null,
+    @SerialName("competition") val competition: CompetitionSummaryInfo? = null
+)
+
+@Serializable
+data class CompetitionSummaryInfo(
+    @SerialName("id") val id: Int,
+    @SerialName("name") val name: String,
+    @SerialName("short_name") val shortName: String? = null,
+    @SerialName("logo") val logo: String? = null
 )
 
 @Serializable

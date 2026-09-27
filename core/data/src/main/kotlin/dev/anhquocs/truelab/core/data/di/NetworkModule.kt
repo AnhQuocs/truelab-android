@@ -5,6 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.anhquocs.truelab.core.data.BuildConfig
+import dev.anhquocs.truelab.core.data.league.remote.api.CompetitionApi
 import dev.anhquocs.truelab.core.data.match.remote.api.MatchApi
 import dev.anhquocs.truelab.core.data.odds.remote.api.OddsApi
 import dev.anhquocs.truelab.core.data.ranking.remote.api.RankingApi
@@ -78,4 +79,9 @@ object NetworkModule {
     @Singleton
     fun provideRankingApi(retrofit: Retrofit): RankingApi =
         retrofit.create(RankingApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideCompetitionApi(retrofit: Retrofit): CompetitionApi =
+        retrofit.create(CompetitionApi::class.java)
 }
