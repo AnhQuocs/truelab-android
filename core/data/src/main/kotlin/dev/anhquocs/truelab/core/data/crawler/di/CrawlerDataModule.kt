@@ -64,6 +64,7 @@ abstract class CrawlerDataModule {
             matchApi: MatchApi,
             oddsApi: OddsApi,
             rankingApi: RankingApi,
+            competitionApi: dev.anhquocs.truelab.core.data.league.remote.api.CompetitionApi,
             database: TrueLabDatabase,
             json: Json,
             metadataRepository: DatasetMetadataRepository,
@@ -74,6 +75,7 @@ abstract class CrawlerDataModule {
             matchApi = matchApi,
             oddsApi = oddsApi,
             rankingApi = rankingApi,
+            competitionApi = competitionApi,
             database = database,
             json = json,
             metadataRepository = metadataRepository,
@@ -81,6 +83,7 @@ abstract class CrawlerDataModule {
             cacheFreshnessChecker = cacheFreshnessChecker,
             freshnessPolicy = freshnessPolicy
         )
+
 
         @Provides
         @Singleton

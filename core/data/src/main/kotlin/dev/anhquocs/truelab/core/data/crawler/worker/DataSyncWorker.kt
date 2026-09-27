@@ -33,6 +33,7 @@ class DataSyncWorker @AssistedInject constructor(
         val targetDate = inputData.getString(KEY_TARGET_DATE) ?: getTodayDateString()
         val forceRefresh = inputData.getBoolean(KEY_FORCE_REFRESH, false)
         val syncOddsAndRankings = inputData.getBoolean(KEY_SYNC_ODDS_AND_RANKINGS, true)
+        val syncLeaguesAndSeasons = inputData.getBoolean(KEY_SYNC_LEAGUES_AND_SEASONS, true)
         val categoryName = inputData.getString(KEY_DATASET_CATEGORY)
         val category = categoryName?.let {
             try {
@@ -46,6 +47,7 @@ class DataSyncWorker @AssistedInject constructor(
             when (val syncResult = dataSyncEngine.syncFullPipelineForDate(
                 date = targetDate,
                 syncOddsAndRankings = syncOddsAndRankings,
+                syncLeaguesAndSeasons = syncLeaguesAndSeasons,
                 forceRefresh = forceRefresh,
                 category = category
             )) {
@@ -78,6 +80,7 @@ class DataSyncWorker @AssistedInject constructor(
         const val KEY_FORCE_REFRESH = "force_refresh"
         const val KEY_DATASET_CATEGORY = "dataset_category"
         const val KEY_SYNC_ODDS_AND_RANKINGS = "sync_odds_and_rankings"
+        const val KEY_SYNC_LEAGUES_AND_SEASONS = "sync_leagues_and_seasons"
         const val DATE_FORMAT = "yyyy-MM-dd"
     }
 }

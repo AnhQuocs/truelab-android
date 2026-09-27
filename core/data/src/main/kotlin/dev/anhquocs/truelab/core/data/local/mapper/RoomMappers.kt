@@ -2,6 +2,8 @@ package dev.anhquocs.truelab.core.data.local.mapper
 
 import dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity
 import dev.anhquocs.truelab.core.data.league.local.entity.SeasonEntity
+import dev.anhquocs.truelab.core.data.league.remote.dto.CompetitionItemDto
+import dev.anhquocs.truelab.core.data.league.remote.dto.SeasonDto
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchEntity
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchWithTeams
 import dev.anhquocs.truelab.core.data.match.remote.dto.MatchRecord
@@ -83,6 +85,7 @@ object RoomMappers {
         latestMatchDate = latestMatchDate,
         schemaVersion = schemaVersion
     )
+
     fun PredictionEntity.toDomain() = PredictionResult(
         matchId = matchId,
         algorithmName = algorithmName,
@@ -158,6 +161,36 @@ object RoomMappers {
     )
 
     // --- DTO to Entity ---
+    fun CompetitionItemDto.toLeagueEntity() = LeagueEntity(
+        id = id,
+        name = name,
+        shortName = shortName,
+        logo = logo,
+        country = countryId?.toString(),
+        category = categoryId?.toString()
+    )
+
+    fun SeasonDto.toSeasonEntity() = SeasonEntity(
+        id = id.toString(),
+        leagueId = competitionId.toInt(),
+        name = year,
+        year = year.take(4).toIntOrNull() ?: 0,
+        isCurrent = isCurrent == 1,
+        startDate = startTime?.toString(),
+        endDate = endTime?.toString()
+    )
+
+    fun MatchRecord.toLeagueEntity(): LeagueEntity? = competitionId?.let { compId ->
+        LeagueEntity(
+            id = compId,
+            name = competition?.name ?: "League #$compId",
+            shortName = competition?.shortName,
+            logo = competition?.logo,
+            country = null,
+            category = null
+        )
+    }
+
     fun MatchRecord.toMatchEntity() = MatchEntity(
         id = id,
         homeTeamId = homeTeam.id,
@@ -165,7 +198,8 @@ object RoomMappers {
         homeScore = homeScore,
         awayScore = awayScore,
         startTimeDate = startTimeDate,
-        status = status
+        status = status,
+        leagueId = competitionId
     )
 
     fun MatchRecord.toHomeTeamEntity() = TeamEntity(

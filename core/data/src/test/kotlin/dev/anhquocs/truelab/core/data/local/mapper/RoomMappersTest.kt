@@ -158,4 +158,101 @@ class RoomMappersTest {
         assertEquals(MatchStatus.SCHEDULED, MatchWithTeams(scheduledMatch, homeTeam, awayTeam).toDomain().status)
         assertEquals(MatchStatus.ENDED, MatchWithTeams(determinedMatch, homeTeam, awayTeam).toDomain().status)
     }
+
+    @Test
+    fun competitionItemDto_toLeagueEntity_mapsCorrectly() {
+        val dto = dev.anhquocs.truelab.core.data.league.remote.dto.CompetitionItemDto(
+            id = 1515,
+            name = "FIFA World Cup",
+            shortName = "FIFA World Cup",
+            slug = "fifa-world-cup",
+            logo = "https://example.com/logo.png",
+            categoryId = 1,
+            countryId = 0,
+            curSeasonId = 28277L
+        )
+
+        val entity = dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.run { dto.toLeagueEntity() }
+
+        assertEquals(1515, entity.id)
+        assertEquals("FIFA World Cup", entity.name)
+        assertEquals("FIFA World Cup", entity.shortName)
+        assertEquals("https://example.com/logo.png", entity.logo)
+        assertEquals("0", entity.country)
+        assertEquals("1", entity.category)
+    }
+
+    @Test
+    fun seasonDto_toSeasonEntity_mapsCorrectly() {
+        val dto = dev.anhquocs.truelab.core.data.league.remote.dto.SeasonDto(
+            id = 28277L,
+            competitionId = 1515L,
+            year = "2026",
+            isCurrent = 1,
+            startTime = 1781204400L,
+            endTime = 1784487600L
+        )
+
+        val entity = dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.run { dto.toSeasonEntity() }
+
+        assertEquals("28277", entity.id)
+        assertEquals(1515, entity.leagueId)
+        assertEquals("2026", entity.name)
+        assertEquals(2026, entity.year)
+        assertEquals(true, entity.isCurrent)
+        assertEquals("1781204400", entity.startDate)
+        assertEquals("1784487600", entity.endDate)
+    }
+
+    @Test
+    fun matchRecord_toMatchEntity_mapsCompetitionIdToLeagueId() {
+        val matchRecord = dev.anhquocs.truelab.core.data.match.remote.dto.MatchRecord(
+            id = 571388L,
+            competitionId = 1515,
+            homeTeam = dev.anhquocs.truelab.core.data.match.remote.dto.TeamInfo(1, "USA", null),
+            awayTeam = dev.anhquocs.truelab.core.data.match.remote.dto.TeamInfo(2, "Belgium", null),
+            homeScore = 3,
+            awayScore = 0,
+            startTimeDate = "1930-07-13T13:00:00Z",
+            status = "ended"
+        )
+
+        val entity = dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.run { matchRecord.toMatchEntity() }
+
+        assertEquals(571388L, entity.id)
+        assertEquals(1, entity.homeTeamId)
+        assertEquals(2, entity.awayTeamId)
+        assertEquals(3, entity.homeScore)
+        assertEquals(0, entity.awayScore)
+        assertEquals("ended", entity.status)
+        assertEquals(1515, entity.leagueId)
+    }
+
+    @Test
+    fun matchRecord_toLeagueEntity_extractsLeagueInformation() {
+        val matchRecord = dev.anhquocs.truelab.core.data.match.remote.dto.MatchRecord(
+            id = 571388L,
+            competitionId = 1515,
+            competition = dev.anhquocs.truelab.core.data.match.remote.dto.CompetitionSummaryInfo(
+                id = 1515,
+                name = "FIFA World Cup",
+                shortName = "World Cup",
+                logo = "https://example.com/wc.png"
+            ),
+            homeTeam = dev.anhquocs.truelab.core.data.match.remote.dto.TeamInfo(1, "USA", null),
+            awayTeam = dev.anhquocs.truelab.core.data.match.remote.dto.TeamInfo(2, "Belgium", null),
+            homeScore = 3,
+            awayScore = 0,
+            startTimeDate = "1930-07-13T13:00:00Z",
+            status = "ended"
+        )
+
+        val leagueEntity = dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.run { matchRecord.toLeagueEntity() }
+
+        org.junit.Assert.assertNotNull(leagueEntity)
+        assertEquals(1515, leagueEntity?.id)
+        assertEquals("FIFA World Cup", leagueEntity?.name)
+        assertEquals("World Cup", leagueEntity?.shortName)
+        assertEquals("https://example.com/wc.png", leagueEntity?.logo)
+    }
 }
