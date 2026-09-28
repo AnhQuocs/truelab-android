@@ -188,4 +188,37 @@
     <string name="setting_theme_light">Light Theme ☀️</string>
     <string name="setting_theme_dark">Dark Theme 🌙</string>
     <string name="setting_theme_system">Default ⚙️</string>
+
+    <!-- H2H Comparison -->
+    <string name="nav_h2h_comparison">H2H Comparison</string>
+    <string name="home_tool_h2h_title">H2H Comparison</string>
+    <string name="home_tool_h2h_desc">Compare direct clash record, form, Elo rating and splits between any two teams</string>
+    <string name="h2h_screen_title">Head-to-Head Comparison</string>
+    <string name="h2h_screen_subtitle">Deep direct clash analysis &amp; team metrics</string>
+    <string name="h2h_select_teams_title">Select Teams</string>
+    <string name="h2h_select_team_a">Select Team A</string>
+    <string name="h2h_select_team_b">Select Team B</string>
+    <string name="h2h_select_both_teams_prompt">Please select both Team A and Team B to compare</string>
+    <string name="h2h_error_same_team">Team A and Team B must be different teams</string>
+    <string name="h2h_selection_guide_desc">Select two clubs above to evaluate their direct clash history, Form ratings, Elo differential, and Home vs Away splits.</string>
+    <string name="h2h_search_team_hint">Search teams by name...</string>
+    <string name="h2h_no_teams_match">No teams match your search keyword</string>
+    <string name="h2h_clash_summary_title">Clash Record</string>
+    <string name="h2h_total_clashes">%1$d Direct Matches</string>
+    <string name="h2h_no_past_clashes">No direct match records found in database</string>
+    <string name="h2h_team_a_wins_label">A Win</string>
+    <string name="h2h_draws_label">Draw</string>
+    <string name="h2h_team_b_wins_label">B Win</string>
+    <string name="h2h_total_goals_scored">Total Goals Scored</string>
+    <string name="h2h_metrics_comparison_title">Team Metrics Comparison</string>
+    <string name="h2h_elo_rating_label">Elo Rating</string>
+    <string name="h2h_form_score_label">Recent Form Score</string>
+    <string name="h2h_streak_label">Current Streak</string>
+    <string name="h2h_mean_goals_label">Average Goals / Match</string>
+    <string name="h2h_goal_diff_label">Goal Difference</string>
+    <string name="h2h_splits_comparison_title">Home vs Away Splits</string>
+    <string name="h2h_home_record_label">Home Record</string>
+    <string name="h2h_away_record_label">Away Record</string>
+    <string name="h2h_match_history_title">Direct Match History</string>
+    <string name="h2h_past_matches_count">(%1$d matches)</string>
 </resources>

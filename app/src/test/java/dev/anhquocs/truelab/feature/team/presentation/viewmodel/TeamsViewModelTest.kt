@@ -412,5 +412,15 @@ class TeamsViewModelTest {
                 emit(matches.filter { it.leagueId == leagueId && it.season == season })
             }
         }
+
+        override fun getH2HMatches(teamAId: Int, teamBId: Int): Flow<List<Match>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database connection failed")
+            matchesFlow.collect { matches ->
+                emit(matches.filter {
+                    (it.homeTeam.id == teamAId && it.awayTeam.id == teamBId) ||
+                    (it.homeTeam.id == teamBId && it.awayTeam.id == teamAId)
+                })
+            }
+        }
     }
 }

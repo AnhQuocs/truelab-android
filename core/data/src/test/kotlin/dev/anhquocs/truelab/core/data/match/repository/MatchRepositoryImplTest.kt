@@ -215,5 +215,39 @@ class MatchRepositoryImplTest {
         val recentMatches = repo.getRecentMatchesForTeam(1, limit = 5).first()
         assertEquals(5, recentMatches.size)
     }
+
+    @Test
+    fun getH2HMatches_returnsMatchesBetweenTwoTeamsBothHomeAndAway() = runTest {
+        val dao = FakeMatchDao()
+        val repo = MatchRepositoryImpl(dao)
+
+        val team1 = TeamEntity(id = 1, name = "Arsenal", logo = null, leagueName = "EPL")
+        val team2 = TeamEntity(id = 2, name = "Chelsea", logo = null, leagueName = "EPL")
+        val team3 = TeamEntity(id = 3, name = "Liverpool", logo = null, leagueName = "EPL")
+
+        dao.matches.addAll(
+            listOf(
+                MatchWithTeams(
+                    match = MatchEntity(1L, 1, 2, 2, 1, "2024-01-01", "8"),
+                    homeTeam = team1,
+                    awayTeam = team2
+                ),
+                MatchWithTeams(
+                    match = MatchEntity(2L, 2, 1, 0, 0, "2024-02-01", "8"),
+                    homeTeam = team2,
+                    awayTeam = team1
+                ),
+                MatchWithTeams(
+                    match = MatchEntity(3L, 1, 3, 3, 0, "2024-03-01", "8"),
+                    homeTeam = team1,
+                    awayTeam = team3
+                )
+            )
+        )
+
+        val h2h = repo.getH2HMatches(1, 2).first()
+        assertEquals(2, h2h.size)
+        assertEquals(listOf(1L, 2L), h2h.map { it.id })
+    }
 }
 
