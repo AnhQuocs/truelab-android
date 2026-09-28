@@ -75,6 +75,7 @@ class DataSyncWorkerTest {
         override fun getRecentMatchesForTeam(teamId: Int, limit: Int) = throw NotImplementedError()
         override fun getMatchesByLeague(leagueId: Int) = throw NotImplementedError()
         override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String) = throw NotImplementedError()
+        override fun getAllMatches() = throw NotImplementedError()
     }
 
     private class WorkerTestMatchApi : MatchApi {

@@ -93,6 +93,7 @@ class DataSyncEngineBootstrapTest {
         override fun getRecentMatchesForTeam(teamId: Int, limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getMatchesByLeague(leagueId: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<MatchWithTeams>> = flowOf(emptyList())
+        override fun getAllMatches(): Flow<List<MatchWithTeams>> = flowOf(emptyList())
     }
 
     private class FakeMatchApi : MatchApi {

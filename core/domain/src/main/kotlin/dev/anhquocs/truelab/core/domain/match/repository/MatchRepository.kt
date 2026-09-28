@@ -9,4 +9,5 @@ interface MatchRepository {
     fun getRecentMatchesForTeam(teamId: Int, limit: Int = 5): Flow<List<Match>>
     fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<Match>>
     fun getH2HMatches(teamAId: Int, teamBId: Int): Flow<List<Match>>
+    fun getAllMatches(): Flow<List<Match>>
 }

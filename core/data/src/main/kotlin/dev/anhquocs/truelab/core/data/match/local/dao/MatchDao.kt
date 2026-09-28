@@ -56,4 +56,8 @@ interface MatchDao {
     @Transaction
     @Query("SELECT * FROM matches WHERE leagueId = :leagueId AND season = :season ORDER BY startTimeDate DESC")
     fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<MatchWithTeams>>
+
+    @Transaction
+    @Query("SELECT * FROM matches ORDER BY startTimeDate ASC")
+    fun getAllMatches(): Flow<List<MatchWithTeams>>
 }

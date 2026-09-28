@@ -46,4 +46,9 @@ class FakeMatchRepository : MatchRepository {
             (it.homeTeam.id == teamBId && it.awayTeam.id == teamAId)
         })
     }
+
+    override fun getAllMatches(): Flow<List<Match>> = flow {
+        errorToThrow?.let { throw it }
+        matchesFlow.collect { emit(it) }
+    }
 }

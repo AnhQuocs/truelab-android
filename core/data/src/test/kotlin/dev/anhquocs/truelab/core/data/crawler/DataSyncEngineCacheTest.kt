@@ -75,6 +75,7 @@ class DataSyncEngineCacheTest {
         override fun getRecentMatchesForTeam(teamId: Int, limit: Int): Flow<List<MatchWithTeams>> = throw NotImplementedError()
         override fun getMatchesByLeague(leagueId: Int): Flow<List<MatchWithTeams>> = throw NotImplementedError()
         override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<MatchWithTeams>> = throw NotImplementedError()
+        override fun getAllMatches(): Flow<List<MatchWithTeams>> = throw NotImplementedError()
     }
 
     private class CacheTestMatchApi : MatchApi {

@@ -83,4 +83,14 @@ object DomainUseCaseModule {
             calculateHomeAwaySplitsUseCase = calculateHomeAwaySplitsUseCase,
             getTeamStatisticsUseCase = getTeamStatisticsUseCase
         )
+
+    @Provides
+    @Singleton
+    fun provideBacktestPredictionUseCase(
+        predictMatchOutcomeUseCase: PredictMatchOutcomeUseCase
+    ): dev.anhquocs.truelab.core.domain.evaluation.usecase.BacktestPredictionUseCase =
+        dev.anhquocs.truelab.core.domain.evaluation.usecase.BacktestPredictionUseCase(
+            predictMatchOutcomeUseCase = predictMatchOutcomeUseCase,
+            calculateEvaluationMetricsUseCase = dev.anhquocs.truelab.core.domain.evaluation.usecase.CalculateEvaluationMetricsUseCase()
+        )
 }
