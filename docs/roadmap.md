@@ -14,6 +14,7 @@
 │                        PRESENTATION ROADMAP                            │
 │  [P1: Matches + Teams + Analytics + Prediction + Deprecation] (DONE)   │
 │  [P2: Benchmark Runner UI + Splits UI + Filters UI + Dataset UI] (DONE)│
+│  [P3: H2H Comparison Tool + Prediction Backtest Visualizer] (COMPLETE) │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │
                                     ▼
@@ -54,6 +55,7 @@ Tầng Presentation chịu trách nhiệm về Jetpack Compose UI, ViewModel, Ui
 | :--- | :--- | :---: | :--- |
 | **Presentation P1** | **Core Football Screens Integration & Deprecation** | **DONE** | • `MatchesScreen` + `MatchesViewModel` (Dynamic data, search, sort, status filter, match detail bottom sheet)<br/>• `TeamsScreen` + `TeamsViewModel` (Dynamic standings, tie-breakers, search, form score, Elo rating)<br/>• `AnalyticsScreen` + `AnalyticsViewModel` (Descriptive stats cards, odds matrix, `OddsTrendLineChart` Canvas)<br/>• `PredictionScreen` + `PredictionViewModel` (Match selector, 3-way probabilities card, prediction factors card)<br/>• Triển khai Triple-Locale (`values`, `values-en`, `values-vi`) và `@Deprecated` legacy paths |
 | **Presentation P2** | **Presentation Expansion & Tools** | **DONE** | • **P2.1**: `BenchmarkScreen` Runner UI (Đo lường thời gian thực thi thuật toán trên `Dispatchers.Default`, so sánh Search/Sort, Speedup banner, $O(\cdot)$ badge)<br/>• **P2.2**: Hiển thị Home/Away Splits chi tiết (W-D-L và Win Rate động) trên `TeamAnalyticsCard`<br/>• **P2.3**: Dynamic Dataset Overview trên `HomeScreen` + Bộ lọc League/Season trên `MatchesScreen` |
+| **Presentation P3** | **Advanced Analysis & Evaluation Visualizer** | **COMPLETE** | • **P3.1**: `H2HComparisonScreen` + `H2HComparisonViewModel` (So sánh đối đầu 2 đội bất kỳ, tỷ lệ W-D-L, Elo & Form so sánh hai chiều, Home/Away splits đối kháng, lịch sử chạm trán) (COMPLETE)<br/>• **P3.2**: `BacktestVisualizerScreen` + `BacktestViewModel` (Kiểm thử ngược trên tập dữ liệu lịch sử, Confusion Matrix 3x3 Heatmap, Per-class Precision/Recall/F1/Support, Timeline kèm thanh xác suất & bộ lọc) (COMPLETE) |
 
 ---
 
