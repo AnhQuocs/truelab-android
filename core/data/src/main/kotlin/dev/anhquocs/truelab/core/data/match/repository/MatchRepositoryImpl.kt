@@ -39,4 +39,10 @@ class MatchRepositoryImpl @Inject constructor(
             list.map { it.toDomain() }
         }
     }
+
+    override fun getAllMatches(): Flow<List<Match>> {
+        return matchDao.getAllMatches().map { list ->
+            list.map { it.toDomain() }
+        }
+    }
 }

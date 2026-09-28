@@ -241,4 +241,6 @@ private class FakeH2HMatchRepository : MatchRepository {
     override fun getMatchDetail(matchId: Long): Flow<Match?> = flowOf(null)
 
     override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<Match>> = flowOf(emptyList())
+
+    override fun getAllMatches(): Flow<List<Match>> = flowOf(emptyList())
 }

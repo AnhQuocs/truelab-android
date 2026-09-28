@@ -6,6 +6,7 @@
     <string name="select_language">Select Language</string>
     <string name="apply">Apply</string>
     <string name="common_close">Close</string>
+    <string name="common_back">Back</string>
 
     <!-- Navigation Labels -->
     <string name="nav_home">Home</string>
@@ -221,4 +222,47 @@
     <string name="h2h_away_record_label">Away Record</string>
     <string name="h2h_match_history_title">Direct Match History</string>
     <string name="h2h_past_matches_count">(%1$d matches)</string>
+
+    <!-- Prediction Backtest & Evaluation Visualizer -->
+    <string name="nav_backtest_visualizer">Backtest &amp; Evaluation</string>
+    <string name="home_tool_backtest_title">Backtest &amp; Evaluation</string>
+    <string name="home_tool_backtest_desc">Simulate predictions on historical matches and inspect model accuracy, confusion matrix and F1 scores</string>
+    <string name="backtest_screen_title">Prediction Backtest</string>
+    <string name="backtest_screen_subtitle">Historical model evaluation &amp; performance matrix</string>
+    <string name="backtest_run_btn">Run Backtest</string>
+    <string name="backtest_running_status">Running backtest on historical dataset...</string>
+    <string name="backtest_loading_status">Loading historical dataset...</string>
+    <string name="backtest_overview_title">Overall Performance</string>
+    <string name="backtest_accuracy_label">Overall Accuracy</string>
+    <string name="backtest_evaluated_matches_label">Evaluated Matches</string>
+    <string name="backtest_correct_predictions_label">Correct Predictions</string>
+    <string name="backtest_macro_f1_label">Macro F1</string>
+    <string name="backtest_macro_precision_label">Macro Precision</string>
+    <string name="backtest_macro_recall_label">Macro Recall</string>
+    <string name="backtest_matches_summary">%1$d / %2$d matches</string>
+    <string name="backtest_confusion_matrix_title">Confusion Matrix (3x3)</string>
+    <string name="backtest_matrix_actual_label">Actual</string>
+    <string name="backtest_matrix_predicted_label">Predicted</string>
+    <string name="backtest_matrix_home">Home</string>
+    <string name="backtest_matrix_draw">Draw</string>
+    <string name="backtest_matrix_away">Away</string>
+    <string name="backtest_class_breakdown_title">Per-Class Breakdown</string>
+    <string name="backtest_class_precision">Precision</string>
+    <string name="backtest_class_recall">Recall</string>
+    <string name="backtest_class_f1">F1-Score</string>
+    <string name="backtest_class_support">Support: %1$d</string>
+    <string name="backtest_timeline_title">Backtested Matches Timeline</string>
+    <string name="backtest_filter_all">All (%1$d)</string>
+    <string name="backtest_filter_correct">Correct (%1$d)</string>
+    <string name="backtest_filter_incorrect">Incorrect (%1$d)</string>
+    <string name="backtest_match_correct_badge">CORRECT</string>
+    <string name="backtest_match_incorrect_badge">INCORRECT</string>
+    <string name="backtest_predicted_label">Pred: %1$s</string>
+    <string name="backtest_actual_label">Actual: %1$s</string>
+    <string name="backtest_confidence_format">Conf: %1$d%%</string>
+    <string name="backtest_empty_title">No Historical Matches Available</string>
+    <string name="backtest_empty_desc">There are no ended matches in the database with complete scores to perform backtesting.</string>
+    <string name="backtest_error_default">An error occurred while executing the backtest pipeline.</string>
+    <string name="backtest_retry_btn">Retry</string>
+    <string name="backtest_zero_leakage_note">Temporal Isolation: Strictly prior matches used for feature contexts. Current snapshot Elo ratings applied.</string>
 </resources>

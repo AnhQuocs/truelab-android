@@ -338,6 +338,11 @@ class PredictionViewModelTest {
                 })
             }
         }
+
+        override fun getAllMatches(): Flow<List<Match>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database match query failed")
+            matchesFlow.collect { emit(it) }
+        }
     }
 
     private class FakeTeamRepository : TeamRepository {

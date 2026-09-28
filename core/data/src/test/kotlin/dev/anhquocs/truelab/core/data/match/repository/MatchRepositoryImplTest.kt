@@ -46,6 +46,9 @@ class MatchRepositoryImplTest {
 
         override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<MatchWithTeams>> =
             flowOf(matches.filter { it.match.leagueId == leagueId && it.match.season == season })
+
+        override fun getAllMatches(): Flow<List<MatchWithTeams>> =
+            flowOf(matches.sortedBy { it.match.startTimeDate })
     }
 
     @Test
@@ -248,6 +251,35 @@ class MatchRepositoryImplTest {
         val h2h = repo.getH2HMatches(1, 2).first()
         assertEquals(2, h2h.size)
         assertEquals(listOf(1L, 2L), h2h.map { it.id })
+    }
+
+    @Test
+    fun getAllMatches_returnsAllMappedMatchesSortedByDate() = runTest {
+        val dao = FakeMatchDao()
+        val repo = MatchRepositoryImpl(dao)
+
+        val team1 = TeamEntity(id = 1, name = "Arsenal", logo = null, leagueName = "EPL")
+        val team2 = TeamEntity(id = 2, name = "Chelsea", logo = null, leagueName = "EPL")
+
+        dao.matches.addAll(
+            listOf(
+                MatchWithTeams(
+                    match = MatchEntity(2L, 2, 1, 0, 0, "2024-02-01", "8"),
+                    homeTeam = team2,
+                    awayTeam = team1
+                ),
+                MatchWithTeams(
+                    match = MatchEntity(1L, 1, 2, 2, 1, "2024-01-01", "8"),
+                    homeTeam = team1,
+                    awayTeam = team2
+                )
+            )
+        )
+
+        val allMatches = repo.getAllMatches().first()
+        assertEquals(2, allMatches.size)
+        assertEquals(1L, allMatches[0].id)
+        assertEquals(2L, allMatches[1].id)
     }
 }
 

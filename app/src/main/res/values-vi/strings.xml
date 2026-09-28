@@ -6,6 +6,7 @@
     <string name="select_language">Chọn ngôn ngữ</string>
     <string name="apply">Áp dụng</string>
     <string name="common_close">Đóng</string>
+    <string name="common_back">Quay lại</string>
 
     <!-- Navigation Labels -->
     <string name="nav_home">Trang chủ</string>
@@ -221,4 +222,47 @@
     <string name="h2h_away_record_label">Thành tích sân khách</string>
     <string name="h2h_match_history_title">Lịch sử các trận đối đầu</string>
     <string name="h2h_past_matches_count">(%1$d trận)</string>
+
+    <!-- Prediction Backtest & Evaluation Visualizer -->
+    <string name="nav_backtest_visualizer">Kiểm Thử Ngược (Backtest)</string>
+    <string name="home_tool_backtest_title">Kiểm Thử Ngược (Backtest)</string>
+    <string name="home_tool_backtest_desc">Thực thi kiểm thử ngược trên dữ liệu lịch sử, đánh giá độ chính xác, ma trận nhầm lẫn và chỉ số F1</string>
+    <string name="backtest_screen_title">Đánh Giá &amp; Kiểm Thử Ngược</string>
+    <string name="backtest_screen_subtitle">Ma trận hiệu năng &amp; độ tin cậy mô hình dự đoán</string>
+    <string name="backtest_run_btn">Chạy Kiểm Thử</string>
+    <string name="backtest_running_status">Đang chạy kiểm thử ngược trên tập dữ liệu lịch sử...</string>
+    <string name="backtest_loading_status">Đang tải tập dữ liệu lịch sử...</string>
+    <string name="backtest_overview_title">Tổng Quan Hiệu Năng</string>
+    <string name="backtest_accuracy_label">Độ Chính Xác Tổng Thể</string>
+    <string name="backtest_evaluated_matches_label">Số Trận Đã Thẩm Định</string>
+    <string name="backtest_correct_predictions_label">Dự Đoán Chính Xác</string>
+    <string name="backtest_macro_f1_label">Macro F1</string>
+    <string name="backtest_macro_precision_label">Macro Precision</string>
+    <string name="backtest_macro_recall_label">Macro Recall</string>
+    <string name="backtest_matches_summary">%1$d / %2$d trận</string>
+    <string name="backtest_confusion_matrix_title">Ma Trận Nhầm Lẫn (3x3)</string>
+    <string name="backtest_matrix_actual_label">Thực Tế</string>
+    <string name="backtest_matrix_predicted_label">Dự Đoán</string>
+    <string name="backtest_matrix_home">Chủ</string>
+    <string name="backtest_matrix_draw">Hòa</string>
+    <string name="backtest_matrix_away">Khách</string>
+    <string name="backtest_class_breakdown_title">Chi Tiết Từng Phân Lớp</string>
+    <string name="backtest_class_precision">Precision</string>
+    <string name="backtest_class_recall">Recall</string>
+    <string name="backtest_class_f1">F1-Score</string>
+    <string name="backtest_class_support">Số lượng: %1$d</string>
+    <string name="backtest_timeline_title">Dòng Thời Gian Trận Đấu Kiểm Thử</string>
+    <string name="backtest_filter_all">Tất Cả (%1$d)</string>
+    <string name="backtest_filter_correct">Đúng (%1$d)</string>
+    <string name="backtest_filter_incorrect">Sai (%1$d)</string>
+    <string name="backtest_match_correct_badge">CHÍNH XÁC</string>
+    <string name="backtest_match_incorrect_badge">CHƯA ĐÚNG</string>
+    <string name="backtest_predicted_label">Đoán: %1$s</string>
+    <string name="backtest_actual_label">Thực tế: %1$s</string>
+    <string name="backtest_confidence_format">Tin cậy: %1$d%%</string>
+    <string name="backtest_empty_title">Không Có Dữ Liệu Trận Đấu Lịch Sử</string>
+    <string name="backtest_empty_desc">Không tìm thấy trận đấu đã kết thúc có đầy đủ tỷ số trong cơ sở dữ liệu để thực hiện kiểm thử ngược.</string>
+    <string name="backtest_error_default">Đã xảy ra lỗi trong quá trình thực thi kiểm thử ngược.</string>
+    <string name="backtest_retry_btn">Thử Lại</string>
+    <string name="backtest_zero_leakage_note">Cô lập thời gian: Chỉ sử dụng các trận đấu diễn ra trước đó làm bối cảnh đặc trưng. Điểm Elo áp dụng theo snapshot hiện tại.</string>
 </resources>

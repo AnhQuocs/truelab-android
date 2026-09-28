@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dev.anhquocs.truelab.feature.analytics.presentation.AnalyticsScreen
+import dev.anhquocs.truelab.feature.backtest.presentation.BacktestVisualizerScreen
 import dev.anhquocs.truelab.feature.benchmark.presentation.BenchmarkScreen
 import dev.anhquocs.truelab.feature.h2h.presentation.H2HComparisonScreen
 import dev.anhquocs.truelab.feature.home.presentation.HomeScreen
@@ -129,6 +130,12 @@ fun MainScreen(
 
                 composable(MainNavDestination.H2HComparison.route) {
                     H2HComparisonScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(MainNavDestination.BacktestVisualizer.route) {
+                    BacktestVisualizerScreen(
                         onNavigateBack = { navController.popBackStack() }
                     )
                 }

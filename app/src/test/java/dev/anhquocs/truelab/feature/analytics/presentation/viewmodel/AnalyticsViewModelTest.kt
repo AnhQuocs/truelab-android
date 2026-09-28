@@ -415,6 +415,11 @@ class AnalyticsViewModelTest {
                 })
             }
         }
+
+        override fun getAllMatches(): Flow<List<Match>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database connection failed")
+            matchesFlow.collect { emit(it) }
+        }
     }
 
     private class FakeOddsRepository : OddsRepository {

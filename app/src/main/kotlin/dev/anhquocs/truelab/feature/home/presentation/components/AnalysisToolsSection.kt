@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AutoGraph
+import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -93,6 +94,18 @@ fun AnalysisToolsSection(
                     title = stringResource(R.string.home_tool_h2h_title),
                     description = stringResource(R.string.home_tool_h2h_desc),
                     onClick = { onNavigate(MainNavDestination.H2HComparison.route) }
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = Dimen.PaddingM),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                )
+
+                ToolItemRow(
+                    icon = Icons.Default.FactCheck,
+                    title = stringResource(R.string.home_tool_backtest_title),
+                    description = stringResource(R.string.home_tool_backtest_desc),
+                    onClick = { onNavigate(MainNavDestination.BacktestVisualizer.route) }
                 )
             }
         }

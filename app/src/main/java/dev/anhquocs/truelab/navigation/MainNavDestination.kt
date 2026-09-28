@@ -51,11 +51,17 @@ sealed class MainNavDestination(
         iconRes = R.drawable.ic_teams
     )
 
+    data object BacktestVisualizer : MainNavDestination(
+        route = "backtest_visualizer",
+        titleRes = R.string.nav_backtest_visualizer,
+        iconRes = R.drawable.ic_analytics
+    )
+
     companion object {
         val bottomNavItems: List<MainNavDestination>
             get() = listOf(Home, Matches, Teams, Analytics)
 
         val all: List<MainNavDestination>
-            get() = listOf(Home, Matches, Teams, Analytics, Prediction, Benchmark, H2HComparison)
+            get() = listOf(Home, Matches, Teams, Analytics, Prediction, Benchmark, H2HComparison, BacktestVisualizer)
     }
 }
