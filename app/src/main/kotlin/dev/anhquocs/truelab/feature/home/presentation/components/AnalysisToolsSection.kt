@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AutoGraph
 import androidx.compose.material.icons.filled.Speed
@@ -80,6 +81,18 @@ fun AnalysisToolsSection(
                     title = stringResource(R.string.home_tool_benchmark_title),
                     description = stringResource(R.string.home_tool_benchmark_desc),
                     onClick = { onNavigate(MainNavDestination.Benchmark.route) }
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = Dimen.PaddingM),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                )
+
+                ToolItemRow(
+                    icon = Icons.AutoMirrored.Filled.CompareArrows,
+                    title = stringResource(R.string.home_tool_h2h_title),
+                    description = stringResource(R.string.home_tool_h2h_desc),
+                    onClick = { onNavigate(MainNavDestination.H2HComparison.route) }
                 )
             }
         }

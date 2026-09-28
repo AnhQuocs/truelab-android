@@ -38,4 +38,12 @@ class FakeMatchRepository : MatchRepository {
         errorToThrow?.let { throw it }
         emit(matchesFlow.value.filter { it.leagueId == leagueId && it.season == season })
     }
+
+    override fun getH2HMatches(teamAId: Int, teamBId: Int): Flow<List<Match>> = flow {
+        errorToThrow?.let { throw it }
+        emit(matchesFlow.value.filter {
+            (it.homeTeam.id == teamAId && it.awayTeam.id == teamBId) ||
+            (it.homeTeam.id == teamBId && it.awayTeam.id == teamAId)
+        })
+    }
 }

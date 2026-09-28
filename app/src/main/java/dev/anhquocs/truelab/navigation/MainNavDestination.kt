@@ -45,11 +45,17 @@ sealed class MainNavDestination(
         iconRes = R.drawable.ic_benchmark
     )
 
+    data object H2HComparison : MainNavDestination(
+        route = "h2h_comparison",
+        titleRes = R.string.nav_h2h_comparison,
+        iconRes = R.drawable.ic_teams
+    )
+
     companion object {
         val bottomNavItems: List<MainNavDestination>
             get() = listOf(Home, Matches, Teams, Analytics)
 
         val all: List<MainNavDestination>
-            get() = listOf(Home, Matches, Teams, Analytics, Prediction, Benchmark)
+            get() = listOf(Home, Matches, Teams, Analytics, Prediction, Benchmark, H2HComparison)
     }
 }

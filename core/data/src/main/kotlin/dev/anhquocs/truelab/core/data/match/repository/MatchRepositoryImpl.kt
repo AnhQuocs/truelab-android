@@ -33,4 +33,10 @@ class MatchRepositoryImpl @Inject constructor(
             list.map { it.toDomain() }
         }
     }
+
+    override fun getH2HMatches(teamAId: Int, teamBId: Int): Flow<List<Match>> {
+        return matchDao.getH2HMatches(teamAId, teamBId).map { list ->
+            list.map { it.toDomain() }
+        }
+    }
 }

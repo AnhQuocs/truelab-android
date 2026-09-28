@@ -70,4 +70,17 @@ object DomainUseCaseModule {
     @Provides
     @Singleton
     fun provideCalculateHomeAwaySplitsUseCase(): CalculateHomeAwaySplitsUseCase = CalculateHomeAwaySplitsUseCase()
+
+    @Provides
+    @Singleton
+    fun provideGetHeadToHeadComparisonUseCase(
+        calculateTeamFormUseCase: CalculateTeamFormUseCase,
+        calculateHomeAwaySplitsUseCase: CalculateHomeAwaySplitsUseCase,
+        getTeamStatisticsUseCase: GetTeamStatisticsUseCase
+    ): dev.anhquocs.truelab.core.domain.team.usecase.GetHeadToHeadComparisonUseCase =
+        dev.anhquocs.truelab.core.domain.team.usecase.GetHeadToHeadComparisonUseCase(
+            calculateTeamFormUseCase = calculateTeamFormUseCase,
+            calculateHomeAwaySplitsUseCase = calculateHomeAwaySplitsUseCase,
+            getTeamStatisticsUseCase = getTeamStatisticsUseCase
+        )
 }
