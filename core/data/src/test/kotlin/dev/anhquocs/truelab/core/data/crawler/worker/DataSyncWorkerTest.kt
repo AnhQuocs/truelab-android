@@ -37,6 +37,7 @@ import dev.anhquocs.truelab.core.domain.metadata.repository.DatasetMetadataRepos
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
@@ -76,6 +77,8 @@ class DataSyncWorkerTest {
         override fun getMatchesByLeague(leagueId: Int) = throw NotImplementedError()
         override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String) = throw NotImplementedError()
         override fun getAllMatches() = throw NotImplementedError()
+        override fun getPredictableMatches(limit: Int) = throw NotImplementedError()
+        override fun searchMatches(query: String, limit: Int) = throw NotImplementedError()
     }
 
     private class WorkerTestMatchApi : MatchApi {
@@ -96,6 +99,15 @@ class DataSyncWorkerTest {
                 )
             )
         }
+
+        override suspend fun getSeasonMatches(
+            seasonId: Long,
+            status: Int,
+            pageSize: Int,
+            page: Int
+        ): BaseResponse<MatchInfoDetailResponseBase> = BaseResponse(
+            200, "OK", MatchInfoDetailResponseBase(emptyList(), MetaResponse(1, 1))
+        )
     }
 
     private class WorkerTestOddsApi : OddsApi {
@@ -132,6 +144,7 @@ class DataSyncWorkerTest {
         }
         override fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?) = throw NotImplementedError()
         override fun getLatestOddsForMatch(matchId: Long) = throw NotImplementedError()
+        override fun getLatestPreMatchEuropeanOddsForAllMatches(): Flow<List<dev.anhquocs.truelab.core.data.odds.local.entity.OddsEntity>> = flowOf(emptyList())
     }
 
     private class WorkerTestRankingDao : RankingDao {

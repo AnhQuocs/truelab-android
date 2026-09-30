@@ -51,4 +51,19 @@ class FakeMatchRepository : MatchRepository {
         errorToThrow?.let { throw it }
         matchesFlow.collect { emit(it) }
     }
+
+    override fun getPredictableMatches(limit: Int): Flow<List<Match>> = flow {
+        errorToThrow?.let { throw it }
+        emit(matchesFlow.value.take(limit))
+    }
+
+    override fun searchMatches(query: String, limit: Int): Flow<List<Match>> = flow {
+        errorToThrow?.let { throw it }
+        emit(
+            matchesFlow.value.filter {
+                it.homeTeam.name.contains(query, ignoreCase = true) ||
+                it.awayTeam.name.contains(query, ignoreCase = true)
+            }.take(limit)
+        )
+    }
 }

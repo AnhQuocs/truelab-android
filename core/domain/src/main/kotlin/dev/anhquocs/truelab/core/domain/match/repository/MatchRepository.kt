@@ -10,4 +10,6 @@ interface MatchRepository {
     fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<Match>>
     fun getH2HMatches(teamAId: Int, teamBId: Int): Flow<List<Match>>
     fun getAllMatches(): Flow<List<Match>>
+    fun getPredictableMatches(limit: Int = 50): Flow<List<Match>>
+    fun searchMatches(query: String, limit: Int = 30): Flow<List<Match>>
 }

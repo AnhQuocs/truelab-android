@@ -15,11 +15,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,10 +32,15 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,6 +82,8 @@ fun PredictionScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val availableMatches by viewModel.availableMatches.collectAsStateWithLifecycle()
+    var searchInput by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -80,85 +91,82 @@ fun PredictionScreen(
         },
         modifier = modifier
     ) { paddingValues ->
-        when (val state = uiState) {
-            is PredictionUiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(Dimen.SizeXL),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentPadding = PaddingValues(
+                start = Dimen.PaddingM,
+                end = Dimen.PaddingM,
+                top = Dimen.PaddingS,
+                bottom = Dimen.PaddingXXL
+            ),
+            verticalArrangement = Arrangement.spacedBy(Dimen.PaddingM)
+        ) {
+            // Match Selector (Always visible at top)
+            item {
+                val currentSelectedMatch = (uiState as? PredictionUiState.Success)?.selectedMatch
+                    ?: availableMatches.firstOrNull()
+
+                PredictionMatchSelector(
+                    matches = availableMatches,
+                    selectedMatch = currentSelectedMatch,
+                    searchQuery = searchInput,
+                    onSearchQueryChange = { query ->
+                        searchInput = query
+                        viewModel.onSearchQueryChanged(query)
+                    },
+                    onMatchSelected = { viewModel.onSelectMatch(it.id) }
+                )
             }
 
-            is PredictionUiState.Error -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(Dimen.PaddingM),
-                    contentAlignment = Alignment.Center
-                ) {
-                    PredictionFeedbackCard(
-                        icon = Icons.Default.ErrorOutline,
-                        iconTint = MaterialTheme.colorScheme.error,
-                        title = stringResource(R.string.prediction_error_default),
-                        message = state.message.asString(),
-                        containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
-                        titleColor = MaterialTheme.colorScheme.error,
-                        messageColor = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                }
-            }
-
-            is PredictionUiState.Empty -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(Dimen.PaddingM),
-                    contentAlignment = Alignment.Center
-                ) {
-                    PredictionFeedbackCard(
-                        icon = Icons.Default.Info,
-                        iconTint = MaterialTheme.colorScheme.primary,
-                        title = stringResource(R.string.prediction_title),
-                        message = state.message.asString(),
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                        titleColor = MaterialTheme.colorScheme.primary,
-                        messageColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            is PredictionUiState.Success -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentPadding = PaddingValues(
-                        start = Dimen.PaddingM,
-                        end = Dimen.PaddingM,
-                        top = Dimen.PaddingS,
-                        bottom = Dimen.PaddingXXL
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(Dimen.PaddingM)
-                ) {
-                    // Match Selector
-                    if (state.availableMatches.isNotEmpty()) {
-                        item {
-                            PredictionMatchSelector(
-                                matches = state.availableMatches,
-                                selectedMatch = state.selectedMatch,
-                                onMatchSelected = { viewModel.onSelectMatch(it.id) }
+            // Body Content based on UiState
+            when (val state = uiState) {
+                is PredictionUiState.Loading -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = Dimen.PaddingXXL),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(Dimen.SizeXL),
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
+                }
 
+                is PredictionUiState.Error -> {
+                    item {
+                        PredictionFeedbackCard(
+                            icon = Icons.Default.ErrorOutline,
+                            iconTint = MaterialTheme.colorScheme.error,
+                            title = stringResource(R.string.prediction_error_default),
+                            message = state.message.asString(),
+                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                            titleColor = MaterialTheme.colorScheme.error,
+                            messageColor = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+
+                is PredictionUiState.Empty -> {
+                    item {
+                        PredictionFeedbackCard(
+                            icon = Icons.Default.Info,
+                            iconTint = MaterialTheme.colorScheme.primary,
+                            title = stringResource(R.string.prediction_title),
+                            message = state.message.asString(),
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                            titleColor = MaterialTheme.colorScheme.primary,
+                            messageColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                is PredictionUiState.Success -> {
                     // Selected Match Header Card
                     item {
                         SelectedMatchHeaderCard(match = state.selectedMatch)
@@ -234,39 +242,93 @@ private fun PredictionTopBar(
 @Composable
 private fun PredictionMatchSelector(
     matches: List<Match>,
-    selectedMatch: Match,
+    selectedMatch: Match?,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     onMatchSelected: (Match) -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(SpacingS)
+    ) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChange,
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.matches_search_hint),
+                    style = MaterialTheme.typography.s12,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { onSearchQueryChange("") }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Clear",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(RadiusLarge),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
         Text(
             text = stringResource(R.string.prediction_select_match),
             style = MaterialTheme.typography.s13.bold(),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = SpacingXS)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(SpacingS)
-        ) {
-            matches.forEach { match ->
-                val isSelected = match.id == selectedMatch.id
-                val label = "${match.homeTeam.name} vs ${match.awayTeam.name}"
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { onMatchSelected(match) },
-                    label = {
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.s12
+
+        if (matches.isEmpty()) {
+            Text(
+                text = stringResource(R.string.matches_empty_search),
+                style = MaterialTheme.typography.s12,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = SpacingXS)
+            )
+        } else {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(SpacingS)
+            ) {
+                items(
+                    items = matches,
+                    key = { it.id }
+                ) { match ->
+                    val isSelected = match.id == selectedMatch?.id
+                    val label = "${match.homeTeam.name} vs ${match.awayTeam.name}"
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { onMatchSelected(match) },
+                        label = {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.s12
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                         )
-                    },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                )
+                }
             }
         }
     }

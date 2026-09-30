@@ -7,4 +7,5 @@ import kotlinx.coroutines.flow.Flow
 interface OddsRepository {
     fun getMatchOdds(matchId: Long): Flow<MatchOdds>
     fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?): Flow<List<OddsRecordItem>>
+    suspend fun getLatestEuropeanOddsMap(): Map<Long, OddsRecordItem>
 }

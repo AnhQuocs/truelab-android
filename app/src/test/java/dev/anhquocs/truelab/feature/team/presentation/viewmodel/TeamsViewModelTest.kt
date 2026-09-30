@@ -427,5 +427,22 @@ class TeamsViewModelTest {
             if (shouldThrowError) throw RuntimeException("Database connection failed")
             matchesFlow.collect { emit(it) }
         }
+
+        override fun getPredictableMatches(limit: Int): Flow<List<Match>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database connection failed")
+            matchesFlow.collect { emit(it.take(limit)) }
+        }
+
+        override fun searchMatches(query: String, limit: Int): Flow<List<Match>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database connection failed")
+            matchesFlow.collect { matches ->
+                emit(
+                    matches.filter {
+                        it.homeTeam.name.contains(query, ignoreCase = true) ||
+                        it.awayTeam.name.contains(query, ignoreCase = true)
+                    }.take(limit)
+                )
+            }
+        }
     }
 }

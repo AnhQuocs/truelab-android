@@ -60,4 +60,26 @@ interface MatchDao {
     @Transaction
     @Query("SELECT * FROM matches ORDER BY startTimeDate ASC")
     fun getAllMatches(): Flow<List<MatchWithTeams>>
+
+    @Transaction
+    @Query("""
+        SELECT * FROM matches 
+        ORDER BY CASE 
+            WHEN status NOT IN ('8', 'ended', 'determined', 'finished', 'ft', 'aet', 'pen') THEN 0 
+            ELSE 1 
+        END, startTimeDate DESC 
+        LIMIT :limit
+    """)
+    fun getPredictableMatches(limit: Int = 50): Flow<List<MatchWithTeams>>
+
+    @Transaction
+    @Query("""
+        SELECT m.* FROM matches m
+        JOIN teams ht ON m.homeTeamId = ht.id
+        JOIN teams at ON m.awayTeamId = at.id
+        WHERE ht.name LIKE '%' || :query || '%' OR at.name LIKE '%' || :query || '%'
+        ORDER BY m.startTimeDate DESC 
+        LIMIT :limit
+    """)
+    fun searchMatches(query: String, limit: Int = 30): Flow<List<MatchWithTeams>>
 }

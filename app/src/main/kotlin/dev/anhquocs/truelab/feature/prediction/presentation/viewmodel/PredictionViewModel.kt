@@ -39,9 +39,27 @@ class PredictionViewModel @Inject constructor(
         ?: savedStateHandle.get<Long>("matchId")
 
     private val _selectedMatchId = MutableStateFlow<Long?>(navMatchId)
+    private val _searchQuery = MutableStateFlow("")
+
+    private val matchesFlow = _searchQuery
+        .flatMapLatest { query ->
+            if (query.isBlank()) {
+                matchRepository.getPredictableMatches(50)
+            } else {
+                matchRepository.searchMatches(query.trim(), 30)
+            }
+        }
+
+    val availableMatches: StateFlow<List<Match>> = matchesFlow
+        .catch { emit(emptyList()) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
 
     val uiState: StateFlow<PredictionUiState> = combine(
-        matchRepository.getMatches(""),
+        matchesFlow,
         _selectedMatchId
     ) { matches, userMatchId ->
         Pair(matches, userMatchId)
@@ -60,13 +78,18 @@ class PredictionViewModel @Inject constructor(
                 teamRepository.getTeamDetail(awayTeamId),
                 matchRepository.getRecentMatchesForTeam(homeTeamId, 5),
                 matchRepository.getRecentMatchesForTeam(awayTeamId, 5),
+                matchRepository.getH2HMatches(homeTeamId, awayTeamId),
                 oddsRepository.getMatchOdds(selectedMatch.id)
-            ) { homeTeamDetail, awayTeamDetail, homeRecent, awayRecent, matchOdds ->
-                val h2hMatches = matches.filter { m ->
-                    (m.homeTeam.id == homeTeamId && m.awayTeam.id == awayTeamId) ||
-                        (m.homeTeam.id == awayTeamId && m.awayTeam.id == homeTeamId)
-                }
-
+            ) { args: Array<Any?> ->
+                val homeTeamDetail = args[0] as? dev.anhquocs.truelab.core.domain.team.model.TeamDetail
+                val awayTeamDetail = args[1] as? dev.anhquocs.truelab.core.domain.team.model.TeamDetail
+                @Suppress("UNCHECKED_CAST")
+                val homeRecent = (args[2] as? List<Match>) ?: emptyList()
+                @Suppress("UNCHECKED_CAST")
+                val awayRecent = (args[3] as? List<Match>) ?: emptyList()
+                @Suppress("UNCHECKED_CAST")
+                val h2hMatches = (args[4] as? List<Match>) ?: emptyList()
+                val matchOdds = args[5] as dev.anhquocs.truelab.core.domain.odds.model.MatchOdds
                 val context = MatchPredictionContext(
                     matchId = selectedMatch.id,
                     homeTeamId = homeTeamId,
@@ -117,5 +140,9 @@ class PredictionViewModel @Inject constructor(
 
     fun onSelectMatch(matchId: Long) {
         _selectedMatchId.value = matchId
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
     }
 }

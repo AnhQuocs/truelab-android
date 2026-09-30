@@ -293,4 +293,76 @@ class BacktestPredictionUseCaseTest {
         val resSim = useCase(listOf(mSim1, mSim2))
         assertEquals(2, resSim.totalMatches)
     }
+
+    @Test
+    fun `15 Historical Elo starts at 1500 and updates chronologically after each match`() {
+        // Match 1 on Jan 01: Man City vs Arsenal (Man City wins 3-0)
+        // Match 2 on Jan 10: Man City vs Chelsea (Man City should have higher Elo than initial 1500)
+        val m1 = createMatch(1L, teamManCity, teamArsenal, 3, 0, "2026-01-01T15:00:00")
+        val m2 = createMatch(2L, teamManCity, teamChelsea, 1, 0, "2026-01-10T15:00:00")
+
+        val result = useCase(listOf(m1, m2))
+
+        assertEquals(2, result.totalMatches)
+        val rec1 = result.records[0]
+        val rec2 = result.records[1]
+
+        // Match 1: both start at default 1500 -> home win prob is standard prior
+        // Match 2: Man City has higher Elo (won match 1) -> Man City home win prob increases
+        assertTrue(rec2.homeWinProb > rec1.homeWinProb)
+    }
+
+    @Test
+    fun `16 Same timestamp matches do not leak Elo updates into each other`() {
+        // Two simultaneous matches on Jan 01
+        val m1 = createMatch(1L, teamManCity, teamArsenal, 5, 0, "2026-01-01T15:00:00")
+        val m2 = createMatch(2L, teamLiverpool, teamChelsea, 0, 4, "2026-01-01T15:00:00")
+
+        val res1 = useCase(listOf(m1, m2))
+        val res2 = useCase(listOf(m2, m1))
+
+        // Predictions for m1 and m2 must be identical regardless of input collection ordering
+        assertEquals(res1.records[0].homeWinProb, res2.records[0].homeWinProb, 1e-4)
+        assertEquals(res1.records[1].homeWinProb, res2.records[1].homeWinProb, 1e-4)
+    }
+
+    @Test
+    fun `17 Target match odds are utilized when provided and fallback cleanly when missing`() {
+        val m1 = createMatch(1L, teamManCity, teamArsenal, 2, 0, "2026-01-01T15:00:00")
+        val m2 = createMatch(2L, teamChelsea, teamLiverpool, 1, 1, "2026-01-01T15:00:00")
+
+        val heavyHomeOdds = createOddsItem(1, "BET365", 1.20, 6.00, 15.00)
+        val oddsMap = mapOf(1L to heavyHomeOdds)
+
+        val resultWithOdds = useCase(listOf(m1, m2), matchOddsMap = oddsMap)
+        val resultNoOdds = useCase(listOf(m1, m2), matchOddsMap = emptyMap())
+
+        // Match 1 (has strong home odds): Home win probability is higher when odds are present
+        val m1WithOdds = resultWithOdds.records.find { it.matchId == 1L }!!
+        val m1NoOdds = resultNoOdds.records.find { it.matchId == 1L }!!
+        assertTrue(m1WithOdds.homeWinProb > m1NoOdds.homeWinProb)
+
+        // Match 2 (no odds in both cases): Probabilities are identical
+        val m2WithOdds = resultWithOdds.records.find { it.matchId == 2L }!!
+        val m2NoOdds = resultNoOdds.records.find { it.matchId == 2L }!!
+        assertEquals(m2NoOdds.homeWinProb, m2WithOdds.homeWinProb, 1e-4)
+    }
+
+    @Test
+    fun `18 Future match insertion preserves target match prediction invariant zero temporal leakage`() {
+        val targetMatch = createMatch(10L, teamManCity, teamArsenal, 2, 1, "2026-01-10T15:00:00")
+        val futureMatch = createMatch(20L, teamManCity, teamChelsea, 0, 5, "2026-01-20T15:00:00")
+
+        val resultTargetOnly = useCase(listOf(targetMatch))
+        val resultWithFuture = useCase(listOf(targetMatch, futureMatch))
+
+        val rec1 = resultTargetOnly.records[0]
+        val rec2 = resultWithFuture.records.find { it.matchId == 10L }!!
+
+        assertEquals(rec1.homeWinProb, rec2.homeWinProb, 1e-6)
+        assertEquals(rec1.drawProb, rec2.drawProb, 1e-6)
+        assertEquals(rec1.awayWinProb, rec2.awayWinProb, 1e-6)
+        assertEquals(rec1.confidenceScore, rec2.confidenceScore, 1e-6)
+        assertEquals(rec1.predictedOutcome, rec2.predictedOutcome)
+    }
 }

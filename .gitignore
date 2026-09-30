@@ -27,6 +27,7 @@ DATA_API_INTERNAL.md
 bin/
 **/bin/
 *.db
+!app/src/main/assets/database/truelab_database.db
 *.db-journal
 *.db-shm
 *.db-wal

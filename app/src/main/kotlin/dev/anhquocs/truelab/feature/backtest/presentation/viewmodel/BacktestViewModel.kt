@@ -8,6 +8,7 @@ import dev.anhquocs.truelab.core.domain.evaluation.model.PredictionBacktestResul
 import dev.anhquocs.truelab.core.domain.evaluation.usecase.BacktestPredictionUseCase
 import dev.anhquocs.truelab.core.domain.match.repository.MatchRepository
 import dev.anhquocs.truelab.core.domain.team.repository.TeamRepository
+import dev.anhquocs.truelab.core.domain.odds.repository.OddsRepository
 import dev.anhquocs.truelab.core.ui.utils.UiText
 import dev.anhquocs.truelab.feature.backtest.presentation.mapper.BacktestUiMapper
 import dev.anhquocs.truelab.feature.backtest.presentation.model.BacktestFilter
@@ -30,23 +31,21 @@ import kotlin.coroutines.cancellation.CancellationException
  * Runs heavy data synthesis and backtesting on [defaultDispatcher] to guarantee that the UI thread never stutters.
  */
 @HiltViewModel
-class BacktestViewModel @Inject constructor(
+class BacktestViewModel(
     private val matchRepository: MatchRepository,
     private val teamRepository: TeamRepository,
-    private val backtestPredictionUseCase: BacktestPredictionUseCase
+    private val oddsRepository: OddsRepository,
+    private val backtestPredictionUseCase: BacktestPredictionUseCase,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
-    private var defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
-
-    // Secondary constructor for Unit Testing
+    @Inject
     constructor(
         matchRepository: MatchRepository,
         teamRepository: TeamRepository,
-        backtestPredictionUseCase: BacktestPredictionUseCase,
-        defaultDispatcher: CoroutineDispatcher
-    ) : this(matchRepository, teamRepository, backtestPredictionUseCase) {
-        this.defaultDispatcher = defaultDispatcher
-    }
+        oddsRepository: OddsRepository,
+        backtestPredictionUseCase: BacktestPredictionUseCase
+    ) : this(matchRepository, teamRepository, oddsRepository, backtestPredictionUseCase, Dispatchers.Default)
 
     private val _uiState = MutableStateFlow<BacktestUiState>(BacktestUiState.Loading)
     val uiState: StateFlow<BacktestUiState> = _uiState.asStateFlow()
@@ -64,11 +63,12 @@ class BacktestViewModel @Inject constructor(
 
         _uiState.value = BacktestUiState.Running
 
-        viewModelScope.launch {
+        viewModelScope.launch(defaultDispatcher) {
             try {
-                // Fetch matches and teams from repositories
+                // Fetch matches, teams, and pre-match target odds from repositories
                 val allMatches = matchRepository.getAllMatches().first()
                 val allTeams = teamRepository.getTeams().first()
+                val targetOddsMap = oddsRepository.getLatestEuropeanOddsMap()
 
                 if (allMatches.isEmpty()) {
                     _uiState.value = BacktestUiState.Empty(
@@ -83,7 +83,7 @@ class BacktestViewModel @Inject constructor(
                 val backtestResult: PredictionBacktestResult = withContext(defaultDispatcher) {
                     backtestPredictionUseCase(
                         matches = allMatches,
-                        matchOddsMap = emptyMap(),
+                        matchOddsMap = targetOddsMap,
                         teamEloMap = teamEloMap
                     )
                 }

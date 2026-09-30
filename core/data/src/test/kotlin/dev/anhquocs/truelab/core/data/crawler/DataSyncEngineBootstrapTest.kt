@@ -94,11 +94,21 @@ class DataSyncEngineBootstrapTest {
         override fun getMatchesByLeague(leagueId: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getAllMatches(): Flow<List<MatchWithTeams>> = flowOf(emptyList())
+        override fun getPredictableMatches(limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
+        override fun searchMatches(query: String, limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
     }
 
     private class FakeMatchApi : MatchApi {
         var responseToReturn: BaseResponse<MatchInfoDetailResponseBase>? = null
         override suspend fun getMatches(date: String, status: Int?, page: Int, pageSize: Int, sort: String): BaseResponse<MatchInfoDetailResponseBase> {
+            return responseToReturn ?: BaseResponse(statusCode = 200, message = "OK", data = MatchInfoDetailResponseBase(data = emptyList(), meta = MetaResponse(1, 1)))
+        }
+        override suspend fun getSeasonMatches(
+            seasonId: Long,
+            status: Int,
+            pageSize: Int,
+            page: Int
+        ): BaseResponse<MatchInfoDetailResponseBase> {
             return responseToReturn ?: BaseResponse(statusCode = 200, message = "OK", data = MatchInfoDetailResponseBase(data = emptyList(), meta = MetaResponse(1, 1)))
         }
     }

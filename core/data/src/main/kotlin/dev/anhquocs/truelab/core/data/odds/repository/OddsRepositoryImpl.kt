@@ -6,6 +6,7 @@ import dev.anhquocs.truelab.core.domain.odds.model.MatchOdds
 import dev.anhquocs.truelab.core.domain.odds.model.OddsRecordItem
 import dev.anhquocs.truelab.core.domain.odds.repository.OddsRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -30,5 +31,12 @@ class OddsRepositoryImpl @Inject constructor(
         return oddsDao.getOddsHistory(matchId, companyId, oddsType).map { list ->
             list.map { it.toDomain() }
         }
+    }
+
+    override suspend fun getLatestEuropeanOddsMap(): Map<Long, OddsRecordItem> {
+        return oddsDao.getLatestPreMatchEuropeanOddsForAllMatches()
+            .first()
+            .distinctBy { it.matchId }
+            .associate { it.matchId to it.toDomain() }
     }
 }
