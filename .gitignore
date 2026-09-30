@@ -26,3 +26,10 @@ local_*.md
 DATA_API_INTERNAL.md
 bin/
 **/bin/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.py
+run_*.py
+scratch/

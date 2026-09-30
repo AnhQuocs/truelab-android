@@ -3,6 +3,7 @@ package dev.anhquocs.truelab.core.data.match.remote.api
 import dev.anhquocs.truelab.core.data.match.remote.dto.MatchInfoDetailResponseBase
 import dev.anhquocs.truelab.core.data.remote.dto.BaseResponse
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface MatchApi {
@@ -13,5 +14,13 @@ interface MatchApi {
         @Query("page") page: Int = 1,
         @Query("page_size") pageSize: Int = 50,
         @Query("sort") sort: String = "time_asc"
+    ): BaseResponse<MatchInfoDetailResponseBase>
+
+    @GET("/sport/v1.0/competitions/{seasonId}/match-list")
+    suspend fun getSeasonMatches(
+        @Path("seasonId") seasonId: Long,
+        @Query("status") status: Int = -1,
+        @Query("page_size") pageSize: Int = 100,
+        @Query("page") page: Int = 1
     ): BaseResponse<MatchInfoDetailResponseBase>
 }
