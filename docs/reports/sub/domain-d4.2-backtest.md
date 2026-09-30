@@ -96,9 +96,9 @@ Trong mỗi bước dự đoán trận $T_i$:
 
 | Model / UseCase | Vị Trí | Mô Tả |
 |:---|:---|:---|
-| [`BacktestMatchRecord`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/model/EvaluationModels.kt) | `:core:domain` | Record chi tiết từng trận backtest (matchId, date, teams, predicted, actual, probs, confidence, isCorrect). |
-| [`PredictionBacktestResult`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/model/EvaluationModels.kt) | `:core:domain` | Kết quả tổng hợp (evaluationResult, records, totalMatches, correctMatches). |
-| [`BacktestPredictionUseCase`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt) | `:core:domain` | Orchestrator chính thực thi pipeline backtest chống rò rỉ dữ liệu. |
+| [`BacktestMatchRecord`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/model/EvaluationModels.kt) | `:core:domain` | Record chi tiết từng trận backtest (matchId, date, teams, predicted, actual, probs, confidence, isCorrect). |
+| [`PredictionBacktestResult`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/model/EvaluationModels.kt) | `:core:domain` | Kết quả tổng hợp (evaluationResult, records, totalMatches, correctMatches). |
+| [`BacktestPredictionUseCase`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt) | `:core:domain` | Orchestrator chính thực thi pipeline backtest chống rò rỉ dữ liệu. |
 
 ---
 

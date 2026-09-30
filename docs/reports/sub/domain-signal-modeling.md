@@ -8,8 +8,8 @@ Tài liệu này tổng kết quá trình triển khai cấu hình trọng số 
 
 - **Module**: `:core:domain` (Pure Kotlin/JVM).
 - **Phạm vi**:
-  - Tạo [PredictionWeightConfig.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/model/PredictionWeightConfig.kt) chuẩn hóa cấu hình trọng số và các tham số mô hình hóa.
-  - Xây dựng **6 Signal Transformers** chuyển đổi dữ liệu bóng đá thành [Signal3Way.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/Signal3Way.kt).
+  - Tạo [PredictionWeightConfig.kt](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/model/PredictionWeightConfig.kt) chuẩn hóa cấu hình trọng số và các tham số mô hình hóa.
+  - Xây dựng **6 Signal Transformers** chuyển đổi dữ liệu bóng đá thành [Signal3Way.kt](../../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/Signal3Way.kt).
   - Viết bộ Unit Test toàn diện cho toàn bộ cấu hình và transformers.
 - **Ranh giới Kiến trúc**:
   - Tuyệt đối **KHÔNG sửa đổi `:core:algorithm`** (tiếp tục FROZEN).
@@ -22,12 +22,12 @@ Tài liệu này tổng kết quá trình triển khai cấu hình trọng số 
 
 | STT | Transformer Class | Input Nghiệp vụ | Output | Cơ chế Xử lý & Tham số |
 |:---:|---|---|---|---|
-| **1** | [OddsSignalTransformer.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/OddsSignalTransformer.kt) | `OddsRecordItem?` | `Signal3Way` | Gọi `calculateImpliedProbability()`, chuẩn hóa biên lợi nhuận nhà cái. Fallback `weight = 0.0` nếu thiếu odds. |
-| **2** | [EloSignalTransformer.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/EloSignalTransformer.kt) | `homeElo: Double?`<br>`awayElo: Double?` | `Signal3Way` | Tính kỳ vọng logistic 2 chiều $E_H, E_A$ qua `EloRatingCalculator` và phân rã với Baseline Draw $P_D = 0.26$. |
-| **3** | [FormSignalTransformer.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/FormSignalTransformer.kt) | `homeForm: FormScore?`<br>`awayForm: FormScore?` | `Signal3Way` | Chuẩn hóa điểm phong độ $[0, 100]$, tính tỷ trọng tương đối có hệ số làm mịn $\epsilon = 0.10$ kết hợp Baseline Draw $P_D = 0.26$. |
-| **4** | [H2hSignalTransformer.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/H2hSignalTransformer.kt) | `homeWins: Int`<br>`draws: Int`<br>`awayWins: Int` | `Signal3Way` | Áp dụng Laplace Smoothing với phân phối tiên nghiệm $\boldsymbol{\alpha} = [0.45, 0.27, 0.28]$ và độ mạnh mẫu $K = 3.0$. |
-| **5** | [HomeAdvantageSignalTransformer.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/HomeAdvantageSignalTransformer.kt) | `isNeutralVenue: Boolean` | `Signal3Way` | Tạo tín hiệu độc lập $[0.46, 0.26, 0.28]$ với trọng số $10\%$ theo FR-14 (hoặc $[0.37, 0.26, 0.37]$ nếu sân trung lập). |
-| **6** | [GoalsSignalTransformer.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/GoalsSignalTransformer.kt) | `homeMeanScored, conceded`<br>`awayMeanScored, conceded` | `Signal3Way` | Tính chênh lệch bàn thắng kỳ vọng $\Delta \lambda$, ánh xạ tuyến tính với độ nhạy $\beta = 0.15$ và chặn biên $[0.05, 0.69]$ cùng $P_D = 0.26$. |
+| **1** | [OddsSignalTransformer.kt](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/OddsSignalTransformer.kt) | `OddsRecordItem?` | `Signal3Way` | Gọi `calculateImpliedProbability()`, chuẩn hóa biên lợi nhuận nhà cái. Fallback `weight = 0.0` nếu thiếu odds. |
+| **2** | [EloSignalTransformer.kt](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/EloSignalTransformer.kt) | `homeElo: Double?`<br>`awayElo: Double?` | `Signal3Way` | Tính kỳ vọng logistic 2 chiều $E_H, E_A$ qua `EloRatingCalculator` và phân rã với Baseline Draw $P_D = 0.26$. |
+| **3** | [FormSignalTransformer.kt](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/FormSignalTransformer.kt) | `homeForm: FormScore?`<br>`awayForm: FormScore?` | `Signal3Way` | Chuẩn hóa điểm phong độ $[0, 100]$, tính tỷ trọng tương đối có hệ số làm mịn $\epsilon = 0.10$ kết hợp Baseline Draw $P_D = 0.26$. |
+| **4** | [H2hSignalTransformer.kt](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/H2hSignalTransformer.kt) | `homeWins: Int`<br>`draws: Int`<br>`awayWins: Int` | `Signal3Way` | Áp dụng Laplace Smoothing với phân phối tiên nghiệm $\boldsymbol{\alpha} = [0.45, 0.27, 0.28]$ và độ mạnh mẫu $K = 3.0$. |
+| **5** | [HomeAdvantageSignalTransformer.kt](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/HomeAdvantageSignalTransformer.kt) | `isNeutralVenue: Boolean` | `Signal3Way` | Tạo tín hiệu độc lập $[0.46, 0.26, 0.28]$ với trọng số $10\%$ theo FR-14 (hoặc $[0.37, 0.26, 0.37]$ nếu sân trung lập). |
+| **6** | [GoalsSignalTransformer.kt](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/GoalsSignalTransformer.kt) | `homeMeanScored, conceded`<br>`awayMeanScored, conceded` | `Signal3Way` | Tính chênh lệch bàn thắng kỳ vọng $\Delta \lambda$, ánh xạ tuyến tính với độ nhạy $\beta = 0.15$ và chặn biên $[0.05, 0.69]$ cùng $P_D = 0.26$. |
 
 ---
 

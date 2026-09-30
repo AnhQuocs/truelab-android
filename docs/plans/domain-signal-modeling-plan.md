@@ -6,7 +6,7 @@ Tài liệu này xác lập đặc tả toán học, định nghĩa tham số v�
 
 ## 1. Bản chất Kỹ thuật & Bất biến Toán học của Signal3Way
 
-Trong `:core:algorithm`, cấu trúc [Signal3Way.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/Signal3Way.kt) và phương thức `predictOutcome` của [WeightedScorer.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/WeightedScorer.kt) quy định các bất biến (Invariants) bắt buộc:
+Trong `:core:algorithm`, cấu trúc [Signal3Way.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/Signal3Way.kt) và phương thức `predictOutcome` của [WeightedScorer.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/WeightedScorer.kt) quy định các bất biến (Invariants) bắt buộc:
 
 ```kotlin
 data class Signal3Way(
@@ -56,7 +56,7 @@ Theo [README.md](../README.md#L148) (**FR-14 – Weighted Scoring**), mô hình 
 
 #### a. Nguồn dữ liệu & Trạng thái:
 - **Dữ liệu hiện có**: `OddsDao.getLatestOddsForMatch(matchId)` $\to$ `OddsRecordItem`.
-- **Hàm hiện có**: [Odds.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/odds/model/Odds.kt#L21) (`calculateImpliedProbability()`).
+- **Hàm hiện có**: [Odds.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/odds/model/Odds.kt#L21) (`calculateImpliedProbability()`).
 
 #### b. Công thức Toán học:
 $$raw_H = \frac{1.0}{O_{\text{home}}}, \quad raw_D = \frac{1.0}{O_{\text{draw}}}, \quad raw_A = \frac{1.0}{O_{\text{away}}}$$

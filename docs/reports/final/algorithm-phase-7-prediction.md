@@ -238,7 +238,7 @@ interface WeightedScorer {
 
 ## 8. Test Suite & Verification Matrix (Ma trận Kiểm thử)
 
-Bộ kiểm thử [WeightedScoringAlgorithmsTest.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/WeightedScoringAlgorithmsTest.kt) gồm **27 test cases** độc lập:
+Bộ kiểm thử [WeightedScoringAlgorithmsTest.kt](../../../core/algorithm/src/test/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/WeightedScoringAlgorithmsTest.kt) gồm **27 test cases** độc lập:
 
 ### Nhóm 1: Single-Dimension Weighted Scoring (12 tests)
 1. `calculateScore - single feature returns exact score`

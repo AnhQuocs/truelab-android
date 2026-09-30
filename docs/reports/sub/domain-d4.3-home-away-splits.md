@@ -20,7 +20,7 @@ Toàn bộ logic được xây dựng trên Pure Kotlin/JVM tại `:core:domain`
 
 ## 2. Mô Hình Dữ Liệu (Domain Models)
 
-Vị trí: [`core/domain/.../team/model/TeamHomeAwaySplits.kt`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/model/TeamHomeAwaySplits.kt)
+Vị trí: [`core/domain/.../team/model/TeamHomeAwaySplits.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/team/model/TeamHomeAwaySplits.kt)
 
 ```kotlin
 data class TeamPerformanceSplit(

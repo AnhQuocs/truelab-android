@@ -1,99 +1,129 @@
-# Odds & Runtime Data Coverage Audit
+# Báo Cáo Audit Độ Bao Phủ Dữ Liệu Odds & Runtime (Odds & Runtime Data Coverage Audit)
 
-**Date:** 2026-09-29  
-**Goal:** Audit runtime database to verify data availability, odds distribution, and prediction signals, avoiding blind assumptions.
+**Ngày thực hiện:** 2026-09-29
+**Mục tiêu:** Kiểm toán cơ sở dữ liệu runtime để xác minh tính khả dụng của dữ liệu, phân phối tỷ lệ cược (Odds) và các tín hiệu dự đoán (Prediction signals), tránh các giả định thiếu căn cứ.
 
-## 1. Runtime Snapshot
-- **Current git HEAD**: `d285a14` (docs: finalize Presentation P3)
-- **Database Status**: The local `truelab.db` has been extracted and queried via Python Pandas.
+---
 
-## 2. Match Coverage
-- **Total Matches**: 156
-- **Ended Matches (`status='ended'`)**: 97
-- **Pending/Other Matches**: 59 (pending, live, determined, cancelled, postponed)
+## 1. Ảnh Chụp Trạng Thái Runtime (Runtime Snapshot)
+- **Git HEAD tại thời điểm audit**: `d285a14` (docs: finalize Presentation P3)
+- **Trạng thái Database**: Database runtime `truelab.db` đã được trích xuất và truy vấn phân tích trực tiếp qua Python Pandas.
 
-*Finding:* Dataset is extremely small (156 matches), far from the target "50,000–75,000 matches". This is a severely limited test dataset.
+---
 
-## 3. Odds Record Coverage
-- **Total Odds Records**: 550,962
-- **Avg records per match**: ~4,142
-- **Earliest timestamp**: 1785625961
-- **Latest timestamp**: 1790666187
+## 2. Độ Bao Phủ Trận Đấu (Match Coverage)
+- **Tổng số trận đấu (Total Matches)**: 156
+- **Trận đấu đã kết thúc (`status='ended'`)**: 97
+- **Trận đấu chờ / trạng thái khác**: 59 (pending, live, determined, cancelled, postponed)
 
-*Finding:* While we only have 156 matches, they possess an incredible depth of odds history (avg 4k+ snapshots per match).
+*Đánh giá:* Tập dữ liệu ban đầu rất nhỏ (156 trận), cách xa mục tiêu quy mô "50,000–75,000 trận". Đây là tập dữ liệu thử nghiệm bị giới hạn nghiêm ngặt.
 
-## 4. Provider Coverage
-- **Distinct Providers**: 17 companies.
-- **Top Providers by Volume**:
+---
+
+## 3. Độ Bao Phủ Bản Ghi Tỷ Lệ Cược (Odds Record Coverage)
+- **Tổng số bản ghi Odds**: 550,962
+- **Số bản ghi trung bình mỗi trận**: ~4,142
+- **Dấu thời gian sớm nhất (Earliest timestamp)**: 1785625961
+- **Dấu thời gian mới nhất (Latest timestamp)**: 1790666187
+
+*Đánh giá:* Mặc dù số lượng trận đấu ban đầu chỉ có 156, chiều sâu lịch sử biến động odds lại cực kỳ lớn (trung bình hơn 4,000 snapshot odds trên mỗi trận).
+
+---
+
+## 4. Độ Bao Phủ Nhà Cái / Nhà Cung Cấp (Provider Coverage)
+- **Số nhà cái riêng biệt (Distinct Providers)**: 17 công ty/nhà cung cấp.
+- **Top nhà cái theo khối lượng bản ghi**:
   1. Sbobet (63,330)
   2. Easybets (62,666)
   3. BET365 (60,942)
   4. Vcbet (55,216)
   5. Pinnacle (46,635)
-- **Providers per match**: Median is 14 providers covering a single match.
+- **Số nhà cái trung bình mỗi trận**: Median đạt 14 nhà cái cùng đưa tỷ lệ cho 1 trận đấu.
 
-*Finding:* Multi-provider coverage is excellent for the matches we do have.
+*Đánh giá:* Độ phủ đa nhà cái (Multi-provider) rất tốt đối với các trận đấu hiện có.
 
-## 5. 1X2 Odds Coverage
-- **Odds Types**: 
-  - `bs` (Over/Under): 210,450
-  - `eu` (1X2): 171,008
-  - `asia` (Asian Handicap): 140,193
-  - `cr` (Correct Score): 29,311
-- **1X2 (`eu`) Usable Coverage**: 133 distinct matches possess complete (Home+Draw+Away) `eu` odds.
+---
 
-*Finding:* 133/156 (~85%) of the database matches have valid 1X2 odds. `getLatestOddsForMatch()` will return non-null 1X2 data for these 133 matches.
+## 5. Độ Bao Phủ Kèo Châu Âu 1X2 (1X2 Odds Coverage)
+- **Phân loại loại kèo (Odds Types)**:
+  - `bs` (Tài/Xỉu - Over/Under): 210,450
+  - `eu` (Kèo Châu Âu 1X2): 171,008
+  - `asia` (Kèo Châu Á - Asian Handicap): 140,193
+  - `cr` (Tỷ số chính xác - Correct Score): 29,311
+- **Độ bao phủ khả dụng của kèo 1X2 (`eu`)**: 133 trận đấu riêng biệt sở hữu đầy đủ tỷ lệ 1X2 (Chủ nhà + Hòa + Đội khách).
 
-## 6. Odds History Coverage
-- **Matches with >= 10 snapshots**: 133 matches.
-- **Market Phases**: `rolling_ball` (In-play) dominates with 464,324 records, `instant` (Pre-match updates) has 81,726, and `initial` (Opening) has 4,912.
+*Đánh giá:* 133/156 (~85%) trận đấu trong DB có tỷ lệ 1X2 hợp lệ. Hàm `getLatestOddsForMatch()` sẽ trả về dữ liệu 1X2 non-null cho 133 trận này.
 
-*Finding:* Odds movement analysis (Trend, Volatility, Moving Average) is highly viable due to the massive depth of snapshots per match.
+---
 
-## 7. Form Coverage
-- **Total Teams**: 309
-- **Teams with 0 ended matches**: 115
-- **Teams with 1 ended match**: 194
-- **Teams with >= 2 ended matches**: 0
+## 6. Độ Bao Phủ Lịch Sử Biến Động Odds (Odds History Coverage)
+- **Số trận có từ 10 snapshots trở lên**: 133 trận.
+- **Phân bổ giai đoạn thị trường (Market Phases)**: `rolling_ball` (Trực tiếp trong trận) chiếm ưu thế với 464,324 bản ghi, `instant` (Cập nhật trước trận) có 81,726 bản ghi, và `initial` (Kèo mở sớm) có 4,912 bản ghi.
 
-*Finding:* **SEVERE DATA SPARSITY**. No team in the current local dataset has played more than 1 match. Form Score calculation (which requires 5 matches) is currently impossible to evaluate meaningfully.
+*Đánh giá:* Phân tích xu hướng biến động odds (Trend, Volatility, Moving Average) hoàn toàn khả thi nhờ chiều sâu snapshot phong phú trên từng trận.
 
-## 8. Elo Coverage
-- **Teams with Elo = 1500**: 309 (100%)
-- **Teams with Elo != 1500**: 0
+---
 
-*Finding:* **DOMAINE PIPELINE GAP**. Elo Rating is completely static at the default 1500. No historical Elo calculation or updating mechanism has run on this dataset.
+## 7. Độ Bao Phủ Phong Độ (Form Coverage)
+- **Tổng số đội bóng (Total Teams)**: 309
+- **Đội có 0 trận đã kết thúc**: 115
+- **Đội có 1 trận đã kết thúc**: 194
+- **Đội có từ 2 trận đã kết thúc trở lên**: 0
 
-## 9. H2H Coverage
-- **Team pairs with historical meetings**: 97 pairs.
-- **Distribution**: Every pair has exactly 1 match (the 97 ended matches). No pair has met twice.
+*Đánh giá:* **DỮ LIỆU BỊ PHÂN TÁN/THIẾU HỤT NGHIÊM TRỌNG (SEVERE DATA SPARSITY)**. Không có đội bóng nào trong tập dữ liệu cục bộ ban đầu thi đấu quá 1 trận. Việc tính toán điểm phong độ (Form Score - thường yêu cầu 5 trận gần nhất) là bất khả thi nếu không có lịch sử đấu.
 
-*Finding:* **DATA SPARSITY**. H2H comparison tool will only ever show 1 historical match at most.
+---
 
-## 10. Goals Coverage
-- **Matches with valid Home/Away scores**: 97 (All ended matches).
+## 8. Độ Bao Phủ Elo (Elo Coverage)
+- **Đội bóng có điểm Elo = 1500**: 309 (100%)
+- **Đội bóng có điểm Elo != 1500**: 0
 
-*Finding:* Goals signal can be calculated for 97 matches.
+*Đánh giá:* **KHOẢNG TRỐNG TRONG DOMAIN PIPELINE (DOMAIN PIPELINE GAP)**. Điểm Elo hoàn toàn tĩnh ở mức mặc định 1500 do chưa có cơ chế tính toán và cập nhật Elo lịch sử chạy qua tập dữ liệu này.
 
-## 11. Prediction Signal Distribution
-- **Total predictions stored in DB**: 0.
+---
 
-*Finding:* The `predictions` table is completely empty. The previous report stating "42 correct / 89" implies backtesting was likely run entirely in-memory during UI interaction, not persisted. Due to Form=0 and Elo=1500 for everyone, the WeightedScoring model essentially defaults to heavily weighting the Odds Implied Probability + Home Advantage, explaining why the prediction variation is extremely low and favors the Home team.
+## 9. Độ Bao Phủ Đối Đầu (H2H Coverage)
+- **Số cặp đội từng gặp nhau**: 97 cặp.
+- **Phân phối**: Mỗi cặp chỉ có duy nhất 1 trận đấu (97 trận đã kết thúc). Không có cặp nào gặp nhau lần thứ 2.
 
-## 12. Match UI Odds Investigation
-*Finding:* If the Match UI displays "-" for Odds while the DB clearly has 133 matches with complete `eu` 1X2 odds, it indicates a **UI INTEGRATION GAP** or **MAPPING BUG**. `OddsDao.getLatestOddsForMatch()` works, but the pipeline from `OddsRepository` -> `UseCase` -> `ViewModel` -> `UI` is breaking or filtering out the data incorrectly.
+*Đánh giá:* **DỮ LIỆU BỊ THIẾU HỤT (DATA SPARSITY)**. Công cụ so sánh đối đầu H2H chỉ có thể hiển thị tối đa 1 trận lịch sử cho mỗi cặp.
 
-## 13. Root Cause Classification
-- **DATA SPARSITY**: The root cause of Form, H2H, and Elo failing is simply the lack of historical matches (only 1 match per team max). We need a much deeper historical fetch.
-- **DOMAIN PIPELINE GAP**: Elo ratings are never calculated/updated.
-- **UI INTEGRATION GAP**: Odds are failing to render on UI despite massive DB availability.
+---
 
-## 14. Recommended Next Phase
-Based strictly on runtime evidence, the next immediate phase must be:
-1. **Fix UI Odds Integration**: Resolve why the rich Odds data in the DB is failing to reach the UI.
-2. **Execute Deep Historical Sync**: We need the actual 50,000 matches. The current dataset is too shallow (time-wise) to demonstrate Form, Elo, or H2H algorithms effectively.
-3. **Persist Predictions/Elo**: Establish an offline job to calculate and persist Elo and Predictions.
+## 10. Độ Bao Phủ Bàn Thắng (Goals Coverage)
+- **Số trận có tỷ số Chủ/Khách hợp lệ**: 97 (Toàn bộ các trận đã kết thúc).
 
-## 15. Limitations
-- Python `sqlite3` was used on a pulled copy of `truelab.db`.
-- Backtest/Prediction runtime logic could not be fully analyzed since no prediction records were persisted to DB.
+*Đánh giá:* Tín hiệu phân tích bàn thắng (Goals signal) có thể tính toán được cho 97 trận đấu này.
+
+---
+
+## 11. Phân Bổ Tín Hiệu Dự Đoán (Prediction Signal Distribution)
+- **Tổng số bản ghi dự đoán lưu trong DB**: 0.
+
+*Đánh giá:* Bảng `predictions` hoàn toàn rỗng. Các kết quả backtest trước đó được chạy trực tiếp in-memory khi tương tác UI chứ không được persist vào database. Do Form=0 và Elo=1500 cho mọi đội, mô hình WeightedScoring chủ yếu dựa vào Xác suất ngầm định từ Odds (Implied Probability) + Lợi thế sân nhà (Home Advantage).
+
+---
+
+## 12. Điều Tra Hiển Thị Odds Trên UI Trận Đấu
+*Đánh giá:* Việc UI hiển thị dấu "-" cho tỷ lệ cược trong khi DB có 133 trận chứa đầy đủ kèo 1X2 `eu` chỉ ra vấn đề **KẾT NỐI TÍCH HỢP UI (UI INTEGRATION GAP)** hoặc **LỖI MAPPING DỮ LIỆU**. `OddsDao.getLatestOddsForMatch()` hoạt động chuẩn, nhưng luồng xử lý từ `OddsRepository` -> `UseCase` -> `ViewModel` -> `UI` bị gián đoạn hoặc lọc nhầm dữ liệu.
+
+---
+
+## 13. Phân Loại Nguyên Nhân Gốc (Root Cause Classification)
+- **DATA SPARSITY (Thiếu hụt dữ liệu)**: Nguyên nhân khiến Form, H2H, và Elo chưa phát huy được giá trị là do thiếu dữ liệu lịch sử (mỗi đội chỉ có tối đa 1 trận). Cần đồng bộ sâu nhiều mùa giải lịch sử.
+- **DOMAIN PIPELINE GAP (Thiếu pipeline tính toán)**: Điểm Elo chưa có worker/engine tính toán cập nhật theo dòng thời gian.
+- **UI INTEGRATION GAP (Đứt gãy hiển thị UI)**: Dữ liệu Odds trong DB rất phong phú nhưng chưa được render đầy đủ lên giao diện.
+
+---
+
+## 14. Đề Xuất Các Bước Tiếp Theo (Recommended Next Phase)
+Dựa trên bằng chứng thực tế từ runtime:
+1. **Khắc phục hiển thị Odds trên UI**: Đảm bảo dữ liệu Odds phong phú từ DB được chuyển tải chính xác lên UI.
+2. **Triển khai đồng bộ dữ liệu lịch sử quy mô lớn (Deep Historical Sync)**: Mở rộng dataset lên 15,000 → 50,000+ trận đấu để phục vụ các thuật toán Form, Elo và H2H.
+3. **Persist kết quả Elo / Dự đoán**: Thiết lập cơ chế tính toán và lưu trữ Elo/Predictions khi cần.
+
+---
+
+## 15. Hạn Chế & Ghi Chú (Limitations)
+- Kiểm toán sử dụng Python `sqlite3` trên bản snapshot cơ sở dữ liệu `truelab.db`.
+- Không thể phân tích lịch sử dự đoán từ DB do bảng `predictions` chưa thực hiện persist.

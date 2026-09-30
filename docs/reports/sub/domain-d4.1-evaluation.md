@@ -17,13 +17,13 @@ Báo cáo chi tiết triển khai cấu phần **Domain D4.1 — Evaluation Metr
 ## 2. Danh sách File Đã Tạo (Created Files)
 
 1. **`EvaluationModels.kt`**:
-   - Vị trí: [`core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/model/EvaluationModels.kt`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/model/EvaluationModels.kt)
+   - Vị trí: [`core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/model/EvaluationModels.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/model/EvaluationModels.kt)
    - Chứa: `ConfusionMatrix3Way`, `ClassEvaluationMetrics`, `ModelEvaluationResult`.
 2. **`CalculateEvaluationMetricsUseCase.kt`**:
-   - Vị trí: [`core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/CalculateEvaluationMetricsUseCase.kt`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/CalculateEvaluationMetricsUseCase.kt)
+   - Vị trí: [`core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/CalculateEvaluationMetricsUseCase.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/CalculateEvaluationMetricsUseCase.kt)
    - Chứa logic tính toán thống kê và kiểm tra tính hợp lệ của nhãn.
 3. **`CalculateEvaluationMetricsUseCaseTest.kt`**:
-   - Vị trí: [`core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/CalculateEvaluationMetricsUseCaseTest.kt`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/CalculateEvaluationMetricsUseCaseTest.kt)
+   - Vị trí: [`core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/CalculateEvaluationMetricsUseCaseTest.kt`](../../../core/domain/src/test/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/CalculateEvaluationMetricsUseCaseTest.kt)
    - Chứa 12 test cases bao phủ toàn diện các kịch bản thực tế và trường hợp biên.
 
 ---

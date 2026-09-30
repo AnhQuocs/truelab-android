@@ -78,7 +78,7 @@ Data D1 đã thiết lập nền tảng dữ liệu vững chắc cho toàn bộ
 ## 6. D1.5 — Migration & Data Layer Verification
 
 ### 6.1. Migration Verification
-Được thực thi và kiểm chứng chuyên sâu trong [MigrationTest.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/local/database/MigrationTest.kt) (8 test cases):
+Được thực thi và kiểm chứng chuyên sâu trong [MigrationTest.kt](../../../core/data/src/test/kotlin/dev/anhquocs/truelab/core/data/local/database/MigrationTest.kt) (8 test cases):
 - **Khởi tạo Baseline Schema v1**: Dựng cấu trúc CSDL chính xác theo `schemas/1.json` (`teams`, `matches`, `odds`, `season_rankings`, `predictions`).
 - **Thực thi Migration 1 $\rightarrow$ 2**: Kích hoạt `MIGRATION_1_2.migrate(db)`.
 - **Xác thực Schema v2**:

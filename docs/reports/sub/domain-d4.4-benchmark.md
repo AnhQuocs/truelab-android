@@ -49,7 +49,7 @@ Output: ComprehensiveBenchmarkSuiteResult
 
 ## 3. Mô Hình Dữ Liệu (Domain Models)
 
-Vị trí: [`core/domain/.../benchmark/model/BenchmarkModels.kt`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/benchmark/model/BenchmarkModels.kt)
+Vị trí: [`core/domain/.../benchmark/model/BenchmarkModels.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/benchmark/model/BenchmarkModels.kt)
 
 ```kotlin
 data class BenchmarkMeasurement(
@@ -78,7 +78,7 @@ data class ComprehensiveBenchmarkSuiteResult(
 
 ## 4. Bộ Sinh Dữ Liệu Giả Lập (`SyntheticDatasetGenerator`)
 
-Vị trí: [`core/domain/.../benchmark/generator/SyntheticDatasetGenerator.kt`](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/benchmark/generator/SyntheticDatasetGenerator.kt)
+Vị trí: [`core/domain/.../benchmark/generator/SyntheticDatasetGenerator.kt`](../../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/benchmark/generator/SyntheticDatasetGenerator.kt)
 
 - **Hạt giống cố định**: `DEFAULT_SEED = 42L` đảm bảo tính tái lập 100% (Reproducible) giữa các lần chạy.
 - `generateRandomIntList(size, seed)`: Sinh danh sách số nguyên ngẫu nhiên trong đoạn $[0, 1,000,000)$.

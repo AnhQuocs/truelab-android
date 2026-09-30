@@ -1,91 +1,113 @@
-# Historical Match Sync Audit & Design
+# Báo Cáo Audit & Thiết Kế Đồng Bộ Trận Đấu Lịch Sử (Historical Match Sync)
 
-## 1. Current Sync Architecture
-The current data sync logic resides primarily in `DataSyncEngine.kt`. The main entry point is `syncFullPipelineForDate(date, ...)`, which implies the current architecture is overwhelmingly date-based.
+## 1. Kiến Trúc Đồng Bộ Hiện Tại (Current Sync Architecture)
+Logic đồng bộ dữ liệu hiện tại nằm chủ yếu trong [`DataSyncEngine.kt`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/DataSyncEngine.kt). Điểm khởi đầu chính là `syncFullPipelineForDate(date, ...)`, cho thấy kiến trúc ban đầu được xây dựng xoay quanh việc đồng bộ theo ngày (date-based).
 
-Flow:
-1. It queries `/sport/v1.0/matches` via `MatchApi.getMatches(date=date, page=currentPage)`.
-2. It loops `while (currentPage <= totalPages)` (reading `response.data.meta.totalPage`).
-3. For each page, it maps to `LeagueEntity`, `TeamEntity`, and `MatchEntity` and inserts them into Room via `runInTransaction`.
-4. If configured, it proceeds to fetch Odds and Rankings for each match individually.
+**Luồng xử lý (Flow):**
+1. Gửi truy vấn tới endpoint `/sport/v1.0/matches` qua [`MatchApi.getMatches(date=date, page=currentPage)`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/remote/api/MatchApi.kt).
+2. Lặp phân trang `while (currentPage <= totalPages)` (đọc từ `response.data.meta.totalPage`).
+3. Với mỗi trang, map dữ liệu sang `LeagueEntity`, `TeamEntity`, và `MatchEntity` rồi insert vào Room Database thông qua `runInTransaction`.
+4. Nếu được cấu hình, tiếp tục fetch Odds và Rankings cho từng trận đấu riêng lẻ.
 
-## 2. Current 156-Match Root Cause
-The root cause of having only ~156 matches in the database is the **Date-based sync strategy (`syncFullPipelineForDate`) coupled with limited date coverage**. 
+---
 
-- The current implementation is designed to fetch matches *for a specific date*.
-- Even though the pagination logic (`while (currentPage <= totalPages)`) is correctly implemented for that single date, a single day in football only has a limited number of matches (in our Python audit test, calling the date endpoint for `2026-09-01` returned 0 matches, and a typical day might only yield ~100-200 ended matches).
-- Unless this function is wrapped in an external loop that iterates over *hundreds of past dates*, the database will remain sparse.
-- Furthermore, the `status` parameter in `MatchApi` defaults to `null` (not explicitly `-1` or `8`), meaning it might not even be requesting historical/ended matches exclusively.
+## 2. Nguyên Nhân Gốc Của Giới Hạn ~156 Trận Đấu (156-Match Root Cause)
+Nguyên nhân gốc rễ khiến cơ sở dữ liệu chỉ có khoảng ~156 trận đấu là do **chiến lược đồng bộ theo ngày (`syncFullPipelineForDate`) kết hợp với phạm vi ngày bị giới hạn**.
 
-## 3. TrueScore API Contract Required by TrueLab
-To fulfill the requirement of 50,000+ historical matches, we need the following API contract:
+- Logic hiện tại được thiết kế để lấy các trận đấu *cho một ngày cụ thể*.
+- Dù logic phân trang (`while (currentPage <= totalPages)`) đã được xử lý chính xác cho ngày đó, một ngày trong bóng đá chỉ có số lượng trận đấu nhất định (khi test audit với ngày `2026-09-01` trả về 0 trận, và một ngày thông thường chỉ có khoảng ~100-200 trận đã kết thúc).
+- Nếu không có vòng lặp ngoài quét qua *hàng trăm ngày trong quá khứ*, cơ sở dữ liệu sẽ luôn bị giới hạn.
+- Ngoài ra, tham số `status` trong `MatchApi` ban đầu mặc định là `null` (không chỉ định rõ `-1` hoặc `8`), nghĩa là không lọc chuyên biệt cho các trận đấu lịch sử đã kết thúc.
+
+---
+
+## 3. TrueScore API Contract Yêu Cầu Cho TrueLab
+Để đáp ứng yêu cầu mở rộng quy mô lên 50,000+ trận đấu lịch sử, hệ thống cần hợp đồng API sau:
 - **Endpoint**: `/sport/v1.0/competitions/{seasonId}/match-list`
-- **Query `status`**: `-1` (Verified to retrieve historical/ended matches).
-- **Query `page_size`**: `100` (Verified to work and reduce API calls).
-- **Pagination**: Iterating from `meta.current_page` to `meta.last_page`.
+- **Query `status`**: `-1` (Đã xác minh: chuyên lấy các trận đấu lịch sử / đã kết thúc).
+- **Query `page_size`**: `100` (Đã xác minh: hoạt động chuẩn và giảm số lượng API calls).
+- **Phân trang**: Lặp từ `meta.current_page` đến `meta.last_page`.
 
-## 4. Missing Capabilities
-1. **Competition/Season Match List Endpoint**: `MatchApi` currently only has `/sport/v1.0/matches` (date-based). It lacks the crucial `/sport/v1.0/competitions/{seasonId}/match-list` endpoint.
-2. **Status Parameter Filtering**: The current date sync does not explicitly filter for `status=-1`.
-3. **Deep Historical Sweeper**: `DataSyncEngine` lacks a function to iterate over historical seasons (it only fetches `syncLeaguesAndSeasonsFromRemoteInternal` but doesn't use those seasons to fetch matches).
+---
 
-## 5. Historical Sync Design
-**Flow:**
-1. Fetch `CompetitionList`.
-2. For each Competition, fetch `SeasonList`.
-3. Identify historical seasons (e.g., prior to the current year).
-4. For each selected `seasonId`, call `/sport/v1.0/competitions/{seasonId}/match-list?status=-1&page_size=100`.
-5. Loop through `page=1` to `last_page`.
-6. For each page, map DTOs to Entities.
-7. Perform `runInTransaction` to upsert Teams and Matches.
+## 4. Các Khả Năng Còn Thiếu (Missing Capabilities)
+1. **Endpoint Lấy Danh Sách Trận Đấu Theo Giải/Mùa**: [`MatchApi`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/remote/api/MatchApi.kt) ban đầu chỉ có `/sport/v1.0/matches` (theo ngày), thiếu endpoint `/sport/v1.0/competitions/{seasonId}/match-list`.
+2. **Bộ Lọc Tham Số Status**: Việc đồng bộ theo ngày chưa lọc tường minh `status=-1`.
+3. **Cơ Chế Quét Lịch Sử Chuyên Sâu (Deep Historical Sweeper)**: [`DataSyncEngine`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/DataSyncEngine.kt) thiếu hàm lặp qua các mùa giải lịch sử (trước đó chỉ có `syncLeaguesAndSeasonsFromRemoteInternal` nhưng chưa tận dụng các seasonId này để fetch trận đấu).
 
-**Scope Rollout:**
-- **Phase A**: 1 Competition (e.g., EPL id=927) × 1 historical season (e.g., id=26528). Yields ~380 matches.
-- **Phase B**: Top 5 European Leagues × last 5 seasons. Yields ~9,500 matches.
-- **Phase C**: Top 50 Competitions × last 5 seasons. Yields ~75,000 matches.
+---
 
-## 6. Pagination Design
-The pagination must rely on the API's `meta` object:
+## 5. Thiết Kế Đồng Bộ Lịch Sử (Historical Sync Design)
+
+**Luồng Xử Lý:**
+1. Lấy danh sách giải đấu (`CompetitionList`).
+2. Với mỗi giải đấu, lấy danh sách mùa giải (`SeasonList`).
+3. Xác định các mùa giải lịch sử (ví dụ: các mùa trước năm hiện tại).
+4. Với từng `seasonId` đã chọn, gọi `/sport/v1.0/competitions/{seasonId}/match-list?status=-1&page_size=100`.
+5. Lặp từ `page=1` đến `last_page`.
+6. Với mỗi trang, map DTO sang Entity.
+7. Thực thi `runInTransaction` để lưu Teams và Matches.
+
+**Lộ Trình Quy Mô (Scope Rollout):**
+- **Phase A**: 1 Giải đấu (EPL id=927) × 1 mùa giải lịch sử (id=26528) → Thu được ~380 trận.
+- **Phase B**: Top 5 Giải Vô Địch Quốc Gia Châu Âu × 3 mùa gần nhất → Thu được ~5,405 trận.
+- **Phase C**: 11 Giải đấu × 43 mùa giải → Thu được ~15,300 trận lịch sử (kết hợp baseline đạt 15,456 trận).
+- **Phase D**: Mở rộng toàn diện → Đạt mốc 50,000+ trận.
+
+---
+
+## 6. Thiết Kế Phân Trang (Pagination Design)
+Cơ chế phân trang dựa vào object `meta` trả về từ API:
 ```kotlin
 var currentPage = 1
 var lastPage = 1
 while (currentPage <= lastPage) {
     val response = matchApi.getSeasonMatches(seasonId, status = -1, pageSize = 100, page = currentPage)
-    // process data...
+    // Xử lý dữ liệu...
     lastPage = response.data.meta?.lastPage ?: 1
     currentPage++
 }
 ```
 
-## 7. Deduplication Strategy
-- **API Level**: Because we are fetching by distinct `seasonId`, cross-season duplication is minimal.
-- **Kotlin Level**: `teams.distinctBy { it.id }` within each page before insertion.
-- **Database Level**: `MatchDao` and `TeamDao` must use `OnConflictStrategy.REPLACE` or `IGNORE`. Currently, `MatchDao` uses `REPLACE` (Upsert), which perfectly handles existing matches without violating constraints.
+---
 
-## 8. Room / Performance Considerations
-- **Memory**: Processing page-by-page (100 matches per list) guarantees low memory footprint. We never hold 50k matches in memory.
-- **Transactions**: `database.runInTransaction` per page (100 matches + ~200 teams) is optimal for SQLite.
-- **Rate Limiting**: A `delay(1000)` or `delay(500)` between page fetches is highly recommended to prevent API rate limiting or Cloudflare blocking during a 50k crawl.
+## 7. Chiến Lược Chống Trùng Lặp (Deduplication Strategy)
+- **Cấp độ API**: Fetch theo từng `seasonId` riêng biệt giúp hạn chế tối đa trùng lặp giữa các mùa.
+- **Cấp độ Kotlin**: `teams.distinctBy { it.id }` trong từng trang trước khi insert.
+- **Cấp độ Database**: `MatchDao` và `TeamDao` sử dụng `OnConflictStrategy.IGNORE` để bảo toàn dữ liệu liên kết và tránh kích hoạt CASCADE DELETE trên bảng Odds.
 
-## 9. Odds Data Safety
-- **Constraint Check**: `OddsEntity` has a `ForeignKey` to `MatchEntity` with `onDelete = ForeignKey.CASCADE`.
-- **Safety**: Re-syncing a `MatchEntity` using `OnConflictStrategy.REPLACE` in Room actually executes an `UPDATE` if the row exists (or a `DELETE`/`INSERT` depending on the SQLite implementation under the hood, but Room `REPLACE` usually preserves child rows if the PK doesn't change). However, to be absolutely safe, `OnConflictStrategy.IGNORE` for historical matches that are already `status='8'` or `status='ended'` might be safer to guarantee Odds aren't orphaned, OR we rely on the fact that `matchId` is completely stable from the API.
+---
 
-## 10. Incremental Migration Plan
-1. **Retain Existing Data**: Do not clear the DB.
-2. **Add Endpoint**: Add `getSeasonMatches` to `MatchApi`.
-3. **Add Sync Function**: Create `syncHistoricalMatchesBySeason(seasonId)` in `DataSyncEngine`.
-4. **Iterative Crawl**: Write a simple one-off script/worker to loop through a predefined list of historical `seasonId`s, calling `syncHistoricalMatchesBySeason` for each, with error catching to resume on the next ID if one fails.
+## 8. Tối Ưu Hiệu Năng & Room Database
+- **Bộ nhớ (Memory)**: Xử lý theo từng trang (100 trận/trang) đảm bảo memory footprint thấp, không load đồng thời hàng chục ngàn trận vào RAM.
+- **Transactions**: `database.runInTransaction` cho mỗi trang (100 trận + ~200 teams) đạt hiệu năng tối ưu với SQLite.
+- **Giới hạn tần suất (Rate Limiting)**: Sử dụng `delay(200)` hoặc cấu hình phù hợp giữa các lượt gọi trang để tránh bị rate limit hoặc chặn kết nối trong quá trình quét dữ liệu lớn.
 
-## 11. Implementation Checklist
+---
 
-| Item | Current TrueLab | Required |
-|------|-----------------|----------|
-| Ended status | `null` (in MatchApi) | `-1` |
-| Page size | `50` (default) | `100` |
-| Pagination | `totalPage` | `current_page` → `last_page` |
-| Historical seasons | `syncLeaguesAndSeasonsFromRemote` | Yes (Need Match sync loop) |
-| Competition discovery | Exists | Required |
-| Deduplication | `distinctBy { it.id }` | `matchId` |
-| Resume | Try/Catch present | Yes (Per season loop) |
-| Bulk insert | Yes (per page) | Yes |
+## 9. An Toàn Dữ Liệu Odds (Odds Data Safety)
+- **Ràng buộc khóa ngoại**: `OddsEntity` có `ForeignKey` tham chiếu tới `MatchEntity` với `onDelete = ForeignKey.CASCADE`.
+- **Độ an toàn**: Để đảm bảo tuyệt đối không làm mất dữ liệu Odds hiện có khi import hoặc sync thêm trận đấu, bắt buộc dùng `OnConflictStrategy.IGNORE` trên `MatchDao`.
+
+---
+
+## 10. Kế Hoạch Di Trú Từng Bước (Incremental Migration Plan)
+1. **Giữ nguyên dữ liệu hiện có**: Tuyệt đối không xóa hay reset database.
+2. **Bổ sung Endpoint**: Thêm `getSeasonMatches` vào [`MatchApi`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/remote/api/MatchApi.kt).
+3. **Thêm Hàm Đồng Bộ**: Xây dựng `syncHistoricalMatchesBySeason(seasonId)` trong [`DataSyncEngine`](../../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/crawler/DataSyncEngine.kt).
+4. **Đồng Bộ Từng Giai Đoạn**: Thực hiện quét tuần tự theo danh sách mùa giải lịch sử với cơ chế try/catch để xử lý lỗi cục bộ mà không gián đoạn toàn bộ tiến trình.
+
+---
+
+## 11. Bảng Đối Chiếu Hiện Trạng (Implementation Checklist)
+
+| Mục kiểm tra | TrueLab Ban Đầu | Yêu Cầu Thiết Kế |
+|---|---|---|
+| Ended status | `null` (trong MatchApi) | `-1` |
+| Kích thước trang (Page size) | `50` (mặc định) | `100` |
+| Phân trang | `totalPage` | `current_page` → `last_page` |
+| Mùa giải lịch sử | `syncLeaguesAndSeasonsFromRemote` | Có (Cần vòng lặp Match sync) |
+| Nhận diện giải đấu | Đã có | Yêu cầu |
+| Chống trùng lặp | `distinctBy { it.id }` | `matchId` |
+| Khả năng tiếp tục (Resume) | Có Try/Catch | Có (Theo từng season loop) |
+| Bulk insert | Có (theo trang) | Có |
