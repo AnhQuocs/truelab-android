@@ -66,6 +66,8 @@ class DataSyncEngineTest {
         override fun getMatchesByLeague(leagueId: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getAllMatches(): Flow<List<MatchWithTeams>> = flowOf(emptyList())
+        override fun getPredictableMatches(limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
+        override fun searchMatches(query: String, limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
     }
 
     private class FakeLeagueDao : LeagueDao {
@@ -98,6 +100,7 @@ class DataSyncEngineTest {
         }
         override fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?): Flow<List<OddsEntity>> = flowOf(emptyList())
         override fun getLatestOddsForMatch(matchId: Long): Flow<List<OddsEntity>> = flowOf(emptyList())
+        override fun getLatestPreMatchEuropeanOddsForAllMatches(): Flow<List<OddsEntity>> = flowOf(emptyList())
     }
 
     private class FakeRankingDao : RankingDao {
@@ -115,6 +118,10 @@ class DataSyncEngineTest {
         var responseToReturn: BaseResponse<MatchInfoDetailResponseBase>? = null
         var errorToThrow: Throwable? = null
         override suspend fun getMatches(date: String, status: Int?, page: Int, pageSize: Int, sort: String): BaseResponse<MatchInfoDetailResponseBase> {
+            errorToThrow?.let { throw it }
+            return responseToReturn ?: BaseResponse(statusCode = 200, message = "OK", data = MatchInfoDetailResponseBase(data = emptyList(), meta = MetaResponse(1, 1)))
+        }
+        override suspend fun getSeasonMatches(seasonId: Long, status: Int, pageSize: Int, page: Int): BaseResponse<MatchInfoDetailResponseBase> {
             errorToThrow?.let { throw it }
             return responseToReturn ?: BaseResponse(statusCode = 200, message = "OK", data = MatchInfoDetailResponseBase(data = emptyList(), meta = MetaResponse(1, 1)))
         }

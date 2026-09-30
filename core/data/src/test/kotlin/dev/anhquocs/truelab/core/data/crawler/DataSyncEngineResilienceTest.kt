@@ -73,6 +73,8 @@ class DataSyncEngineResilienceTest {
         override fun getMatchesByLeague(leagueId: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getAllMatches(): Flow<List<MatchWithTeams>> = flowOf(emptyList())
+        override fun getPredictableMatches(limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
+        override fun searchMatches(query: String, limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
     }
 
     private class ResilientFakeOddsDao : OddsDao {
@@ -83,6 +85,7 @@ class DataSyncEngineResilienceTest {
         }
         override fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?): Flow<List<OddsEntity>> = flowOf(emptyList())
         override fun getLatestOddsForMatch(matchId: Long): Flow<List<OddsEntity>> = flowOf(emptyList())
+        override fun getLatestPreMatchEuropeanOddsForAllMatches(): Flow<List<OddsEntity>> = flowOf(emptyList())
     }
 
     private class ResilientFakeRankingDao : RankingDao {
@@ -135,6 +138,17 @@ class DataSyncEngineResilienceTest {
                 )
             )
         }
+
+        override suspend fun getSeasonMatches(
+            seasonId: Long,
+            status: Int,
+            pageSize: Int,
+            page: Int
+        ): BaseResponse<MatchInfoDetailResponseBase> = BaseResponse(
+            statusCode = 200,
+            message = "OK",
+            data = MatchInfoDetailResponseBase(data = emptyList(), meta = MetaResponse(1, 1))
+        )
     }
 
     private class ResilientFakeOddsApi : OddsApi {

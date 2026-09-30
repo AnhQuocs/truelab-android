@@ -33,6 +33,7 @@ object DatabaseModule {
             TrueLabDatabase::class.java,
             "truelab_database.db"
         )
+        .createFromAsset("database/truelab_database.db")
         .addMigrations(MIGRATION_1_2)
         // Fallback to destructive migration is NOT used here 
         // to preserve the huge offline local dataset across versions. 

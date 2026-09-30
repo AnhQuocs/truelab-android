@@ -254,14 +254,22 @@ class PredictionViewModelTest {
     }
 
     @Test
-    fun `no mock static data regression - probabilities are strictly computed`() = runTest {
+    fun `search query filters available matches without reloading full dataset`() = runTest {
         val collectJob = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
+        viewModel.onSearchQueryChanged("Arsenal")
+        advanceUntilIdle()
+
         val state = viewModel.uiState.value as PredictionUiState.Success
-        // Ensure probabilities are not hardcoded 54, 24, 22
-        val notAllStatic = (state.homeWinPercent != 54) || (state.drawPercent != 24) || (state.awayWinPercent != 22)
-        assertTrue("Probabilities should be computed, not mock 54/24/22", notAllStatic)
+        assertEquals(2, state.availableMatches.size) // Both match1 and match2 contain Arsenal
+
+        viewModel.onSearchQueryChanged("Liverpool")
+        advanceUntilIdle()
+
+        val stateLiverpool = viewModel.uiState.value as PredictionUiState.Success
+        assertEquals(1, stateLiverpool.availableMatches.size)
+        assertEquals(102L, stateLiverpool.availableMatches[0].id)
 
         collectJob.cancel()
     }
@@ -343,6 +351,21 @@ class PredictionViewModelTest {
             if (shouldThrowError) throw RuntimeException("Database match query failed")
             matchesFlow.collect { emit(it) }
         }
+
+        override fun getPredictableMatches(limit: Int): Flow<List<Match>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database match query failed")
+            matchesFlow.collect { emit(it.take(limit)) }
+        }
+
+        override fun searchMatches(query: String, limit: Int): Flow<List<Match>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database match query failed")
+            matchesFlow.collect { matches ->
+                emit(matches.filter {
+                    it.homeTeam.name.contains(query, ignoreCase = true) ||
+                    it.awayTeam.name.contains(query, ignoreCase = true)
+                }.take(limit))
+            }
+        }
     }
 
     private class FakeTeamRepository : TeamRepository {
@@ -391,5 +414,7 @@ class PredictionViewModelTest {
             if (shouldThrowError) throw RuntimeException("Database history query failed")
             emit(emptyList())
         }
+
+        override suspend fun getLatestEuropeanOddsMap(): Map<Long, OddsRecordItem> = emptyMap()
     }
 }

@@ -76,6 +76,8 @@ class DataSyncEngineCacheTest {
         override fun getMatchesByLeague(leagueId: Int): Flow<List<MatchWithTeams>> = throw NotImplementedError()
         override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<MatchWithTeams>> = throw NotImplementedError()
         override fun getAllMatches(): Flow<List<MatchWithTeams>> = throw NotImplementedError()
+        override fun getPredictableMatches(limit: Int): Flow<List<MatchWithTeams>> = throw NotImplementedError()
+        override fun searchMatches(query: String, limit: Int): Flow<List<MatchWithTeams>> = throw NotImplementedError()
     }
 
     private class CacheTestMatchApi : MatchApi {
@@ -105,6 +107,17 @@ class DataSyncEngineCacheTest {
                 )
             )
         }
+
+        override suspend fun getSeasonMatches(
+            seasonId: Long,
+            status: Int,
+            pageSize: Int,
+            page: Int
+        ): BaseResponse<MatchInfoDetailResponseBase> = BaseResponse(
+            statusCode = 200,
+            message = "OK",
+            data = MatchInfoDetailResponseBase(data = emptyList(), meta = MetaResponse(1, 1))
+        )
     }
 
     private class CacheTestOddsApi : OddsApi {

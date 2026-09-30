@@ -45,4 +45,16 @@ class MatchRepositoryImpl @Inject constructor(
             list.map { it.toDomain() }
         }
     }
+
+    override fun getPredictableMatches(limit: Int): Flow<List<Match>> {
+        return matchDao.getPredictableMatches(limit).map { list ->
+            list.map { it.toDomain() }
+        }
+    }
+
+    override fun searchMatches(query: String, limit: Int): Flow<List<Match>> {
+        return matchDao.searchMatches(query, limit).map { list ->
+            list.map { it.toDomain() }
+        }
+    }
 }

@@ -7,6 +7,9 @@ import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
 import dev.anhquocs.truelab.core.domain.match.model.TeamSummary
 import dev.anhquocs.truelab.core.domain.prediction.usecase.PredictMatchOutcomeUseCase
 import dev.anhquocs.truelab.core.domain.team.model.SeasonRanking
+import dev.anhquocs.truelab.core.domain.odds.model.MatchOdds
+import dev.anhquocs.truelab.core.domain.odds.model.OddsRecordItem
+import dev.anhquocs.truelab.core.domain.odds.repository.OddsRepository
 import dev.anhquocs.truelab.core.domain.team.model.TeamDetail
 import dev.anhquocs.truelab.core.domain.team.repository.TeamRepository
 import dev.anhquocs.truelab.feature.backtest.presentation.model.BacktestFilter
@@ -36,6 +39,7 @@ class BacktestViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeMatchRepository: FakeMatchRepository
     private lateinit var fakeTeamRepository: FakeBacktestTeamRepository
+    private lateinit var fakeOddsRepository: FakeBacktestOddsRepository
     private lateinit var backtestPredictionUseCase: BacktestPredictionUseCase
 
     private val arsenal = TeamDetail(id = 1, name = "Arsenal", eloRating = 1900.0)
@@ -46,6 +50,7 @@ class BacktestViewModelTest {
         Dispatchers.setMain(testDispatcher)
         fakeMatchRepository = FakeMatchRepository()
         fakeTeamRepository = FakeBacktestTeamRepository()
+        fakeOddsRepository = FakeBacktestOddsRepository()
         fakeTeamRepository.setTeams(listOf(arsenal, chelsea))
 
         backtestPredictionUseCase = BacktestPredictionUseCase(
@@ -86,6 +91,7 @@ class BacktestViewModelTest {
         val viewModel = BacktestViewModel(
             matchRepository = fakeMatchRepository,
             teamRepository = fakeTeamRepository,
+            oddsRepository = fakeOddsRepository,
             backtestPredictionUseCase = backtestPredictionUseCase,
             defaultDispatcher = testDispatcher
         )
@@ -110,6 +116,7 @@ class BacktestViewModelTest {
         val viewModel = BacktestViewModel(
             matchRepository = fakeMatchRepository,
             teamRepository = fakeTeamRepository,
+            oddsRepository = fakeOddsRepository,
             backtestPredictionUseCase = backtestPredictionUseCase,
             defaultDispatcher = testDispatcher
         )
@@ -150,6 +157,7 @@ class BacktestViewModelTest {
         val viewModel = BacktestViewModel(
             matchRepository = fakeMatchRepository,
             teamRepository = fakeTeamRepository,
+            oddsRepository = fakeOddsRepository,
             backtestPredictionUseCase = backtestPredictionUseCase,
             defaultDispatcher = testDispatcher
         )
@@ -187,6 +195,7 @@ class BacktestViewModelTest {
         val viewModel = BacktestViewModel(
             matchRepository = fakeMatchRepository,
             teamRepository = fakeTeamRepository,
+            oddsRepository = fakeOddsRepository,
             backtestPredictionUseCase = backtestPredictionUseCase,
             defaultDispatcher = testDispatcher
         )
@@ -217,4 +226,14 @@ private class FakeBacktestTeamRepository : TeamRepository {
     override fun getSeasonRanking(matchId: Long): Flow<List<SeasonRanking>> = flowOf(emptyList())
 
     override fun getSeasonRankings(): Flow<List<SeasonRanking>> = flowOf(emptyList())
+}
+
+private class FakeBacktestOddsRepository : OddsRepository {
+    var oddsMapToReturn: Map<Long, OddsRecordItem> = emptyMap()
+
+    override fun getMatchOdds(matchId: Long): Flow<MatchOdds> = flowOf(MatchOdds(matchId = matchId, oddsList = emptyList()))
+
+    override fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?): Flow<List<OddsRecordItem>> = flowOf(emptyList())
+
+    override suspend fun getLatestEuropeanOddsMap(): Map<Long, OddsRecordItem> = oddsMapToReturn
 }

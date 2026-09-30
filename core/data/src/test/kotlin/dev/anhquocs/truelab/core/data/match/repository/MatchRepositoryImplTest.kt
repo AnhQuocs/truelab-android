@@ -49,6 +49,15 @@ class MatchRepositoryImplTest {
 
         override fun getAllMatches(): Flow<List<MatchWithTeams>> =
             flowOf(matches.sortedBy { it.match.startTimeDate })
+
+        override fun getPredictableMatches(limit: Int): Flow<List<MatchWithTeams>> =
+            flowOf(matches.take(limit))
+
+        override fun searchMatches(query: String, limit: Int): Flow<List<MatchWithTeams>> =
+            flowOf(matches.filter {
+                it.homeTeam.name.contains(query, ignoreCase = true) ||
+                it.awayTeam.name.contains(query, ignoreCase = true)
+            }.take(limit))
     }
 
     @Test

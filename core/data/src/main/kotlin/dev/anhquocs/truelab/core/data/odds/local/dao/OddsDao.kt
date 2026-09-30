@@ -35,4 +35,19 @@ interface OddsDao {
           )
     """)
     fun getLatestOddsForMatch(matchId: Long): Flow<List<OddsEntity>>
+
+    @Query("""
+        SELECT o.* FROM odds o
+        JOIN matches m ON o.matchId = m.id
+        WHERE o.oddsType = 'eu'
+          AND o.marketPhase IN ('instant', 'initial')
+          AND o.changeTime < CAST(strftime('%s', m.startTimeDate) AS INTEGER)
+          AND o.homeWin IS NOT NULL AND o.draw IS NOT NULL AND o.awayWin IS NOT NULL
+          AND o.homeWin > 0 AND o.draw > 0 AND o.awayWin > 0
+        ORDER BY o.matchId ASC, 
+                 (CASE WHEN o.marketPhase = 'instant' THEN 1 ELSE 0 END) DESC, 
+                 o.changeTime DESC, 
+                 o.id DESC
+    """)
+    fun getLatestPreMatchEuropeanOddsForAllMatches(): Flow<List<OddsEntity>>
 }

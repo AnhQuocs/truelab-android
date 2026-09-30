@@ -1,5 +1,7 @@
 package dev.anhquocs.truelab.core.domain.evaluation.usecase
 
+import dev.anhquocs.truelab.core.algorithm.rating.EloRatingCalculator
+import dev.anhquocs.truelab.core.algorithm.rating.RatingCalculator
 import dev.anhquocs.truelab.core.domain.evaluation.model.BacktestMatchRecord
 import dev.anhquocs.truelab.core.domain.evaluation.model.PredictionBacktestResult
 import dev.anhquocs.truelab.core.domain.match.model.Match
@@ -11,14 +13,17 @@ import dev.anhquocs.truelab.core.domain.prediction.usecase.PredictMatchOutcomeUs
  * UseCase thuần túy (Pure Kotlin/JVM) thực thi quy trình Backtest đánh giá hiệu năng mô hình dự đoán bóng đá
  * trên tập dữ liệu trận đấu lịch sử.
  *
- * Đảm bảo nguyên tắc Temporal Data Leakage Prevention 100%:
+ * Sử dụng thuật toán Bộ tích lũy Trạng thái Tuần tự Thời gian (Chronological State Accumulator) O(N log N),
+ * đảm bảo nguyên tắc Temporal Data Leakage Prevention 100%:
  * Đối với mỗi trận đấu T_i cần đánh giá:
  * - Chỉ sử dụng các trận đấu diễn ra nghiêm ngặt TRƯỚC thời điểm của T_i (startTimeDate < T_i.startTimeDate).
- * - Tuyệt đối không đưa chính trận T_i hoặc các trận đấu trong tương lai vào bối cảnh phong độ (Recent Form) hay đối đầu (H2H).
+ * - Điểm Elo được tái hiện tuần tự (Chronological Elo Replay): dự đoán bằng Elo trước trận, cập nhật Elo sau trận.
+ * - Tuyệt đối không đưa chính trận T_i hoặc các trận đấu cùng/sau thời điểm vào bối cảnh phong độ (Recent Form) hay đối đầu (H2H).
  */
 class BacktestPredictionUseCase(
     private val predictMatchOutcomeUseCase: PredictMatchOutcomeUseCase = PredictMatchOutcomeUseCase(),
-    private val calculateEvaluationMetricsUseCase: CalculateEvaluationMetricsUseCase = CalculateEvaluationMetricsUseCase()
+    private val calculateEvaluationMetricsUseCase: CalculateEvaluationMetricsUseCase = CalculateEvaluationMetricsUseCase(),
+    private val eloRatingCalculator: RatingCalculator = EloRatingCalculator()
 ) {
 
     /**
@@ -53,72 +58,99 @@ class BacktestPredictionUseCase(
             )
         }
 
-        val records = mutableListOf<BacktestMatchRecord>()
+        val n = eligibleTargets.size
+        val records = ArrayList<BacktestMatchRecord>(n)
+        val teamHistory = HashMap<Int, MutableList<Match>>()
+        val h2hHistory = HashMap<Long, MutableList<Match>>()
+        val currentEloMap = HashMap<Int, Double>(teamEloMap)
 
-        // 3. Thực hiện dự đoán cho từng trận đấu với ngữ cảnh lịch sử nghiêm ngặt
-        for (target in eligibleTargets) {
-            val homeScore = target.homeScore ?: continue
-            val awayScore = target.awayScore ?: continue
-
-            // Lọc tập trận lịch sử diễn ra trước thời điểm target (chống Temporal Leakage)
-            val pastMatches = sortedMatches.filter { m ->
-                isStrictlyBefore(m, target) && m.isEnded && m.homeScore != null && m.awayScore != null && m.id != target.id
+        var i = 0
+        while (i < n) {
+            val currentTimestamp = eligibleTargets[i].startTimeDate
+            var j = i
+            while (j < n && eligibleTargets[j].startTimeDate == currentTimestamp) {
+                j++
             }
 
-            val homeRecent = pastMatches
-                .filter { m -> m.homeTeam.id == target.homeTeam.id || m.awayTeam.id == target.homeTeam.id }
-                .sortedWith(compareByDescending<Match> { it.startTimeDate }.thenByDescending { it.id })
-                .take(5)
+            // A. Dự đoán cho toàn bộ các trận trong nhóm mốc thời gian hiện tại dựa trên trạng thái trước mốc đó
+            for (k in i until j) {
+                val target = eligibleTargets[k]
+                val homeScore = target.homeScore ?: continue
+                val awayScore = target.awayScore ?: continue
+                val homeTeamId = target.homeTeam.id
+                val awayTeamId = target.awayTeam.id
 
-            val awayRecent = pastMatches
-                .filter { m -> m.homeTeam.id == target.awayTeam.id || m.awayTeam.id == target.awayTeam.id }
-                .sortedWith(compareByDescending<Match> { it.startTimeDate }.thenByDescending { it.id })
-                .take(5)
+                val homeRecent = getRecentMatches(teamHistory[homeTeamId], 5)
+                val awayRecent = getRecentMatches(teamHistory[awayTeamId], 5)
+                val h2h = getH2HMatches(h2hHistory[packTeamPair(homeTeamId, awayTeamId)])
+                val homeElo = currentEloMap[homeTeamId] ?: 1500.0
+                val awayElo = currentEloMap[awayTeamId] ?: 1500.0
 
-            val h2h = pastMatches
-                .filter { m ->
-                    (m.homeTeam.id == target.homeTeam.id && m.awayTeam.id == target.awayTeam.id) ||
-                        (m.homeTeam.id == target.awayTeam.id && m.awayTeam.id == target.homeTeam.id)
-                }
-                .sortedWith(compareByDescending<Match> { it.startTimeDate }.thenByDescending { it.id })
-
-            val context = MatchPredictionContext(
-                matchId = target.id,
-                homeTeamId = target.homeTeam.id,
-                awayTeamId = target.awayTeam.id,
-                homeElo = teamEloMap[target.homeTeam.id],
-                awayElo = teamEloMap[target.awayTeam.id],
-                homeRecentMatches = homeRecent,
-                awayRecentMatches = awayRecent,
-                h2hMatches = h2h,
-                latestOdds = matchOddsMap[target.id]
-            )
-
-            val prediction = predictMatchOutcomeUseCase(context)
-
-            val actualOutcome = when {
-                homeScore > awayScore -> CalculateEvaluationMetricsUseCase.LABEL_HOME_WIN
-                homeScore == awayScore -> CalculateEvaluationMetricsUseCase.LABEL_DRAW
-                else -> CalculateEvaluationMetricsUseCase.LABEL_AWAY_WIN
-            }
-
-            val isCorrect = prediction.predictedOutcome == actualOutcome
-
-            records.add(
-                BacktestMatchRecord(
+                val context = MatchPredictionContext(
                     matchId = target.id,
-                    matchDate = target.startTimeDate,
-                    homeTeamName = target.homeTeam.name,
-                    awayTeamName = target.awayTeam.name,
-                    predictedOutcome = prediction.predictedOutcome,
-                    actualOutcome = actualOutcome,
-                    homeWinProb = prediction.homeWinProb,
-                    drawProb = prediction.drawProb,
-                    awayWinProb = prediction.awayWinProb,
-                    confidenceScore = prediction.confidenceScore,
-                    isCorrect = isCorrect
+                    homeTeamId = homeTeamId,
+                    awayTeamId = awayTeamId,
+                    homeElo = homeElo,
+                    awayElo = awayElo,
+                    homeRecentMatches = homeRecent,
+                    awayRecentMatches = awayRecent,
+                    h2hMatches = h2h,
+                    latestOdds = matchOddsMap[target.id]
                 )
-            )
+
+                val prediction = predictMatchOutcomeUseCase(context)
+
+                val actualOutcome = when {
+                    homeScore > awayScore -> CalculateEvaluationMetricsUseCase.LABEL_HOME_WIN
+                    homeScore == awayScore -> CalculateEvaluationMetricsUseCase.LABEL_DRAW
+                    else -> CalculateEvaluationMetricsUseCase.LABEL_AWAY_WIN
+                }
+
+                val isCorrect = prediction.predictedOutcome == actualOutcome
+
+                records.add(
+                    BacktestMatchRecord(
+                        matchId = target.id,
+                        matchDate = target.startTimeDate,
+                        homeTeamName = target.homeTeam.name,
+                        awayTeamName = target.awayTeam.name,
+                        predictedOutcome = prediction.predictedOutcome,
+                        actualOutcome = actualOutcome,
+                        homeWinProb = prediction.homeWinProb,
+                        drawProb = prediction.drawProb,
+                        awayWinProb = prediction.awayWinProb,
+                        confidenceScore = prediction.confidenceScore,
+                        isCorrect = isCorrect
+                    )
+                )
+            }
+
+            // B. Sau khi dự đoán xong nhóm mốc thời gian, cập nhật các trận này vào lịch sử tra cứu & Elo tích lũy
+            for (k in i until j) {
+                val target = eligibleTargets[k]
+                val homeScore = target.homeScore ?: continue
+                val awayScore = target.awayScore ?: continue
+                val homeTeamId = target.homeTeam.id
+                val awayTeamId = target.awayTeam.id
+
+                val homeElo = currentEloMap[homeTeamId] ?: 1500.0
+                val awayElo = currentEloMap[awayTeamId] ?: 1500.0
+                val actualScoreHome = when {
+                    homeScore > awayScore -> 1.0
+                    homeScore == awayScore -> 0.5
+                    else -> 0.0
+                }
+
+                val matchRating = eloRatingCalculator.calculateMatch(homeElo, awayElo, actualScoreHome, kFactor = 32.0)
+                currentEloMap[homeTeamId] = matchRating.newRatingA
+                currentEloMap[awayTeamId] = matchRating.newRatingB
+
+                teamHistory.getOrPut(homeTeamId) { ArrayList() }.add(target)
+                teamHistory.getOrPut(awayTeamId) { ArrayList() }.add(target)
+                h2hHistory.getOrPut(packTeamPair(homeTeamId, awayTeamId)) { ArrayList() }.add(target)
+            }
+
+            i = j
         }
 
         // 4. Tổng hợp các cặp (predicted, actual) để tính toán toàn bộ Evaluation Metrics
@@ -134,7 +166,30 @@ class BacktestPredictionUseCase(
         )
     }
 
-    private fun isStrictlyBefore(matchA: Match, matchB: Match): Boolean {
-        return matchA.startTimeDate < matchB.startTimeDate
+    private fun packTeamPair(idA: Int, idB: Int): Long {
+        val minId = if (idA < idB) idA else idB
+        val maxId = if (idA < idB) idB else idA
+        return (minId.toLong() shl 32) or (maxId.toLong() and 0xFFFFFFFFL)
+    }
+
+    private fun getRecentMatches(history: List<Match>?, count: Int): List<Match> {
+        if (history.isNullOrEmpty()) return emptyList()
+        val size = history.size
+        val start = if (size > count) size - count else 0
+        val result = ArrayList<Match>(size - start)
+        for (idx in size - 1 downTo start) {
+            result.add(history[idx])
+        }
+        return result
+    }
+
+    private fun getH2HMatches(history: List<Match>?): List<Match> {
+        if (history.isNullOrEmpty()) return emptyList()
+        val size = history.size
+        val result = ArrayList<Match>(size)
+        for (idx in size - 1 downTo 0) {
+            result.add(history[idx])
+        }
+        return result
     }
 }

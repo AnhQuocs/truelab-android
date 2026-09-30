@@ -259,10 +259,14 @@ Hành vi mong muốn:
   - **Historical Date Range:** `2019-08-09T18:45:00Z` → `2024-06-23T16:30:00Z` (5 full seasons depth)
   - **Algorithm Data Readiness:** Verified (294 teams $\ge 5$ matches, 229 teams $\ge 30$, 158 teams $\ge 100$, 3,599 H2H pairs $\ge 2$, 1,141 H2H pairs $\ge 6$, 332 H2H pairs $\ge 10$)
 
-> [!CAUTION]
-> **Validation & Runtime Limitation:**
-> 1. Phase A/B/C validation sử dụng API + Python/SQLite runner do môi trường Gradle/Android trên Windows gặp lỗi `AndroidLocationsBuildService`. Đây là validation về mặt API + persistence semantics với `INSERT OR IGNORE`, KHÔNG tuyên bố là full Android Room runtime integration test.
-> 2. Dataset Phase C (15,456 matches) hiện nằm trong `truelab.db` trên host. Android App runtime sử dụng file database riêng `truelab_database.db` (chứa 212 matches live gần nhất). Việc đưa dataset 15.4k matches vào Android runtime (Phase C.1) là task riêng biệt, không thuộc scope Phase C.
+### Phase C.1 [VERIFIED]
+- [x] **Prepackaged Historical Asset Database (`Room.createFromAsset`)**
+  - **Asset:** `app/src/main/assets/database/truelab_database.db` (58.68 MB vacuumed)
+  - **Room Version & Hash:** Room v2 (`9dd083e47a7d9305f0d21f5dc1682349`)
+  - **Clean Install Testing:** Verified on physical Android device (`adb uninstall` -> fresh install)
+  - **Runtime Database Counts:** 15,505 matches (15,456 asset + 49 live), 739 teams, 625,198 odds, 0 orphan odds, 0 duplicates.
+  - **UI Verification:** Dashboard, MatchesScreen, Search, Filter, Sort, Teams, H2H, and Analytics operational.
+  - **Sync Stability:** `DataSyncEngine` successfully appends live matches with `OnConflictStrategy.IGNORE` without overwriting historical dataset.
 
 ### Phase D (Mass Historical Dataset ~50k+)
 - [ ] Top 50+ Leagues/Tournaments
