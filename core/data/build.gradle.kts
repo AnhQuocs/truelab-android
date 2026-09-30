@@ -80,3 +80,6 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
+dependencies {
+    testImplementation("org.robolectric:robolectric:4.11.1")
+}

@@ -296,6 +296,52 @@ class DataSyncEngine(
     /**
      * Đồng bộ Bảng xếp hạng mùa giải tại thời điểm diễn ra trận đấu (Atomic Transaction).
      */
+    suspend fun syncHistoricalMatchesBySeason(seasonId: Long): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            var currentPage = 1
+            var lastPage = 1
+
+            while (currentPage <= lastPage) {
+                val response = retryExecutor.execute {
+                    matchApi.getSeasonMatches(
+                        seasonId = seasonId,
+                        status = -1,
+                        pageSize = 100,
+                        page = currentPage
+                    )
+                }
+
+                val matchRecords = response.data.data
+                if (matchRecords.isEmpty()) break
+
+                val matchLeagues = matchRecords.mapNotNull { it.toLeagueEntity() }.distinctBy { it.id }
+
+                val teams = matchRecords.flatMap {
+                    listOf(it.toHomeTeamEntity(), it.toAwayTeamEntity())
+                }.distinctBy { it.id }
+
+                val matches = matchRecords.map { it.toMatchEntity() }
+
+                database.runInTransaction {
+                    if (matchLeagues.isNotEmpty()) {
+                        database.leagueDao().insertLeagues(matchLeagues)
+                    }
+                    database.teamDao().insertTeams(teams)
+                    database.matchDao().insertMatches(matches)
+                }
+
+                lastPage = response.data.meta?.effectiveLastPage ?: 1
+                currentPage++
+                kotlinx.coroutines.delay(200)
+            }
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun syncSeasonRankingForMatch(matchId: Long): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             syncRankingInternal(matchId)
@@ -336,7 +382,6 @@ class DataSyncEngine(
                 rankingApi.getSeasonRanking(matchId)
             }
             val rankRecords = response.data
-
             if (rankRecords.isNotEmpty()) {
                 val rankEntities = rankRecords.map { it.toEntity(matchId, json) }
                 database.runInTransaction {
