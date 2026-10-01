@@ -19,6 +19,7 @@ data class MatchRecord(
     @SerialName("away_score") val awayScore: Int,
     @SerialName("start_time_date") val startTimeDate: String,
     @SerialName("status") val status: String,
+    @SerialName("minutes") val minutes: String? = null,
     @SerialName("competition_id") val competitionId: Int? = null,
     @SerialName("competition") val competition: CompetitionSummaryInfo? = null
 )

@@ -17,6 +17,7 @@ class MatchRepositoryImplTest {
         val matches = mutableListOf<MatchWithTeams>()
 
         override fun insertMatches(matches: List<MatchEntity>): LongArray = LongArray(matches.size)
+        override fun upsertMatches(matches: List<MatchEntity>): LongArray = LongArray(matches.size)
 
         override fun getMatchById(matchId: Long): Flow<MatchWithTeams?> =
             flowOf(matches.find { it.match.id == matchId })
@@ -58,6 +59,36 @@ class MatchRepositoryImplTest {
                 it.homeTeam.name.contains(query, ignoreCase = true) ||
                 it.awayTeam.name.contains(query, ignoreCase = true)
             }.take(limit))
+
+        override fun getPredictableMatchesFiltered(
+            startDateUtc: String?,
+            endDateUtc: String?,
+            isPastDate: Boolean,
+            isFutureDate: Boolean,
+            leagueId: Int?,
+            statusFilter: String,
+            searchQuery: String?,
+            limit: Int
+        ): Flow<List<MatchWithTeams>> = flowOf(
+            matches.filter { item ->
+                val normalizedStart = item.match.startTimeDate.replace(" ", "T")
+                val dateMatch = (startDateUtc == null || normalizedStart >= startDateUtc) &&
+                    (endDateUtc == null || normalizedStart < endDateUtc)
+                val leagueMatch = leagueId == null || item.match.leagueId == leagueId
+                val statusMatch = when {
+                    isPastDate -> true
+                    isFutureDate -> true
+                    statusFilter == "LIVE_AND_UPCOMING" -> item.match.status in listOf("live", "pending", "1", "0")
+                    statusFilter == "LIVE" -> item.match.status in listOf("live", "1")
+                    statusFilter == "UPCOMING" -> item.match.status in listOf("pending", "0")
+                    else -> true
+                }
+                val searchMatch = searchQuery.isNullOrBlank() ||
+                    item.homeTeam.name.contains(searchQuery, ignoreCase = true) ||
+                    item.awayTeam.name.contains(searchQuery, ignoreCase = true)
+                dateMatch && leagueMatch && statusMatch && searchMatch
+            }.take(limit)
+        )
     }
 
     @Test
@@ -289,6 +320,57 @@ class MatchRepositoryImplTest {
         assertEquals(2, allMatches.size)
         assertEquals(1L, allMatches[0].id)
         assertEquals(2L, allMatches[1].id)
+    }
+
+    @Test
+    fun getPredictableMatchesFiltered_filtersProperlyByDateLeagueAndStatus() = runTest {
+        val dao = FakeMatchDao()
+        val repo = MatchRepositoryImpl(dao)
+
+        val team1 = TeamEntity(id = 1, name = "Arsenal", logo = null, leagueName = "EPL")
+        val team2 = TeamEntity(id = 2, name = "Chelsea", logo = null, leagueName = "EPL")
+
+        dao.matches.addAll(
+            listOf(
+                MatchWithTeams(
+                    match = MatchEntity(1L, 1, 2, 1, 0, "2026-04-01 15:00:00", "live", leagueId = 10, minutes = "45+2"),
+                    homeTeam = team1,
+                    awayTeam = team2
+                ),
+                MatchWithTeams(
+                    match = MatchEntity(2L, 2, 1, null, null, "2026-04-01 18:00:00", "pending", leagueId = 10),
+                    homeTeam = team2,
+                    awayTeam = team1
+                ),
+                MatchWithTeams(
+                    match = MatchEntity(3L, 1, 2, 2, 0, "2026-04-01 20:00:00", "ended", leagueId = 10),
+                    homeTeam = team1,
+                    awayTeam = team2
+                )
+            )
+        )
+
+        val liveOnly = repo.getPredictableMatchesFiltered(
+            datePrefix = "2026-04-01",
+            leagueId = 10,
+            statusFilter = dev.anhquocs.truelab.core.domain.match.model.PredictionStatusFilter.LIVE,
+            limit = 50
+        ).first()
+
+        assertEquals(1, liveOnly.size)
+        assertEquals(1L, liveOnly[0].id)
+        assertEquals("45+2", liveOnly[0].minutes)
+        assertEquals(dev.anhquocs.truelab.core.domain.match.model.MatchStatus.IN_PROGRESS, liveOnly[0].status)
+
+        val liveAndUpcoming = repo.getPredictableMatchesFiltered(
+            datePrefix = "2026-04-01",
+            leagueId = 10,
+            statusFilter = dev.anhquocs.truelab.core.domain.match.model.PredictionStatusFilter.LIVE_AND_UPCOMING,
+            limit = 50
+        ).first()
+
+        assertEquals(2, liveAndUpcoming.size)
+        assertEquals(listOf(1L, 2L), liveAndUpcoming.map { it.id })
     }
 }
 

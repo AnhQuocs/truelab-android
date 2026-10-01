@@ -52,7 +52,8 @@ data class MatchEntity(
     val startTimeDate: String,
     val status: String,
     val leagueId: Int? = null,
-    val season: String? = null
+    val season: String? = null,
+    val minutes: String? = null
 )
 
 data class MatchWithTeams(
@@ -68,5 +69,11 @@ data class MatchWithTeams(
         parentColumn = "awayTeamId",
         entityColumn = "id"
     )
-    val awayTeam: TeamEntity
+    val awayTeam: TeamEntity,
+
+    @Relation(
+        parentColumn = "leagueId",
+        entityColumn = "id"
+    )
+    val league: LeagueEntity? = null
 )

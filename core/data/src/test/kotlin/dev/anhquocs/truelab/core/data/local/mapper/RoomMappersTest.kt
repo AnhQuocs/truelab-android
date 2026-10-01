@@ -132,6 +132,30 @@ class RoomMappersTest {
     }
 
     @Test
+    fun matchWithTeams_toDomain_mapsLeagueNameAndLogo() {
+        val matchEntity = MatchEntity(
+            id = 1001L,
+            homeTeamId = 1,
+            awayTeamId = 2,
+            homeScore = 2,
+            awayScore = 1,
+            startTimeDate = "2024-05-10 20:00:00",
+            status = "8",
+            leagueId = 39,
+            season = "2023-2024"
+        )
+        val homeTeam = TeamEntity(id = 1, name = "Arsenal", logo = "arsenal.png", leagueName = "EPL")
+        val awayTeam = TeamEntity(id = 2, name = "Chelsea", logo = "chelsea.png", leagueName = "EPL")
+        val leagueEntity = LeagueEntity(id = 39, name = "Premier League", logo = "https://example.com/epl.png")
+        val matchWithTeams = MatchWithTeams(match = matchEntity, homeTeam = homeTeam, awayTeam = awayTeam, league = leagueEntity)
+
+        val domain = matchWithTeams.toDomain()
+
+        assertEquals("Premier League", domain.leagueName)
+        assertEquals("https://example.com/epl.png", domain.leagueLogo)
+    }
+
+    @Test
     fun matchWithTeams_toDomain_mapsStringStatusesCorrectly() {
         val homeTeam = TeamEntity(id = 1, name = "Arsenal", logo = "arsenal.png", leagueName = "EPL")
         val awayTeam = TeamEntity(id = 2, name = "Chelsea", logo = "chelsea.png", leagueName = "EPL")

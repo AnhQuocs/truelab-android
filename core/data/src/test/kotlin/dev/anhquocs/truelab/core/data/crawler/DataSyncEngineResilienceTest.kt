@@ -6,6 +6,7 @@ import dev.anhquocs.truelab.core.data.crawler.retry.RetryExecutor
 import dev.anhquocs.truelab.core.data.crawler.retry.RetryPolicy
 import dev.anhquocs.truelab.core.data.league.local.dao.LeagueDao
 import dev.anhquocs.truelab.core.data.league.local.dao.SeasonDao
+import dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity
 import dev.anhquocs.truelab.core.data.local.database.TrueLabDatabase
 import dev.anhquocs.truelab.core.data.match.local.dao.MatchDao
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchEntity
@@ -56,11 +57,19 @@ class DataSyncEngineResilienceTest {
         override fun getTeamById(teamId: Int): Flow<TeamEntity?> = flowOf(teams[teamId])
         override fun searchTeams(query: String): Flow<List<TeamEntity>> =
             flowOf(teams.values.filter { it.name.contains(query, ignoreCase = true) })
+        override fun searchTeams(query: String, limit: Int): Flow<List<TeamEntity>> =
+            flowOf(teams.values.filter { it.name.contains(query, ignoreCase = true) }.take(limit))
+        override fun getTeams(limit: Int): Flow<List<TeamEntity>> =
+            flowOf(teams.values.take(limit))
     }
 
     private class ResilientFakeMatchDao : MatchDao {
         val matches = mutableMapOf<Long, MatchEntity>()
         override fun insertMatches(matches: List<MatchEntity>): LongArray {
+            matches.forEach { this.matches[it.id] = it }
+            return LongArray(matches.size) { (it + 1).toLong() }
+        }
+        override fun upsertMatches(matches: List<MatchEntity>): LongArray {
             matches.forEach { this.matches[it.id] = it }
             return LongArray(matches.size) { (it + 1).toLong() }
         }
@@ -75,6 +84,16 @@ class DataSyncEngineResilienceTest {
         override fun getAllMatches(): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getPredictableMatches(limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun searchMatches(query: String, limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
+        override fun getPredictableMatchesFiltered(
+            startDateUtc: String?,
+            endDateUtc: String?,
+            isPastDate: Boolean,
+            isFutureDate: Boolean,
+            leagueId: Int?,
+            statusFilter: String,
+            searchQuery: String?,
+            limit: Int
+        ): Flow<List<MatchWithTeams>> = flowOf(emptyList())
     }
 
     private class ResilientFakeOddsDao : OddsDao {
@@ -126,6 +145,7 @@ class DataSyncEngineResilienceTest {
                     data = listOf(
                         MatchRecord(
                             id = 101L,
+                            competitionId = 927,
                             homeTeam = TeamInfo(1, "Arsenal", "arsenal.png"),
                             awayTeam = TeamInfo(2, "Chelsea", "chelsea.png"),
                             homeScore = 2,
@@ -231,12 +251,14 @@ class DataSyncEngineResilienceTest {
         fakeOddsApi = ResilientFakeOddsApi()
         fakeRankingApi = ResilientFakeRankingApi()
 
+        leagueDao = ResilientFakeLeagueDao()
+
         testDatabase = object : TrueLabDatabase() {
             override fun matchDao(): MatchDao = matchDao
             override fun teamDao(): TeamDao = teamDao
             override fun oddsDao(): OddsDao = oddsDao
             override fun rankingDao(): RankingDao = rankingDao
-            override fun leagueDao(): LeagueDao = throw NotImplementedError()
+            override fun leagueDao(): LeagueDao = leagueDao
             override fun seasonDao(): SeasonDao = throw NotImplementedError()
             override fun datasetMetadataDao(): DatasetMetadataDao = throw NotImplementedError()
             override fun predictionDao(): PredictionDao = throw NotImplementedError()
@@ -248,6 +270,14 @@ class DataSyncEngineResilienceTest {
             override fun <T> runInTransaction(body: java.util.concurrent.Callable<T>): T = body.call()
             override fun runInTransaction(body: Runnable) = body.run()
         }
+    }
+
+    private lateinit var leagueDao: LeagueDao
+
+    private class ResilientFakeLeagueDao : LeagueDao {
+        override fun insertLeagues(leagues: List<LeagueEntity>): LongArray = LongArray(leagues.size) { (it + 1).toLong() }
+        override fun getLeagues(): Flow<List<LeagueEntity>> = flowOf(emptyList())
+        override fun getLeagueById(leagueId: Int): Flow<LeagueEntity?> = flowOf(null)
     }
 
     @Test

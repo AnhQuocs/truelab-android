@@ -71,3 +71,22 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_matches_leagueId_season` ON `matches` (`leagueId`, `season`)")
     }
 }
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        val cursor = db.query("PRAGMA table_info(`matches`)")
+        var hasMinutes = false
+        val nameIndex = cursor.getColumnIndex("name")
+        while (cursor.moveToNext()) {
+            if (nameIndex != -1 && cursor.getString(nameIndex) == "minutes") {
+                hasMinutes = true
+                break
+            }
+        }
+        cursor.close()
+        if (!hasMinutes) {
+            db.execSQL("ALTER TABLE `matches` ADD COLUMN `minutes` TEXT DEFAULT NULL")
+        }
+    }
+}
+

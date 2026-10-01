@@ -60,11 +60,17 @@ class DataSyncWorkerTest {
         }
         override fun getTeamById(teamId: Int) = throw NotImplementedError()
         override fun searchTeams(query: String) = throw NotImplementedError()
+        override fun searchTeams(query: String, limit: Int) = throw NotImplementedError()
+        override fun getTeams(limit: Int) = throw NotImplementedError()
     }
 
     private class WorkerTestMatchDao : MatchDao {
         val matches = mutableMapOf<Long, MatchEntity>()
         override fun insertMatches(matches: List<MatchEntity>): LongArray {
+            matches.forEach { this.matches[it.id] = it }
+            return LongArray(matches.size) { (it + 1).toLong() }
+        }
+        override fun upsertMatches(matches: List<MatchEntity>): LongArray {
             matches.forEach { this.matches[it.id] = it }
             return LongArray(matches.size) { (it + 1).toLong() }
         }
@@ -79,6 +85,16 @@ class DataSyncWorkerTest {
         override fun getAllMatches() = throw NotImplementedError()
         override fun getPredictableMatches(limit: Int) = throw NotImplementedError()
         override fun searchMatches(query: String, limit: Int) = throw NotImplementedError()
+        override fun getPredictableMatchesFiltered(
+            startDateUtc: String?,
+            endDateUtc: String?,
+            isPastDate: Boolean,
+            isFutureDate: Boolean,
+            leagueId: Int?,
+            statusFilter: String,
+            searchQuery: String?,
+            limit: Int
+        ) = throw NotImplementedError()
     }
 
     private class WorkerTestMatchApi : MatchApi {
@@ -94,7 +110,7 @@ class DataSyncWorkerTest {
             errorToThrow?.let { throw it }
             return BaseResponse(
                 200, "OK", MatchInfoDetailResponseBase(
-                    listOf(MatchRecord(3001L, TeamInfo(1, "LIV", ""), TeamInfo(2, "MCI", ""), 2, 2, "$date 17:30:00", "8")),
+                    listOf(MatchRecord(3001L, TeamInfo(1, "LIV", ""), TeamInfo(2, "MCI", ""), 2, 2, "$date 17:30:00", "8", competitionId = 927)),
                     MetaResponse(1, 1)
                 )
             )
@@ -179,12 +195,14 @@ class DataSyncWorkerTest {
         rankingApi = WorkerTestRankingApi()
         metadataRepo = WorkerTestMetadataRepository()
 
+        leagueDao = WorkerTestLeagueDao()
+
         testDatabase = object : TrueLabDatabase() {
             override fun matchDao(): MatchDao = matchDao
             override fun teamDao(): TeamDao = teamDao
             override fun oddsDao(): OddsDao = oddsDao
             override fun rankingDao(): RankingDao = rankingDao
-            override fun leagueDao(): dev.anhquocs.truelab.core.data.league.local.dao.LeagueDao = throw NotImplementedError()
+            override fun leagueDao(): dev.anhquocs.truelab.core.data.league.local.dao.LeagueDao = leagueDao
             override fun seasonDao(): dev.anhquocs.truelab.core.data.league.local.dao.SeasonDao = throw NotImplementedError()
             override fun datasetMetadataDao(): dev.anhquocs.truelab.core.data.metadata.local.dao.DatasetMetadataDao = throw NotImplementedError()
             override fun predictionDao(): dev.anhquocs.truelab.core.data.prediction.local.dao.PredictionDao = throw NotImplementedError()
@@ -194,6 +212,15 @@ class DataSyncWorkerTest {
             override fun <T> runInTransaction(body: java.util.concurrent.Callable<T>): T = body.call()
             override fun runInTransaction(body: Runnable) = body.run()
         }
+    }
+
+    private lateinit var leagueDao: dev.anhquocs.truelab.core.data.league.local.dao.LeagueDao
+
+    private class WorkerTestLeagueDao : dev.anhquocs.truelab.core.data.league.local.dao.LeagueDao {
+        override fun insertLeagues(leagues: List<dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity>): LongArray =
+            LongArray(leagues.size) { (it + 1).toLong() }
+        override fun getLeagues(): Flow<List<dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity>> = flowOf(emptyList())
+        override fun getLeagueById(leagueId: Int): Flow<dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity?> = flowOf(null)
     }
 
     private fun createWorkerParameters(data: Data = Data.EMPTY): WorkerParameters {

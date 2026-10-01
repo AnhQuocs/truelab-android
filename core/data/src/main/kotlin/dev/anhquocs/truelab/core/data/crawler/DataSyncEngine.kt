@@ -7,6 +7,8 @@ import dev.anhquocs.truelab.core.data.crawler.cache.DefaultCacheFreshnessChecker
 import dev.anhquocs.truelab.core.data.crawler.model.SyncResult
 import dev.anhquocs.truelab.core.data.crawler.model.SyncSummary
 import dev.anhquocs.truelab.core.data.crawler.retry.RetryExecutor
+import dev.anhquocs.truelab.core.data.crawler.policy.CompetitionQualityPolicy
+import dev.anhquocs.truelab.core.data.crawler.policy.DefaultCompetitionQualityPolicy
 import dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity
 import dev.anhquocs.truelab.core.data.league.local.entity.SeasonEntity
 import dev.anhquocs.truelab.core.data.league.remote.api.CompetitionApi
@@ -45,6 +47,7 @@ class DataSyncEngine(
     private val retryExecutor: RetryExecutor = RetryExecutor(),
     private val cacheFreshnessChecker: CacheFreshnessChecker = DefaultCacheFreshnessChecker(),
     private val freshnessPolicy: DataFreshnessPolicy = DataFreshnessPolicy(),
+    private val qualityPolicy: CompetitionQualityPolicy = DefaultCompetitionQualityPolicy(),
     internal var timeProvider: () -> Long = { System.currentTimeMillis() }
 ) {
 
@@ -107,35 +110,40 @@ class DataSyncEngine(
 
                 if (matchRecords.isEmpty()) break
 
-                // 3. Extract and save Leagues from match records (to satisfy Foreign Key constraints)
-                val matchLeagues = matchRecords.mapNotNull { it.toLeagueEntity() }.distinctBy { it.id }
+                // Filter only ACCEPTED matches based on CompetitionQualityPolicy
+                val acceptedRecords = matchRecords.filter { qualityPolicy.isAccepted(it) }
 
-                // 4. Map & Deduplicate Teams per batch
-                val teams = matchRecords.flatMap {
-                    listOf(it.toHomeTeamEntity(), it.toAwayTeamEntity())
-                }.distinctBy { it.id }
+                if (acceptedRecords.isNotEmpty()) {
+                    // 3. Extract and save Leagues ONLY from accepted match records (to satisfy Foreign Key constraints)
+                    val matchLeagues = acceptedRecords.mapNotNull { it.toLeagueEntity() }.distinctBy { it.id }
 
-                val matches = matchRecords.map { it.toMatchEntity() }
+                    // 4. Map & Deduplicate Teams ONLY from accepted match records
+                    val teams = acceptedRecords.flatMap {
+                        listOf(it.toHomeTeamEntity(), it.toAwayTeamEntity())
+                    }.distinctBy { it.id }
 
-                // 5. Atomic Transaction per page (Leagues -> Teams -> Matches)
-                database.runInTransaction {
-                    if (matchLeagues.isNotEmpty()) {
-                        database.leagueDao().insertLeagues(matchLeagues)
+                    val matches = acceptedRecords.map { it.toMatchEntity() }
+
+                    // 5. Atomic Transaction per page (Leagues -> Teams -> Matches)
+                    database.runInTransaction {
+                        if (matchLeagues.isNotEmpty()) {
+                            database.leagueDao().insertLeagues(matchLeagues)
+                        }
+                        database.teamDao().insertTeams(teams)
+                        database.matchDao().upsertMatches(matches)
                     }
-                    database.teamDao().insertTeams(teams)
-                    database.matchDao().insertMatches(matches)
-                }
 
-                totalMatchesSynced += matches.size
-                totalTeamsSynced += teams.size
+                    totalMatchesSynced += matches.size
+                    totalTeamsSynced += teams.size
 
-                // 6. Optional secondary synchronization (Rankings & Odds per match)
-                if (syncOddsAndRankings) {
-                    for (match in matches) {
-                        val oddsCount = syncOddsInternal(match.id)
-                        val rankCount = syncRankingInternal(match.id)
-                        totalOddsSynced += oddsCount
-                        totalRankingsSynced += rankCount
+                    // 6. Optional secondary synchronization (Rankings & Odds per match)
+                    if (syncOddsAndRankings) {
+                        for (match in matches) {
+                            val oddsCount = syncOddsInternal(match.id)
+                            val rankCount = syncRankingInternal(match.id)
+                            totalOddsSynced += oddsCount
+                            totalRankingsSynced += rankCount
+                        }
                     }
                 }
 
@@ -314,20 +322,24 @@ class DataSyncEngine(
                 val matchRecords = response.data.data
                 if (matchRecords.isEmpty()) break
 
-                val matchLeagues = matchRecords.mapNotNull { it.toLeagueEntity() }.distinctBy { it.id }
+                val acceptedRecords = matchRecords.filter { qualityPolicy.isAccepted(it) }
 
-                val teams = matchRecords.flatMap {
-                    listOf(it.toHomeTeamEntity(), it.toAwayTeamEntity())
-                }.distinctBy { it.id }
+                if (acceptedRecords.isNotEmpty()) {
+                    val matchLeagues = acceptedRecords.mapNotNull { it.toLeagueEntity() }.distinctBy { it.id }
 
-                val matches = matchRecords.map { it.toMatchEntity() }
+                    val teams = acceptedRecords.flatMap {
+                        listOf(it.toHomeTeamEntity(), it.toAwayTeamEntity())
+                    }.distinctBy { it.id }
 
-                database.runInTransaction {
-                    if (matchLeagues.isNotEmpty()) {
-                        database.leagueDao().insertLeagues(matchLeagues)
+                    val matches = acceptedRecords.map { it.toMatchEntity() }
+
+                    database.runInTransaction {
+                        if (matchLeagues.isNotEmpty()) {
+                            database.leagueDao().insertLeagues(matchLeagues)
+                        }
+                        database.teamDao().insertTeams(teams)
+                        database.matchDao().upsertMatches(matches)
                     }
-                    database.teamDao().insertTeams(teams)
-                    database.matchDao().insertMatches(matches)
                 }
 
                 lastPage = response.data.meta?.effectiveLastPage ?: 1

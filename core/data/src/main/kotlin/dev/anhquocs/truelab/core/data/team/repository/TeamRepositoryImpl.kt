@@ -21,8 +21,14 @@ class TeamRepositoryImpl @Inject constructor(
         return teamDao.getTeamById(teamId).map { it?.toDomain() }
     }
 
-    override fun getTeams(): Flow<List<TeamDetail>> {
-        return teamDao.searchTeams("").map { list ->
+    override fun getTeams(limit: Int): Flow<List<TeamDetail>> {
+        return teamDao.getTeams(limit).map { list ->
+            list.map { it.toDomain() }
+        }
+    }
+
+    override fun searchTeams(query: String, limit: Int): Flow<List<TeamDetail>> {
+        return teamDao.searchTeams(query, limit).map { list ->
             list.map { it.toDomain() }
         }
     }

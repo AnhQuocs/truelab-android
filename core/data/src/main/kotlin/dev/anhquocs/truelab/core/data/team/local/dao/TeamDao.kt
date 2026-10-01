@@ -20,4 +20,10 @@ interface TeamDao {
 
     @Query("SELECT * FROM teams WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
     fun searchTeams(query: String): Flow<List<TeamEntity>>
+
+    @Query("SELECT * FROM teams WHERE name LIKE '%' || :query || '%' ORDER BY name ASC LIMIT :limit")
+    fun searchTeams(query: String, limit: Int): Flow<List<TeamEntity>>
+
+    @Query("SELECT * FROM teams ORDER BY name ASC LIMIT :limit")
+    fun getTeams(limit: Int): Flow<List<TeamEntity>>
 }

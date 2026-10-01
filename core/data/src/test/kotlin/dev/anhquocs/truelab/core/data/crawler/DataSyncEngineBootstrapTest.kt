@@ -77,11 +77,17 @@ class DataSyncEngineBootstrapTest {
         }
         override fun getTeamById(teamId: Int): Flow<TeamEntity?> = flowOf(teams[teamId])
         override fun searchTeams(query: String): Flow<List<TeamEntity>> = flowOf(emptyList())
+        override fun searchTeams(query: String, limit: Int): Flow<List<TeamEntity>> = flowOf(emptyList())
+        override fun getTeams(limit: Int): Flow<List<TeamEntity>> = flowOf(emptyList())
     }
 
     private class FakeMatchDao : MatchDao {
         val matches = mutableMapOf<Long, MatchEntity>()
         override fun insertMatches(matches: List<MatchEntity>): LongArray {
+            matches.forEach { this.matches[it.id] = it }
+            return LongArray(matches.size) { (it + 1).toLong() }
+        }
+        override fun upsertMatches(matches: List<MatchEntity>): LongArray {
             matches.forEach { this.matches[it.id] = it }
             return LongArray(matches.size) { (it + 1).toLong() }
         }
@@ -96,6 +102,16 @@ class DataSyncEngineBootstrapTest {
         override fun getAllMatches(): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getPredictableMatches(limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun searchMatches(query: String, limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
+        override fun getPredictableMatchesFiltered(
+            startDateUtc: String?,
+            endDateUtc: String?,
+            isPastDate: Boolean,
+            isFutureDate: Boolean,
+            leagueId: Int?,
+            statusFilter: String,
+            searchQuery: String?,
+            limit: Int
+        ): Flow<List<MatchWithTeams>> = flowOf(emptyList())
     }
 
     private class FakeMatchApi : MatchApi {

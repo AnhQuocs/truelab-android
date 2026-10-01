@@ -157,7 +157,10 @@ object RoomMappers {
         startTimeDate = match.startTimeDate,
         status = MatchStatus.fromCode(match.status),
         leagueId = match.leagueId,
-        season = match.season
+        leagueName = league?.name,
+        leagueLogo = league?.logo,
+        season = match.season,
+        minutes = match.minutes
     )
 
     // --- DTO to Entity ---
@@ -180,15 +183,18 @@ object RoomMappers {
         endDate = endTime?.toString()
     )
 
-    fun MatchRecord.toLeagueEntity(): LeagueEntity? = competitionId?.let { compId ->
-        LeagueEntity(
-            id = compId,
-            name = competition?.name ?: "League #$compId",
-            shortName = competition?.shortName,
-            logo = competition?.logo,
-            country = null,
-            category = null
-        )
+    fun MatchRecord.toLeagueEntity(): LeagueEntity? {
+        val compId = competitionId ?: competition?.id
+        return compId?.let { id ->
+            LeagueEntity(
+                id = id,
+                name = competition?.name ?: "League #$id",
+                shortName = competition?.shortName,
+                logo = competition?.logo,
+                country = null,
+                category = null
+            )
+        }
     }
 
     fun MatchRecord.toMatchEntity() = MatchEntity(
@@ -199,7 +205,8 @@ object RoomMappers {
         awayScore = awayScore,
         startTimeDate = startTimeDate,
         status = status,
-        leagueId = competitionId
+        leagueId = competitionId ?: competition?.id,
+        minutes = minutes
     )
 
     fun MatchRecord.toHomeTeamEntity() = TeamEntity(
