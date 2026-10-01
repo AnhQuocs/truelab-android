@@ -6,7 +6,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface TeamRepository {
     fun getTeamDetail(teamId: Int): Flow<TeamDetail?>
-    fun getTeams(): Flow<List<TeamDetail>>
+    fun getTeams(limit: Int = 50): Flow<List<TeamDetail>>
+    fun searchTeams(query: String, limit: Int = 50): Flow<List<TeamDetail>>
     fun getSeasonRanking(matchId: Long): Flow<List<SeasonRanking>>
     fun getSeasonRankings(): Flow<List<SeasonRanking>>
 }

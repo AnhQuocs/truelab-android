@@ -144,7 +144,42 @@ class GetHeadToHeadComparisonUseCaseTest {
         assertNotNull(summary.teamBStats)
         assertEquals(2, summary.teamAHomeAwaySplits.totalSplit.played)
         assertEquals(1, summary.teamBHomeAwaySplits.totalSplit.played)
+        assertEquals(2, summary.teamARecentMatches.size)
+        assertEquals(1, summary.teamBRecentMatches.size)
+        assertEquals(401L, summary.teamARecentMatches[0].id) // oldest match first in timeline (2024-01-01 before 2024-01-08)
+        assertEquals(402L, summary.teamARecentMatches[1].id)
     }
+
+    @Test
+    fun `invoke limits recent matches to top 5 ended in chronological ascending date order`() {
+        val recentA = (1..8).map { i ->
+            createMatch(
+                id = 500L + i,
+                homeId = 1,
+                awayId = 10 + i,
+                homeScore = 1,
+                awayScore = 0,
+                status = MatchStatus.ENDED,
+                date = "2024-02-0$i"
+            )
+        }
+
+        val summary = useCase(
+            teamA = arsenal,
+            teamB = chelsea,
+            h2hMatches = emptyList(),
+            teamARecentMatches = recentA,
+            teamBRecentMatches = emptyList()
+        )
+
+        assertEquals(5, summary.teamARecentMatches.size)
+        // Top 5 recent matches should be 504..508, sorted oldest -> newest (504, 505, 506, 507, 508)
+        assertEquals(504L, summary.teamARecentMatches[0].id)
+        assertEquals(508L, summary.teamARecentMatches[4].id)
+        assertEquals(0, summary.teamBRecentMatches.size)
+    }
+
+
 
     private fun createMatch(
         id: Long,

@@ -7,6 +7,7 @@ data class PredictionResult(
     val drawProb: Double,
     val awayWinProb: Double,
     val predictedOutcome: String,
-    val confidenceScore: Double
+    val confidenceScore: Double,
+    val evidence: PredictionEvidence? = null
 )
 

@@ -9,14 +9,14 @@ data class OddsRecordItem(
     val companyId: Int,
     val companyName: String,
     val oddsType: String,
-    val handicap: Double?,
-    val over: Double?,
-    val under: Double?,
-    val homeWin: Double?,
-    val draw: Double?,
-    val awayWin: Double?,
-    val changeTime: Long,
-    val marketPhase: String?
+    val handicap: Double? = null,
+    val over: Double? = null,
+    val under: Double? = null,
+    val homeWin: Double? = null,
+    val draw: Double? = null,
+    val awayWin: Double? = null,
+    val changeTime: Long = 0L,
+    val marketPhase: String? = null
 ) {
     fun calculateImpliedProbability(): ImpliedProbability? {
         val hw = homeWin ?: return null

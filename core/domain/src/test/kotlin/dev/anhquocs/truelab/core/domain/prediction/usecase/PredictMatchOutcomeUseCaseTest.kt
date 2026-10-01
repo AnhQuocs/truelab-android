@@ -115,6 +115,22 @@ class PredictMatchOutcomeUseCaseTest {
         assertTrue(result.homeWinProb > result.drawProb)
         assertEquals("HOME_WIN", result.predictedOutcome)
         assertEquals(result.homeWinProb, result.confidenceScore, 1e-6)
+
+        // Verify Evidence
+        assertNotNull(result.evidence)
+        val ev = result.evidence!!
+        assertEquals(6, ev.signals.size)
+        assertEquals("1750.0", ev.elo.details["homeElo"])
+        assertEquals("1520.0", ev.elo.details["awayElo"])
+        assertEquals("+230.0", ev.elo.details["diff"])
+        assertEquals("Bet365", ev.odds.details["bookmaker"])
+        assertEquals("1.85", ev.odds.details["homeOdds"])
+        assertTrue(ev.elo.effectiveWeight > 0.0)
+        assertTrue(ev.form.effectiveWeight > 0.0)
+        assertTrue(ev.odds.effectiveWeight > 0.0)
+        assertTrue(ev.goals.effectiveWeight > 0.0)
+        assertTrue(ev.h2h.effectiveWeight > 0.0)
+        assertTrue(ev.homeAdvantage.effectiveWeight > 0.0)
     }
 
     @Test
