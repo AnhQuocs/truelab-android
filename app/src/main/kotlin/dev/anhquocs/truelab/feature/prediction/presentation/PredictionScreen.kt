@@ -1,7 +1,6 @@
 package dev.anhquocs.truelab.feature.prediction.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,27 +14,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,38 +40,40 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.anhquocs.truelab.R
-import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
-import dev.anhquocs.truelab.core.ui.theme.RadiusPill
+import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.core.ui.theme.SpacingXXS
 import dev.anhquocs.truelab.core.ui.utils.bold
-import dev.anhquocs.truelab.core.ui.utils.medium
-import dev.anhquocs.truelab.core.ui.utils.s10
 import dev.anhquocs.truelab.core.ui.utils.s12
-import dev.anhquocs.truelab.core.ui.utils.s13
 import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.s16
 import dev.anhquocs.truelab.core.ui.utils.s18
-import dev.anhquocs.truelab.core.ui.utils.s20
 import dev.anhquocs.truelab.core.ui.utils.semiBold
-import dev.anhquocs.truelab.feature.prediction.presentation.components.PredictionFactorsCard
-import dev.anhquocs.truelab.feature.prediction.presentation.components.ProbabilityResultsCard
+import dev.anhquocs.truelab.feature.prediction.presentation.components.PredictableMatchCard
+import dev.anhquocs.truelab.feature.prediction.presentation.components.PredictionBottomSheet
+import dev.anhquocs.truelab.feature.prediction.presentation.components.PredictionEmptyCard
+import dev.anhquocs.truelab.feature.prediction.presentation.components.PredictionFeedbackCard
+import dev.anhquocs.truelab.feature.prediction.presentation.components.PredictionFilterBar
+import dev.anhquocs.truelab.feature.prediction.presentation.components.PredictionHeader
+import dev.anhquocs.truelab.feature.prediction.presentation.components.PREDICTION_HEADER_HEIGHT
 import dev.anhquocs.truelab.feature.prediction.presentation.model.PredictionUiState
 import dev.anhquocs.truelab.feature.prediction.presentation.viewmodel.PredictionViewModel
+import dev.anhquocs.truelab.navigation.TrueLabMainLayout
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PredictionScreen(
     modifier: Modifier = Modifier,
@@ -83,358 +82,212 @@ fun PredictionScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val availableMatches by viewModel.availableMatches.collectAsStateWithLifecycle()
-    var searchInput by remember { mutableStateOf("") }
+    val selectedDate by viewModel.selectedDate.collectAsStateWithLifecycle()
+    val selectedLeagueId by viewModel.selectedLeagueId.collectAsStateWithLifecycle()
+    val selectedStatusFilter by viewModel.selectedStatusFilter.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val leagues by viewModel.leagues.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val selectedMatchId by viewModel.selectedMatchId.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            PredictionTopBar(onNavigateBack = onNavigateBack)
-        },
-        modifier = modifier
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(
-                start = Dimen.PaddingM,
-                end = Dimen.PaddingM,
-                top = Dimen.PaddingS,
-                bottom = Dimen.PaddingXXL
-            ),
-            verticalArrangement = Arrangement.spacedBy(Dimen.PaddingM)
-        ) {
-            // Match Selector (Always visible at top)
-            item {
-                val currentSelectedMatch = (uiState as? PredictionUiState.Success)?.selectedMatch
-                    ?: availableMatches.firstOrNull()
+    var showPredictionSheet by remember { mutableStateOf(false) }
 
-                PredictionMatchSelector(
-                    matches = availableMatches,
-                    selectedMatch = currentSelectedMatch,
-                    searchQuery = searchInput,
-                    onSearchQueryChange = { query ->
-                        searchInput = query
-                        viewModel.onSearchQueryChanged(query)
-                    },
-                    onMatchSelected = { viewModel.onSelectMatch(it.id) }
+    val pullToRefreshState = rememberPullToRefreshState()
+    val listState = rememberLazyListState()
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        viewModel.refreshErrorEvent.collect { errorUiText ->
+            val message = errorUiText.asString(context)
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
+    val currentSelectedId = (uiState as? PredictionUiState.Success)?.selectedMatch?.id ?: selectedMatchId
+    val leagueNameMap = remember(leagues) { leagues.associate { it.id to it.name } }
+
+    val groupedMatches = remember(availableMatches, leagues, selectedDate) {
+        availableMatches
+            .groupBy { match ->
+                match.leagueId?.toString() ?: match.leagueName ?: "default_group"
+            }
+            .map { (_, matchesInGroup) ->
+                val leagueId = matchesInGroup.firstNotNullOfOrNull { it.leagueId }
+                val leagueName = matchesInGroup.firstNotNullOfOrNull { it.leagueName }
+                    ?: leagueId?.let { id -> leagueNameMap[id] }
+                    ?: "Giải đấu"
+                val leagueLogo = matchesInGroup.firstNotNullOfOrNull { it.leagueLogo }
+                    ?: leagueId?.let { id -> leagues.find { it.id == id }?.logo }
+
+                val sortedMatches = matchesInGroup.sortedWith(
+                    compareBy<dev.anhquocs.truelab.core.domain.match.model.Match> { match ->
+                        when (dev.anhquocs.truelab.feature.prediction.presentation.components.resolveDisplayStatus(match, selectedDate)) {
+                            dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.LIVE -> 0
+                            dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.STARTED -> 1
+                            dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.UPCOMING -> 2
+                            dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.ENDED -> 3
+                        }
+                    }.thenBy { it.startTimeDate }
+                )
+
+                dev.anhquocs.truelab.feature.prediction.presentation.components.CompetitionMatchGroup(
+                    leagueId = leagueId,
+                    leagueName = leagueName,
+                    leagueLogo = leagueLogo,
+                    matches = sortedMatches
                 )
             }
+    }
 
-            // Body Content based on UiState
-            when (val state = uiState) {
-                is PredictionUiState.Loading -> {
+    TrueLabMainLayout(
+        modifier = modifier,
+        headerHeight = PREDICTION_HEADER_HEIGHT,
+        header = {
+            PredictionHeader(
+                onNavigateBack = onNavigateBack,
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.refresh() }
+            )
+        }
+    ) { contentModifier ->
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.refresh() },
+            state = pullToRefreshState,
+            modifier = contentModifier.fillMaxSize()
+        ) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = Dimen.PaddingM,
+                    end = Dimen.PaddingM,
+                    top = Dimen.PaddingS,
+                    bottom = Dimen.PaddingUltra
+                ),
+                verticalArrangement = Arrangement.spacedBy(Dimen.PaddingS)
+            ) {
+                // Section 1: Filters (Date, Competition, Status, Search)
+                item {
+                    PredictionFilterBar(
+                        selectedDate = selectedDate,
+                        onDateChanged = { viewModel.onDateSelected(it) },
+                        leagues = leagues,
+                        selectedLeagueId = selectedLeagueId,
+                        onLeagueSelected = { viewModel.onLeagueSelected(it) },
+                        selectedStatusFilter = selectedStatusFilter,
+                        onStatusFilterSelected = { viewModel.onStatusFilterSelected(it) },
+                        searchQuery = searchQuery,
+                        onSearchQueryChanged = { viewModel.onSearchQueryChanged(it) }
+                    )
+                }
+
+                // Section 2: Match Candidates Grouped by Competition
+                if (groupedMatches.isNotEmpty()) {
                     item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = Dimen.PaddingXXL),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(Dimen.SizeXL),
-                                color = MaterialTheme.colorScheme.primary
+                        Text(
+                            text = stringResource(R.string.prediction_select_match),
+                            style = MaterialTheme.typography.s14.semiBold(),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(top = SpacingXXS)
+                        )
+                    }
+
+                    groupedMatches.forEach { group ->
+                        item(key = "header_${group.leagueId ?: group.leagueName}") {
+                            dev.anhquocs.truelab.feature.prediction.presentation.components.CompetitionSectionHeader(group = group)
+                        }
+
+                        items(
+                            items = group.matches,
+                            key = { it.id }
+                        ) { match ->
+                            PredictableMatchCard(
+                                match = match,
+                                isSelected = match.id == currentSelectedId,
+                                showLeagueHeader = false,
+                                leagueName = group.leagueName,
+                                leagueLogo = group.leagueLogo,
+                                selectedDate = selectedDate,
+                                onClick = {
+                                    viewModel.onSelectMatch(match.id)
+                                },
+                                onPredictClick = {
+                                    viewModel.onSelectMatch(match.id)
+                                    showPredictionSheet = true
+                                }
                             )
                         }
                     }
                 }
 
-                is PredictionUiState.Error -> {
-                    item {
-                        PredictionFeedbackCard(
-                            icon = Icons.Default.ErrorOutline,
-                            iconTint = MaterialTheme.colorScheme.error,
-                            title = stringResource(R.string.prediction_error_default),
-                            message = state.message.asString(),
-                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
-                            titleColor = MaterialTheme.colorScheme.error,
-                            messageColor = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    }
-                }
-
-                is PredictionUiState.Empty -> {
-                    item {
-                        PredictionFeedbackCard(
-                            icon = Icons.Default.Info,
-                            iconTint = MaterialTheme.colorScheme.primary,
-                            title = stringResource(R.string.prediction_title),
-                            message = state.message.asString(),
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                            titleColor = MaterialTheme.colorScheme.primary,
-                            messageColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                is PredictionUiState.Success -> {
-                    // Selected Match Header Card
-                    item {
-                        SelectedMatchHeaderCard(match = state.selectedMatch)
+                // Section 3: Status / Feedback (Loading, Empty, Error)
+                when (val state = uiState) {
+                    is PredictionUiState.Loading -> {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = Dimen.PaddingXXL),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(Dimen.SizeXL),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
                     }
 
-                    // Win / Draw / Loss Probabilities Card
-                    item {
-                        ProbabilityResultsCard(
-                            predictionResult = state.predictionResult,
-                            homeWinPercent = state.homeWinPercent,
-                            drawPercent = state.drawPercent,
-                            awayWinPercent = state.awayWinPercent
-                        )
-                    }
-
-                    // Prediction Factors Card
-                    item {
-                        PredictionFactorsCard(
-                            match = state.selectedMatch,
-                            predictionResult = state.predictionResult,
-                            homeElo = state.homeElo,
-                            awayElo = state.awayElo
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PredictionTopBar(
-    onNavigateBack: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(Dimen.TopbarHeight)
-            .background(MaterialTheme.colorScheme.surface),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Dimen.PaddingS, vertical = Dimen.PaddingS),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onNavigateBack) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_back),
-                    contentDescription = "Back",
-                    modifier = Modifier.size(Dimen.SizeML),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            Spacer(modifier = Modifier.width(Dimen.PaddingXS))
-            Column {
-                Text(
-                    text = stringResource(R.string.prediction_title),
-                    style = MaterialTheme.typography.s18.bold(),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = stringResource(R.string.prediction_subtitle),
-                    style = MaterialTheme.typography.s12,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PredictionMatchSelector(
-    matches: List<Match>,
-    selectedMatch: Match?,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onMatchSelected: (Match) -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(SpacingS)
-    ) {
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = onSearchQueryChange,
-            placeholder = {
-                Text(
-                    text = stringResource(R.string.matches_search_hint),
-                    style = MaterialTheme.typography.s12,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { onSearchQueryChange("") }) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Clear",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            },
-            singleLine = true,
-            shape = RoundedCornerShape(RadiusLarge),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Text(
-            text = stringResource(R.string.prediction_select_match),
-            style = MaterialTheme.typography.s13.bold(),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        if (matches.isEmpty()) {
-            Text(
-                text = stringResource(R.string.matches_empty_search),
-                style = MaterialTheme.typography.s12,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = SpacingXS)
-            )
-        } else {
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(SpacingS)
-            ) {
-                items(
-                    items = matches,
-                    key = { it.id }
-                ) { match ->
-                    val isSelected = match.id == selectedMatch?.id
-                    val label = "${match.homeTeam.name} vs ${match.awayTeam.name}"
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = { onMatchSelected(match) },
-                        label = {
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.s12
+                    is PredictionUiState.Empty -> {
+                        item {
+                            PredictionEmptyCard(
+                                message = stringResource(R.string.prediction_empty_filter_desc),
+                                onResetFilters = { viewModel.onResetFilters() }
                             )
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
+                        }
+                    }
+
+                    is PredictionUiState.Error -> {
+                        item {
+                            PredictionFeedbackCard(
+                                icon = Icons.Default.ErrorOutline,
+                                iconTint = MaterialTheme.colorScheme.error,
+                                title = stringResource(R.string.prediction_error_default),
+                                message = state.message.asString(),
+                                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f),
+                                titleColor = MaterialTheme.colorScheme.error,
+                                messageColor = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+
+                    is PredictionUiState.Success -> {
+                        // Prediction results are displayed inside PredictionBottomSheet
+                    }
                 }
             }
+
+            androidx.compose.material3.SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = Dimen.PaddingUltra)
+            )
         }
     }
-}
 
-@Composable
-private fun SelectedMatchHeaderCard(
-    match: Match
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(RadiusLarge),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimen.PaddingM),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = stringResource(R.string.prediction_selected_match),
-                style = MaterialTheme.typography.s10.medium(),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(SpacingXS))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = match.homeTeam.name,
-                    style = MaterialTheme.typography.s16.bold(),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Start
-                )
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(RadiusPill))
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .padding(horizontal = Dimen.PaddingS, vertical = Dimen.PaddingXXS)
-                ) {
-                    Text(
-                        text = "VS",
-                        style = MaterialTheme.typography.s10.bold(),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-                Text(
-                    text = match.awayTeam.name,
-                    style = MaterialTheme.typography.s16.bold(),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.End
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PredictionFeedbackCard(
-    icon: ImageVector,
-    iconTint: Color,
-    title: String,
-    message: String,
-    containerColor: Color,
-    titleColor: Color,
-    messageColor: Color
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Dimen.PaddingL),
-        shape = RoundedCornerShape(RadiusLarge),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimen.PaddingL),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(SpacingS)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(40.dp)
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.s16.bold(),
-                color = titleColor
-            )
-            Text(
-                text = message,
-                style = MaterialTheme.typography.s14,
-                color = messageColor,
-                textAlign = TextAlign.Center
-            )
-        }
+    // ModalBottomSheet for Prediction Result & Detailed Evidence
+    if (showPredictionSheet && uiState is PredictionUiState.Success) {
+        val successState = uiState as PredictionUiState.Success
+        PredictionBottomSheet(
+            selectedMatch = successState.selectedMatch,
+            predictionResult = successState.predictionResult,
+            leagueName = successState.selectedMatch.leagueName ?: successState.selectedMatch.leagueId?.let { leagueNameMap[it] },
+            leagueLogo = successState.selectedMatch.leagueLogo ?: leagues.find { it.id == successState.selectedMatch.leagueId }?.logo,
+            selectedDate = selectedDate,
+            onDismissRequest = { showPredictionSheet = false }
+        )
     }
 }
