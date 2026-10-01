@@ -358,9 +358,17 @@ class AnalyticsViewModelTest {
             emit(teamsFlow.value.find { it.id == teamId })
         }
 
-        override fun getTeams(): Flow<List<TeamDetail>> = flow {
+        override fun getTeams(limit: Int): Flow<List<TeamDetail>> = flow {
             if (shouldThrowError) throw RuntimeException("Database connection failed")
-            teamsFlow.collect { emit(it) }
+            teamsFlow.collect { emit(it.take(limit)) }
+        }
+
+        override fun searchTeams(query: String, limit: Int): Flow<List<TeamDetail>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database connection failed")
+            teamsFlow.collect { list ->
+                val filtered = if (query.isBlank()) list else list.filter { it.name.contains(query, ignoreCase = true) }
+                emit(filtered.take(limit))
+            }
         }
 
         override fun getSeasonRanking(matchId: Long): Flow<List<SeasonRanking>> = flow {
@@ -437,6 +445,20 @@ class AnalyticsViewModelTest {
                 )
             }
         }
+
+        override fun getPredictableMatchesFiltered(
+            startDateUtc: String?,
+            endDateUtc: String?,
+            isPastDate: Boolean,
+            isFutureDate: Boolean,
+            datePrefix: String?,
+            leagueId: Int?,
+            statusFilter: dev.anhquocs.truelab.core.domain.match.model.PredictionStatusFilter,
+            searchQuery: String?,
+            limit: Int
+        ): Flow<List<Match>> = flow { emit(emptyList()) }
+
+        override suspend fun refreshMatchesForDate(date: String): Result<Unit> = Result.success(Unit)
     }
 
     private class FakeOddsRepository : OddsRepository {

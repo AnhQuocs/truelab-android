@@ -14,24 +14,28 @@ import dev.anhquocs.truelab.core.ui.utils.UiText
 import dev.anhquocs.truelab.feature.h2h.presentation.mapper.H2HUiMapper
 import dev.anhquocs.truelab.feature.h2h.presentation.model.H2HComparisonUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
 class H2HComparisonViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val teamRepository: TeamRepository,
     private val matchRepository: MatchRepository,
-    private val getHeadToHeadComparisonUseCase: GetHeadToHeadComparisonUseCase
+    private val getHeadToHeadComparisonUseCase: GetHeadToHeadComparisonUseCase,
+    private val calculateDynamicEloUseCase: dev.anhquocs.truelab.core.domain.team.usecase.CalculateDynamicEloUseCase = dev.anhquocs.truelab.core.domain.team.usecase.CalculateDynamicEloUseCase()
 ) : ViewModel() {
 
     private val navTeamAId: Int? = savedStateHandle.get<String>("teamAId")?.toIntOrNull()
@@ -45,19 +49,58 @@ class H2HComparisonViewModel @Inject constructor(
     private val _selectedTeamBId = MutableStateFlow<Int?>(navTeamBId)
     val selectedTeamBId: StateFlow<Int?> = _selectedTeamBId.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    val searchResults: StateFlow<List<TeamSummary>> = _searchQuery
+        .debounce(300L)
+        .flatMapLatest { query ->
+            if (query.isBlank()) {
+                teamRepository.getTeams(limit = 100)
+            } else {
+                teamRepository.searchTeams(query = query.trim(), limit = 50)
+            }
+        }
+        .map { list -> list.map { TeamSummary(it.id, it.name, it.logo) } }
+        .catch { emit(emptyList()) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val selectedTeamADetail: StateFlow<TeamDetail?> = _selectedTeamAId
+        .flatMapLatest { id ->
+            if (id == null) flowOf(null) else teamRepository.getTeamDetail(id)
+        }
+        .catch { emit(null) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
+    val selectedTeamBDetail: StateFlow<TeamDetail?> = _selectedTeamBId
+        .flatMapLatest { id ->
+            if (id == null) flowOf(null) else teamRepository.getTeamDetail(id)
+        }
+        .catch { emit(null) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
     val uiState: StateFlow<H2HComparisonUiState> = combine(
-        teamRepository.getTeams().catch { emit(emptyList()) },
         _selectedTeamAId,
         _selectedTeamBId
-    ) { teams, teamAId, teamBId ->
-        val availableSummaries = teams.map { TeamSummary(it.id, it.name, it.logo) }
-        Triple(availableSummaries, teamAId, teamBId)
-    }.flatMapLatest { (availableTeams, teamAId, teamBId) ->
+    ) { teamAId, teamBId ->
+        Pair(teamAId, teamBId)
+    }.flatMapLatest { (teamAId, teamBId) ->
         when {
             teamAId == null || teamBId == null -> {
                 flowOf(
                     H2HComparisonUiState.TeamSelectionRequired(
-                        availableTeams = availableTeams,
                         selectedTeamAId = teamAId,
                         selectedTeamBId = teamBId,
                         message = UiText.StringResource(R.string.h2h_select_both_teams_prompt)
@@ -67,7 +110,6 @@ class H2HComparisonViewModel @Inject constructor(
             teamAId == teamBId -> {
                 flowOf(
                     H2HComparisonUiState.TeamSelectionRequired(
-                        availableTeams = availableTeams,
                         selectedTeamAId = teamAId,
                         selectedTeamBId = null,
                         message = UiText.StringResource(R.string.h2h_error_same_team)
@@ -76,20 +118,30 @@ class H2HComparisonViewModel @Inject constructor(
             }
             else -> {
                 combine(
-                    teamRepository.getTeamDetail(teamAId),
-                    teamRepository.getTeamDetail(teamBId),
+                    combine(
+                        teamRepository.getTeamDetail(teamAId),
+                        teamRepository.getTeamDetail(teamBId),
+                        matchRepository.getAllMatches()
+                    ) { teamADetail, teamBDetail, allMatches ->
+                        Triple(teamADetail, teamBDetail, allMatches)
+                    },
                     matchRepository.getH2HMatches(teamAId, teamBId),
-                    matchRepository.getRecentMatchesForTeam(teamAId, 10),
-                    matchRepository.getRecentMatchesForTeam(teamBId, 10)
-                ) { teamADetail, teamBDetail, h2hMatches, teamARecent, teamBRecent ->
-                    val resolvedTeamA = teamADetail ?: TeamDetail(
+                    matchRepository.getRecentMatchesForTeam(teamAId, 50),
+                    matchRepository.getRecentMatchesForTeam(teamBId, 50)
+                ) { (teamADetail, teamBDetail, allMatches), h2hMatches, teamARecent, teamBRecent ->
+                    val dynamicEloMap = calculateDynamicEloUseCase(allMatches)
+                    val dynamicEloA = dynamicEloMap[teamAId] ?: teamADetail?.eloRating ?: 1500.0
+                    val dynamicEloB = dynamicEloMap[teamBId] ?: teamBDetail?.eloRating ?: 1500.0
+
+                    val resolvedTeamA = (teamADetail ?: TeamDetail(
                         id = teamAId,
-                        name = availableTeams.find { it.id == teamAId }?.name ?: "Team #$teamAId"
-                    )
-                    val resolvedTeamB = teamBDetail ?: TeamDetail(
+                        name = "Team #$teamAId"
+                    )).copy(eloRating = dynamicEloA)
+
+                    val resolvedTeamB = (teamBDetail ?: TeamDetail(
                         id = teamBId,
-                        name = availableTeams.find { it.id == teamBId }?.name ?: "Team #$teamBId"
-                    )
+                        name = "Team #$teamBId"
+                    )).copy(eloRating = dynamicEloB)
 
                     val summary = getHeadToHeadComparisonUseCase(
                         teamA = resolvedTeamA,
@@ -100,7 +152,6 @@ class H2HComparisonViewModel @Inject constructor(
                     )
 
                     H2HComparisonUiState.Success(
-                        availableTeams = availableTeams,
                         teamA = resolvedTeamA,
                         teamB = resolvedTeamB,
                         comparison = H2HUiMapper.toUiRecord(summary),
@@ -109,8 +160,7 @@ class H2HComparisonViewModel @Inject constructor(
                 }.catch { e ->
                     emit(
                         H2HComparisonUiState.Error(
-                            message = UiText.DynamicString(e.localizedMessage ?: "Unknown error loading H2H"),
-                            availableTeams = availableTeams
+                            message = UiText.DynamicString(e.localizedMessage ?: "Unknown error loading H2H")
                         )
                     )
                 }
@@ -124,6 +174,10 @@ class H2HComparisonViewModel @Inject constructor(
             selectedTeamBId = navTeamBId
         )
     )
+
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
+    }
 
     fun selectTeamA(teamId: Int?) {
         if (_selectedTeamBId.value == teamId && teamId != null) {

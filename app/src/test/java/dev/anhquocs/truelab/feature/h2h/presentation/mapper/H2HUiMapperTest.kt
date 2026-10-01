@@ -172,8 +172,14 @@ class H2HUiMapperTest {
         assertEquals("1.60", uiRecord.teamBMeanGoals)
         assertEquals("+43", uiRecord.teamAGoalDiff)
         assertEquals("+10", uiRecord.teamBGoalDiff)
-        assertEquals("11-2-1", uiRecord.teamAHomeRecord)
-        assertEquals("6-3-5", uiRecord.teamBAwayRecord)
+        assertEquals("11W - 2D - 1L", uiRecord.teamAHomeRecord)
+        assertEquals("79%", uiRecord.teamAHomeWinRate)
+        assertEquals("0W - 0D - 0L", uiRecord.teamAAwayRecord)
+        assertEquals("0%", uiRecord.teamAAwayWinRate)
+        assertEquals("0W - 0D - 0L", uiRecord.teamBHomeRecord)
+        assertEquals("0%", uiRecord.teamBHomeWinRate)
+        assertEquals("6W - 3D - 5L", uiRecord.teamBAwayRecord)
+        assertEquals("43%", uiRecord.teamBAwayWinRate)
     }
 
     @Test
@@ -188,4 +194,67 @@ class H2HUiMapperTest {
         assertEquals(3, firstMatch.homeScore)
         assertEquals(1, firstMatch.awayScore)
     }
+
+    @Test
+    fun mapRecentMatches_mapsHomeAwayOutcomesAndFormattingCorrectly() {
+        val matches = listOf(
+            Match(
+                id = 201L,
+                homeTeam = TeamSummary(1, "Arsenal"),
+                awayTeam = TeamSummary(10, "Aston Villa", "villa.png"),
+                homeScore = 2,
+                awayScore = 0,
+                startTimeDate = "2026-04-01T15:00:00",
+                status = MatchStatus.ENDED
+            ),
+            Match(
+                id = 202L,
+                homeTeam = TeamSummary(11, "Fulham", "fulham.png"),
+                awayTeam = TeamSummary(1, "Arsenal"),
+                homeScore = 1,
+                awayScore = 1,
+                startTimeDate = "2026-03-25T20:00:00",
+                status = MatchStatus.ENDED
+            ),
+            Match(
+                id = 203L,
+                homeTeam = TeamSummary(12, "Man City", "mancity.png"),
+                awayTeam = TeamSummary(1, "Arsenal"),
+                homeScore = 2,
+                awayScore = 1,
+                startTimeDate = "2026-03-20 17:30:00",
+                status = MatchStatus.ENDED
+            )
+        )
+
+        val items = H2HUiMapper.mapRecentMatches(matches, teamId = 1)
+
+        assertEquals(3, items.size)
+
+        // Match 201: Arsenal (H) vs Aston Villa (A) 2-0 -> W
+        assertEquals(201L, items[0].matchId)
+        assertEquals("W", items[0].result)
+        assertEquals("Aston Villa", items[0].opponentName)
+        assertEquals("villa.png", items[0].opponentLogo)
+        assertEquals("2 - 0", items[0].score)
+        assertEquals(true, items[0].isHome)
+        assertEquals("2026-04-01", items[0].date)
+
+        // Match 202: Fulham (H) vs Arsenal (A) 1-1 -> D
+        assertEquals(202L, items[1].matchId)
+        assertEquals("D", items[1].result)
+        assertEquals("Fulham", items[1].opponentName)
+        assertEquals(false, items[1].isHome)
+        assertEquals("1 - 1", items[1].score)
+        assertEquals("2026-03-25", items[1].date)
+
+        // Match 203: Man City (H) vs Arsenal (A) 2-1 -> L
+        assertEquals(203L, items[2].matchId)
+        assertEquals("L", items[2].result)
+        assertEquals("Man City", items[2].opponentName)
+        assertEquals(false, items[2].isHome)
+        assertEquals("2 - 1", items[2].score)
+        assertEquals("2026-03-20", items[2].date)
+    }
 }
+

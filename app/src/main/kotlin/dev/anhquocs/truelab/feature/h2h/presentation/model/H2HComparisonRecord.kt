@@ -23,8 +23,14 @@ data class H2HComparisonRecord(
     val teamBFormScore: String,
     val teamAStreak: String,
     val teamBStreak: String,
+    val teamARecentMatches: List<TeamRecentMatchItem> = emptyList(),
+    val teamBRecentMatches: List<TeamRecentMatchItem> = emptyList(),
     val teamAHomeRecord: String,
     val teamAHomeWinRate: String,
+    val teamAAwayRecord: String,
+    val teamAAwayWinRate: String,
+    val teamBHomeRecord: String,
+    val teamBHomeWinRate: String,
     val teamBAwayRecord: String,
     val teamBAwayWinRate: String,
     val teamAMeanGoals: String,
@@ -32,3 +38,17 @@ data class H2HComparisonRecord(
     val teamAGoalDiff: String,
     val teamBGoalDiff: String
 )
+
+/**
+ * UI presentation model cho từng trận đấu gần nhất của đội bóng.
+ */
+data class TeamRecentMatchItem(
+    val matchId: Long,
+    val result: String, // "W", "D", "L"
+    val opponentName: String,
+    val opponentLogo: String?,
+    val score: String, // e.g. "2 - 0"
+    val isHome: Boolean,
+    val date: String // e.g. "2026-09-29"
+)
+

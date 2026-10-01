@@ -24,7 +24,7 @@ fun Match.toUiRecord(): MatchDataRecord {
     return MatchDataRecord(
         id = id.toString(),
         league = "—",
-        date = startTimeDate,
+        date = dev.anhquocs.truelab.core.ui.utils.DateTimeFormatterUtils.formatToVietnamDateTime(startTimeDate),
         homeTeam = homeTeam.name,
         awayTeam = awayTeam.name,
         homeScore = homeScore ?: 0,

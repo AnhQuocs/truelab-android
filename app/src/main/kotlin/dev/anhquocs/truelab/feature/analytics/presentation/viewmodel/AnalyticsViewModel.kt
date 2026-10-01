@@ -6,6 +6,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.match.repository.MatchRepository
+import dev.anhquocs.truelab.core.domain.odds.model.MatchOdds
+import dev.anhquocs.truelab.core.domain.odds.model.OddsRecordItem
+import dev.anhquocs.truelab.core.domain.odds.model.OddsTrendAnalysis
 import dev.anhquocs.truelab.core.domain.odds.model.TargetOddsField
 import dev.anhquocs.truelab.core.domain.odds.repository.OddsRepository
 import dev.anhquocs.truelab.core.domain.odds.usecase.AnalyzeOddsTrendUseCase
@@ -23,6 +26,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -51,8 +55,8 @@ class AnalyticsViewModel @Inject constructor(
     }
 
     val uiState: StateFlow<AnalyticsUiState> = combine(
-        teamRepository.getTeams(),
-        matchRepository.getMatches(""),
+        teamRepository.getTeams(limit = MAX_TEAMS_SELECTION),
+        matchRepository.getPredictableMatches(limit = MAX_MATCHES_SELECTION),
         _selectionFlow
     ) { teams, matches, selection ->
         DataSelectionBundle(
@@ -75,69 +79,72 @@ class AnalyticsViewModel @Inject constructor(
             val selectedMatch = bundle.userMatchId?.let { id -> matches.find { it.id == id } }
                 ?: matches.firstOrNull()
 
-            // 1. Descriptive Statistics via Pure Domain UseCase
-            val teamStats = selectedTeam?.let { team ->
-                getTeamStatisticsUseCase(teamId = team.id, matches = matches)
+            val teamMatchesFlow = if (selectedTeam != null) {
+                matchRepository.getRecentMatchesForTeam(selectedTeam.id, limit = MAX_TEAM_HISTORY_MATCHES)
+            } else {
+                flowOf(emptyList())
             }
 
             val matchId = selectedMatch?.id
-            if (matchId != null) {
+            val oddsFlow = if (matchId != null) {
                 combine(
                     oddsRepository.getMatchOdds(matchId),
                     oddsRepository.getOddsHistory(matchId, null, null)
                 ) { matchOdds, oddsHistory ->
-                    // 2. Odds Time-Series & Trend via Pure Domain UseCase
-                    val oddsTrend = analyzeOddsTrendUseCase(
+                    matchOdds to oddsHistory
+                }
+            } else {
+                flowOf(null to emptyList<OddsRecordItem>())
+            }
+
+            combine(teamMatchesFlow, oddsFlow) { teamMatches, (matchOdds, oddsHistory) ->
+                // 1. Descriptive Statistics via Pure Domain UseCase (bounded to team's matches)
+                val teamStats = selectedTeam?.let { team ->
+                    getTeamStatisticsUseCase(teamId = team.id, matches = teamMatches)
+                }
+
+                // 2. Odds Time-Series & Trend and Multi-Provider Summary Metrics
+                val (oddsTrend, avgHome, avgDraw, avgAway, spread) = if (matchId != null && matchOdds != null) {
+                    val trend = analyzeOddsTrendUseCase(
                         matchId = matchId,
                         oddsHistory = oddsHistory,
                         targetField = bundle.targetField,
                         windowSize = bundle.windowSize
                     )
 
-                    // 3. Multi-Provider Summary Metrics computed strictly from real MatchOdds
                     val validHomeOdds = matchOdds.oddsList.mapNotNull { it.homeWin }.filter { it > 0.0 }
                     val validDrawOdds = matchOdds.oddsList.mapNotNull { it.draw }.filter { it > 0.0 }
                     val validAwayOdds = matchOdds.oddsList.mapNotNull { it.awayWin }.filter { it > 0.0 }
 
-                    val avgHome = if (validHomeOdds.isNotEmpty()) validHomeOdds.average() else null
-                    val avgDraw = if (validDrawOdds.isNotEmpty()) validDrawOdds.average() else null
-                    val avgAway = if (validAwayOdds.isNotEmpty()) validAwayOdds.average() else null
+                    val avgH = if (validHomeOdds.isNotEmpty()) validHomeOdds.average() else null
+                    val avgD = if (validDrawOdds.isNotEmpty()) validDrawOdds.average() else null
+                    val avgA = if (validAwayOdds.isNotEmpty()) validAwayOdds.average() else null
 
-                    val spread = if (validHomeOdds.size >= 2) {
+                    val sp = if (validHomeOdds.size >= 2) {
                         (validHomeOdds.maxOrNull() ?: 0.0) - (validHomeOdds.minOrNull() ?: 0.0)
                     } else {
                         null
                     }
 
-                    AnalyticsUiState.Success(
-                        selectedTeam = selectedTeam,
-                        availableTeams = teams,
-                        teamStats = teamStats,
-                        selectedMatch = selectedMatch,
-                        availableMatches = matches,
-                        matchOdds = matchOdds,
-                        oddsTrend = oddsTrend,
-                        selectedTargetField = bundle.targetField,
-                        selectedWindowSize = bundle.windowSize,
-                        avgHomeOdds = avgHome,
-                        avgDrawOdds = avgDraw,
-                        avgAwayOdds = avgAway,
-                        oddsSpread = spread
-                    )
+                    OddsAnalysisResult(trend, avgH, avgD, avgA, sp)
+                } else {
+                    OddsAnalysisResult(null, null, null, null, null)
                 }
-            } else {
-                flowOf(
-                    AnalyticsUiState.Success(
-                        selectedTeam = selectedTeam,
-                        availableTeams = teams,
-                        teamStats = teamStats,
-                        selectedMatch = null,
-                        availableMatches = matches,
-                        matchOdds = null,
-                        oddsTrend = null,
-                        selectedTargetField = bundle.targetField,
-                        selectedWindowSize = bundle.windowSize
-                    )
+
+                AnalyticsUiState.Success(
+                    selectedTeam = selectedTeam,
+                    availableTeams = teams,
+                    teamStats = teamStats,
+                    selectedMatch = selectedMatch,
+                    availableMatches = matches,
+                    matchOdds = matchOdds,
+                    oddsTrend = oddsTrend,
+                    selectedTargetField = bundle.targetField,
+                    selectedWindowSize = bundle.windowSize,
+                    avgHomeOdds = avgHome,
+                    avgDrawOdds = avgDraw,
+                    avgAwayOdds = avgAway,
+                    oddsSpread = spread
                 )
             }
         }
@@ -175,6 +182,14 @@ class AnalyticsViewModel @Inject constructor(
         }
     }
 
+    private data class OddsAnalysisResult(
+        val oddsTrend: OddsTrendAnalysis?,
+        val avgHomeOdds: Double?,
+        val avgDrawOdds: Double?,
+        val avgAwayOdds: Double?,
+        val oddsSpread: Double?
+    )
+
     private data class UserSelection(
         val teamId: Int?,
         val matchId: Long?,
@@ -190,4 +205,10 @@ class AnalyticsViewModel @Inject constructor(
         val targetField: TargetOddsField,
         val windowSize: Int
     )
+
+    companion object {
+        private const val MAX_TEAMS_SELECTION = 50
+        private const val MAX_MATCHES_SELECTION = 50
+        private const val MAX_TEAM_HISTORY_MATCHES = 50
+    }
 }

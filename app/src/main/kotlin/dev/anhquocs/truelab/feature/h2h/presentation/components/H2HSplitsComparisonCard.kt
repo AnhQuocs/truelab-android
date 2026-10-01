@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.team.model.TeamDetail
@@ -31,7 +33,6 @@ import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.s10
 import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s14
-import dev.anhquocs.truelab.core.ui.utils.s16
 import dev.anhquocs.truelab.core.ui.utils.semiBold
 import dev.anhquocs.truelab.feature.h2h.presentation.model.H2HComparisonRecord
 
@@ -65,23 +66,25 @@ fun H2HSplitsComparisonCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingM)
             ) {
-                // Team A Home Split Box
-                SplitBox(
+                // Team A Splits Box
+                TeamSplitsBox(
                     teamName = teamA.name,
-                    roleLabel = stringResource(R.string.h2h_home_record_label),
-                    record = comparison.teamAHomeRecord,
-                    winRate = comparison.teamAHomeWinRate,
-                    accentColor = MaterialTheme.colorScheme.primary,
+                    homeRecord = comparison.teamAHomeRecord,
+                    homeWinRate = comparison.teamAHomeWinRate,
+                    awayRecord = comparison.teamAAwayRecord,
+                    awayWinRate = comparison.teamAAwayWinRate,
+                    teamColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
 
-                // Team B Away Split Box
-                SplitBox(
+                // Team B Splits Box
+                TeamSplitsBox(
                     teamName = teamB.name,
-                    roleLabel = stringResource(R.string.h2h_away_record_label),
-                    record = comparison.teamBAwayRecord,
-                    winRate = comparison.teamBAwayWinRate,
-                    accentColor = Color(0xFFE57373),
+                    homeRecord = comparison.teamBHomeRecord,
+                    homeWinRate = comparison.teamBHomeWinRate,
+                    awayRecord = comparison.teamBAwayRecord,
+                    awayWinRate = comparison.teamBAwayWinRate,
+                    teamColor = Color(0xFFE57373),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -90,12 +93,13 @@ fun H2HSplitsComparisonCard(
 }
 
 @Composable
-private fun SplitBox(
+private fun TeamSplitsBox(
     teamName: String,
-    roleLabel: String,
-    record: String,
-    winRate: String,
-    accentColor: Color,
+    homeRecord: String,
+    homeWinRate: String,
+    awayRecord: String,
+    awayWinRate: String,
+    teamColor: Color,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -111,31 +115,60 @@ private fun SplitBox(
         ) {
             Text(
                 text = teamName,
-                style = MaterialTheme.typography.s12.semiBold(),
-                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.s14.semiBold(),
+                color = teamColor,
                 maxLines = 1,
-                textAlign = TextAlign.Center
-            )
-
-            Text(
-                text = roleLabel,
-                style = MaterialTheme.typography.s10,
-                color = accentColor,
+                overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(Dimen.PaddingS))
 
+            // Home Subsection
             Text(
-                text = record,
-                style = MaterialTheme.typography.s16.bold(),
-                color = MaterialTheme.colorScheme.onSurface
+                text = stringResource(R.string.h2h_home_record_label),
+                style = MaterialTheme.typography.s10.semiBold(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = homeRecord,
+                style = MaterialTheme.typography.s12.bold(),
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "$homeWinRate Win",
+                style = MaterialTheme.typography.s10.semiBold(),
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
             )
 
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = Dimen.PaddingS),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+            )
+
+            // Away Subsection
             Text(
-                text = "$winRate Win",
+                text = stringResource(R.string.h2h_away_record_label),
+                style = MaterialTheme.typography.s10.semiBold(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = awayRecord,
                 style = MaterialTheme.typography.s12.bold(),
-                color = accentColor
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "$awayWinRate Win",
+                style = MaterialTheme.typography.s10.semiBold(),
+                color = Color(0xFFE57373),
+                textAlign = TextAlign.Center
             )
         }
     }

@@ -164,21 +164,26 @@ private fun TeamSelectionBox(
             Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
 
             // Team Badge Circle
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (team != null) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                        else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = team?.name?.take(2)?.uppercase() ?: "+",
-                    style = MaterialTheme.typography.s16.bold(),
-                    color = if (team != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            if (team != null) {
+                dev.anhquocs.truelab.core.ui.components.TeamLogo(
+                    logoUrl = team.logo,
+                    teamName = team.name,
+                    size = 44.dp
                 )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "+",
+                        style = MaterialTheme.typography.s16.bold(),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(Dimen.PaddingXS))

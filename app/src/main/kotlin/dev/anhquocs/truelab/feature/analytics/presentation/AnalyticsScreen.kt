@@ -1,7 +1,6 @@
 package dev.anhquocs.truelab.feature.analytics.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
@@ -210,13 +210,14 @@ private fun TeamSelectorSection(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = SpacingXS)
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(SpacingS)
         ) {
-            teams.forEach { team ->
+            items(
+                items = teams,
+                key = { it.id }
+            ) { team ->
                 val isSelected = team.id == selectedTeam?.id
                 FilterChip(
                     selected = isSelected,
@@ -250,13 +251,14 @@ private fun MatchSelectorSection(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = SpacingXS)
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(SpacingS)
         ) {
-            matches.forEach { match ->
+            items(
+                items = matches,
+                key = { it.id }
+            ) { match ->
                 val isSelected = match.id == selectedMatch?.id
                 val label = "${match.homeTeam.name} vs ${match.awayTeam.name}"
                 FilterChip(

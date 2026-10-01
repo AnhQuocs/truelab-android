@@ -61,6 +61,11 @@ object DomainUseCaseModule {
 
     @Provides
     @Singleton
+    fun provideCalculateDynamicEloUseCase(): dev.anhquocs.truelab.core.domain.team.usecase.CalculateDynamicEloUseCase =
+        dev.anhquocs.truelab.core.domain.team.usecase.CalculateDynamicEloUseCase()
+
+    @Provides
+    @Singleton
     fun providePredictMatchOutcomeUseCase(): PredictMatchOutcomeUseCase = PredictMatchOutcomeUseCase()
 
     @Provides

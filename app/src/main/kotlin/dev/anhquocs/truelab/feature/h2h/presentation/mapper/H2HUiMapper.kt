@@ -41,12 +41,18 @@ object H2HUiMapper {
         val streakBStr = summary.teamBForm?.let { "${it.wins}W ${it.draws}D ${it.losses}L" } ?: "—"
 
         val homeSplitA = summary.teamAHomeAwaySplits.homeSplit
+        val awaySplitA = summary.teamAHomeAwaySplits.awaySplit
+        val homeSplitB = summary.teamBHomeAwaySplits.homeSplit
         val awaySplitB = summary.teamBHomeAwaySplits.awaySplit
 
-        val homeRecordAStr = "${homeSplitA.won}-${homeSplitA.draw}-${homeSplitA.loss}"
+        val homeRecordAStr = "${homeSplitA.won}W - ${homeSplitA.draw}D - ${homeSplitA.loss}L"
         val homeWinRateAStr = "${(homeSplitA.winRate * 100).roundToInt()}%"
+        val awayRecordAStr = "${awaySplitA.won}W - ${awaySplitA.draw}D - ${awaySplitA.loss}L"
+        val awayWinRateAStr = "${(awaySplitA.winRate * 100).roundToInt()}%"
 
-        val awayRecordBStr = "${awaySplitB.won}-${awaySplitB.draw}-${awaySplitB.loss}"
+        val homeRecordBStr = "${homeSplitB.won}W - ${homeSplitB.draw}D - ${homeSplitB.loss}L"
+        val homeWinRateBStr = "${(homeSplitB.winRate * 100).roundToInt()}%"
+        val awayRecordBStr = "${awaySplitB.won}W - ${awaySplitB.draw}D - ${awaySplitB.loss}L"
         val awayWinRateBStr = "${(awaySplitB.winRate * 100).roundToInt()}%"
 
         val meanGoalsAStr = summary.teamAStats?.let {
@@ -83,8 +89,14 @@ object H2HUiMapper {
             teamBFormScore = formBStr,
             teamAStreak = streakAStr,
             teamBStreak = streakBStr,
+            teamARecentMatches = mapRecentMatches(summary.teamARecentMatches, summary.teamA.id),
+            teamBRecentMatches = mapRecentMatches(summary.teamBRecentMatches, summary.teamB.id),
             teamAHomeRecord = homeRecordAStr,
             teamAHomeWinRate = homeWinRateAStr,
+            teamAAwayRecord = awayRecordAStr,
+            teamAAwayWinRate = awayWinRateAStr,
+            teamBHomeRecord = homeRecordBStr,
+            teamBHomeWinRate = homeWinRateBStr,
             teamBAwayRecord = awayRecordBStr,
             teamBAwayWinRate = awayWinRateBStr,
             teamAMeanGoals = meanGoalsAStr,
@@ -92,6 +104,38 @@ object H2HUiMapper {
             teamAGoalDiff = goalDiffAStr,
             teamBGoalDiff = goalDiffBStr
         )
+    }
+
+    internal fun mapRecentMatches(
+        matches: List<dev.anhquocs.truelab.core.domain.match.model.Match>,
+        teamId: Int
+    ): List<dev.anhquocs.truelab.feature.h2h.presentation.model.TeamRecentMatchItem> {
+        return matches.mapNotNull { match ->
+            val homeScore = match.homeScore ?: return@mapNotNull null
+            val awayScore = match.awayScore ?: return@mapNotNull null
+            val isHome = match.homeTeam.id == teamId
+            val isAway = match.awayTeam.id == teamId
+            if (!isHome && !isAway) return@mapNotNull null
+
+            val opponent = if (isHome) match.awayTeam else match.homeTeam
+            val result = when {
+                homeScore == awayScore -> "D"
+                isHome -> if (homeScore > awayScore) "W" else "L"
+                else -> if (awayScore > homeScore) "W" else "L"
+            }
+            val scoreText = "$homeScore - $awayScore"
+            val dateText = match.startTimeDate.substringBefore('T').substringBefore(' ')
+
+            dev.anhquocs.truelab.feature.h2h.presentation.model.TeamRecentMatchItem(
+                matchId = match.id,
+                result = result,
+                opponentName = opponent.name,
+                opponentLogo = opponent.logo,
+                score = scoreText,
+                isHome = isHome,
+                date = dateText
+            )
+        }
     }
 
     fun toMatchDataRecords(summary: HeadToHeadComparisonSummary): List<MatchDataRecord> {
