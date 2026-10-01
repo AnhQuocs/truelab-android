@@ -5,12 +5,16 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Upsert
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchEntity
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchWithTeams
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MatchDao {
+
+    @Upsert
+    fun upsertMatches(matches: List<MatchEntity>): LongArray
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertMatches(matches: List<MatchEntity>): LongArray
@@ -82,4 +86,45 @@ interface MatchDao {
         LIMIT :limit
     """)
     fun searchMatches(query: String, limit: Int = 30): Flow<List<MatchWithTeams>>
+
+    @Transaction
+    @Query("""
+        SELECT m.* FROM matches m
+        WHERE (
+            (:startDateUtc IS NULL OR :startDateUtc = '' OR REPLACE(m.startTimeDate, ' ', 'T') >= :startDateUtc)
+            AND (:endDateUtc IS NULL OR :endDateUtc = '' OR REPLACE(m.startTimeDate, ' ', 'T') < :endDateUtc)
+        )
+          AND (:leagueId IS NULL OR m.leagueId = :leagueId)
+          AND (
+              (:isPastDate = 1)
+              OR (:isFutureDate = 1)
+              OR (:statusFilter = 'LIVE_AND_UPCOMING' AND m.status IN ('live', 'pending', '1', '0'))
+              OR (:statusFilter = 'LIVE' AND m.status IN ('live', '1'))
+              OR (:statusFilter = 'UPCOMING' AND m.status IN ('pending', '0'))
+              OR (:statusFilter = 'ALL')
+          )
+          AND (:searchQuery IS NULL OR :searchQuery = '' OR EXISTS (
+              SELECT 1 FROM teams t 
+              WHERE (t.id = m.homeTeamId OR t.id = m.awayTeamId) 
+                AND t.name LIKE '%' || :searchQuery || '%'
+          ))
+        ORDER BY 
+          CASE 
+              WHEN m.status IN ('live', '1') THEN 0
+              WHEN m.status IN ('pending', '0') THEN 1
+              ELSE 2
+          END,
+          m.startTimeDate ASC
+        LIMIT :limit
+    """)
+    fun getPredictableMatchesFiltered(
+        startDateUtc: String? = null,
+        endDateUtc: String? = null,
+        isPastDate: Boolean = false,
+        isFutureDate: Boolean = false,
+        leagueId: Int? = null,
+        statusFilter: String = "ALL",
+        searchQuery: String? = null,
+        limit: Int = 50
+    ): Flow<List<MatchWithTeams>>
 }

@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import dev.anhquocs.truelab.core.data.league.local.dao.LeagueDao
 import dev.anhquocs.truelab.core.data.league.local.dao.SeasonDao
 import dev.anhquocs.truelab.core.data.local.database.MIGRATION_1_2
+import dev.anhquocs.truelab.core.data.local.database.MIGRATION_2_3
 import dev.anhquocs.truelab.core.data.local.database.TrueLabDatabase
 import dev.anhquocs.truelab.core.data.match.local.dao.MatchDao
 import dev.anhquocs.truelab.core.data.metadata.local.dao.DatasetMetadataDao
@@ -34,7 +35,7 @@ object DatabaseModule {
             "truelab_database.db"
         )
         .createFromAsset("database/truelab_database.db")
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
         // Fallback to destructive migration is NOT used here 
         // to preserve the huge offline local dataset across versions. 
         // Proper Migrations should be provided when schema changes.

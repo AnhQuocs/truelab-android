@@ -60,6 +60,11 @@ abstract class CrawlerDataModule {
 
         @Provides
         @Singleton
+        fun provideCompetitionQualityPolicy(): dev.anhquocs.truelab.core.data.crawler.policy.CompetitionQualityPolicy =
+            dev.anhquocs.truelab.core.data.crawler.policy.DefaultCompetitionQualityPolicy()
+
+        @Provides
+        @Singleton
         fun provideDataSyncEngine(
             matchApi: MatchApi,
             oddsApi: OddsApi,
@@ -70,7 +75,8 @@ abstract class CrawlerDataModule {
             metadataRepository: DatasetMetadataRepository,
             retryExecutor: RetryExecutor,
             cacheFreshnessChecker: CacheFreshnessChecker,
-            freshnessPolicy: DataFreshnessPolicy
+            freshnessPolicy: DataFreshnessPolicy,
+            qualityPolicy: dev.anhquocs.truelab.core.data.crawler.policy.CompetitionQualityPolicy
         ): DataSyncEngine = DataSyncEngine(
             matchApi = matchApi,
             oddsApi = oddsApi,
@@ -81,7 +87,8 @@ abstract class CrawlerDataModule {
             metadataRepository = metadataRepository,
             retryExecutor = retryExecutor,
             cacheFreshnessChecker = cacheFreshnessChecker,
-            freshnessPolicy = freshnessPolicy
+            freshnessPolicy = freshnessPolicy,
+            qualityPolicy = qualityPolicy
         )
 
 

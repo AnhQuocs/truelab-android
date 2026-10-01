@@ -10,6 +10,7 @@ import dev.anhquocs.truelab.core.data.match.local.dao.MatchDao
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchEntity
 import dev.anhquocs.truelab.core.data.match.local.entity.MatchWithTeams
 import dev.anhquocs.truelab.core.data.match.remote.api.MatchApi
+import dev.anhquocs.truelab.core.data.match.remote.dto.CompetitionSummaryInfo
 import dev.anhquocs.truelab.core.data.match.remote.dto.MatchInfoDetailResponseBase
 import dev.anhquocs.truelab.core.data.match.remote.dto.MatchRecord
 import dev.anhquocs.truelab.core.data.match.remote.dto.TeamInfo
@@ -47,12 +48,21 @@ class DataSyncEngineTest {
         override fun getTeamById(teamId: Int): Flow<TeamEntity?> = flowOf(teams[teamId])
         override fun searchTeams(query: String): Flow<List<TeamEntity>> =
             flowOf(teams.values.filter { it.name.contains(query, ignoreCase = true) })
+        override fun searchTeams(query: String, limit: Int): Flow<List<TeamEntity>> =
+            flowOf(teams.values.filter { it.name.contains(query, ignoreCase = true) }.take(limit))
+        override fun getTeams(limit: Int): Flow<List<TeamEntity>> =
+            flowOf(teams.values.take(limit))
     }
 
     private class FakeMatchDao : MatchDao {
         val matches = mutableMapOf<Long, MatchEntity>()
         var errorToThrow: Throwable? = null
         override fun insertMatches(matches: List<MatchEntity>): LongArray {
+            errorToThrow?.let { throw it }
+            matches.forEach { this.matches[it.id] = it }
+            return LongArray(matches.size) { (it + 1).toLong() }
+        }
+        override fun upsertMatches(matches: List<MatchEntity>): LongArray {
             errorToThrow?.let { throw it }
             matches.forEach { this.matches[it.id] = it }
             return LongArray(matches.size) { (it + 1).toLong() }
@@ -68,6 +78,16 @@ class DataSyncEngineTest {
         override fun getAllMatches(): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getPredictableMatches(limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun searchMatches(query: String, limit: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
+        override fun getPredictableMatchesFiltered(
+            startDateUtc: String?,
+            endDateUtc: String?,
+            isPastDate: Boolean,
+            isFutureDate: Boolean,
+            leagueId: Int?,
+            statusFilter: String,
+            searchQuery: String?,
+            limit: Int
+        ): Flow<List<MatchWithTeams>> = flowOf(emptyList())
     }
 
     private class FakeLeagueDao : LeagueDao {
@@ -205,8 +225,8 @@ class DataSyncEngineTest {
     @Test
     fun syncFullPipelineForDate_success_insertsTeamsAndMatchesDeterministically() = runTest {
         val matches = listOf(
-            MatchRecord(id = 1001L, homeTeam = TeamInfo(1, "Arsenal", "arsenal.png"), awayTeam = TeamInfo(2, "Chelsea", "chelsea.png"), homeScore = 2, awayScore = 1, startTimeDate = "2024-05-10 15:00:00", status = "8"),
-            MatchRecord(id = 1002L, homeTeam = TeamInfo(1, "Arsenal", "arsenal.png"), awayTeam = TeamInfo(3, "Liverpool", "liverpool.png"), homeScore = 0, awayScore = 0, startTimeDate = "2024-05-10 18:00:00", status = "8")
+            MatchRecord(id = 1001L, competitionId = 927, homeTeam = TeamInfo(1, "Arsenal", "arsenal.png"), awayTeam = TeamInfo(2, "Chelsea", "chelsea.png"), homeScore = 2, awayScore = 1, startTimeDate = "2024-05-10 15:00:00", status = "8"),
+            MatchRecord(id = 1002L, competitionId = 927, homeTeam = TeamInfo(1, "Arsenal", "arsenal.png"), awayTeam = TeamInfo(3, "Liverpool", "liverpool.png"), homeScore = 0, awayScore = 0, startTimeDate = "2024-05-10 18:00:00", status = "8")
         )
 
         fakeMatchApi.responseToReturn = BaseResponse(
@@ -272,6 +292,7 @@ class DataSyncEngineTest {
 
         val match = MatchRecord(
             id = 1001L,
+            competitionId = 927,
             homeTeam = TeamInfo(id = 1, name = "Arsenal", logo = "new.png"),
             awayTeam = TeamInfo(id = 2, name = "Chelsea", logo = "chelsea.png"),
             homeScore = 2,
@@ -305,6 +326,7 @@ class DataSyncEngineTest {
     fun syncFullPipelineForDate_databaseExceptionInBatch_returnsFailureResult() = runTest {
         val match = MatchRecord(
             id = 1001L,
+            competitionId = 927,
             homeTeam = TeamInfo(id = 1, name = "Arsenal", logo = "arsenal.png"),
             awayTeam = TeamInfo(id = 2, name = "Chelsea", logo = "chelsea.png"),
             homeScore = 2,
@@ -326,6 +348,290 @@ class DataSyncEngineTest {
 
         assertTrue(result is SyncResult.Failure)
         assertEquals("Disk full", (result as SyncResult.Failure).error.message)
+    }
+
+    @Test
+    fun syncFullPipelineForDate_qualityPolicy_acceptsWhitelistedCompetition() = runTest {
+        val premierLeagueMatch = MatchRecord(
+            id = 5001L,
+            competitionId = 927, // English Premier League (Tier 1 Whitelist)
+            competition = CompetitionSummaryInfo(927, "English Premier League"),
+            homeTeam = TeamInfo(10, "Man City", "mci.png"),
+            awayTeam = TeamInfo(11, "Liverpool", "liv.png"),
+            homeScore = 3,
+            awayScore = 1,
+            startTimeDate = "2026-10-01 15:00:00",
+            status = "8"
+        )
+        fakeMatchApi.responseToReturn = BaseResponse(
+            statusCode = 200,
+            message = "OK",
+            data = MatchInfoDetailResponseBase(
+                data = listOf(premierLeagueMatch),
+                meta = MetaResponse(currentPage = 1, totalPage = 1)
+            )
+        )
+
+        val result = syncEngine.syncFullPipelineForDate("2026-10-01")
+
+        assertTrue(result is SyncResult.Success)
+        assertEquals(1, (result as SyncResult.Success).data.matchesSynced)
+        assertEquals(2, result.data.teamsSynced)
+        assertEquals(1, fakeMatchDao.matches.size)
+        assertEquals(2, fakeTeamDao.teams.size)
+        assertEquals(1, fakeLeagueDao.leagues.size)
+        assertTrue(fakeMatchDao.matches.containsKey(5001L))
+    }
+
+    @Test
+    fun syncFullPipelineForDate_qualityPolicy_rejectsFriendlyMatch() = runTest {
+        val friendlyMatch = MatchRecord(
+            id = 5002L,
+            competitionId = 820, // International Friendly (Blacklisted)
+            competition = CompetitionSummaryInfo(820, "International Friendly"),
+            homeTeam = TeamInfo(20, "France", "fr.png"),
+            awayTeam = TeamInfo(21, "Germany", "de.png"),
+            homeScore = 2,
+            awayScore = 2,
+            startTimeDate = "2026-10-01 19:45:00",
+            status = "8"
+        )
+        fakeMatchApi.responseToReturn = BaseResponse(
+            statusCode = 200,
+            message = "OK",
+            data = MatchInfoDetailResponseBase(
+                data = listOf(friendlyMatch),
+                meta = MetaResponse(currentPage = 1, totalPage = 1)
+            )
+        )
+
+        val result = syncEngine.syncFullPipelineForDate("2026-10-01")
+
+        assertTrue(result is SyncResult.Success)
+        assertEquals(0, (result as SyncResult.Success).data.matchesSynced)
+        assertEquals(0, result.data.teamsSynced)
+        assertEquals(0, fakeMatchDao.matches.size)
+        assertEquals(0, fakeTeamDao.teams.size)
+        assertEquals(0, fakeLeagueDao.leagues.size)
+    }
+
+    @Test
+    fun syncFullPipelineForDate_qualityPolicy_rejectsYouthMatch() = runTest {
+        val youthMatch = MatchRecord(
+            id = 5003L,
+            competition = CompetitionSummaryInfo(10999, "UEFA European U17 Championship"),
+            homeTeam = TeamInfo(30, "Venezuela U17", "ven.png"),
+            awayTeam = TeamInfo(31, "England U17", "eng.png"),
+            homeScore = 1,
+            awayScore = 0,
+            startTimeDate = "2026-10-01 16:30:00",
+            status = "8"
+        )
+        fakeMatchApi.responseToReturn = BaseResponse(
+            statusCode = 200,
+            message = "OK",
+            data = MatchInfoDetailResponseBase(
+                data = listOf(youthMatch),
+                meta = MetaResponse(currentPage = 1, totalPage = 1)
+            )
+        )
+
+        val result = syncEngine.syncFullPipelineForDate("2026-10-01")
+
+        assertTrue(result is SyncResult.Success)
+        assertEquals(0, (result as SyncResult.Success).data.matchesSynced)
+        assertEquals(0, fakeMatchDao.matches.size)
+        assertEquals(0, fakeTeamDao.teams.size)
+        assertEquals(0, fakeLeagueDao.leagues.size)
+    }
+
+    @Test
+    fun syncFullPipelineForDate_qualityPolicy_rejectsAmbiguousQuarantineMatch() = runTest {
+        val ambiguousMatch = MatchRecord(
+            id = 5004L,
+            competitionId = 999999, // Unknown competition
+            competition = CompetitionSummaryInfo(999999, "Random Local Tournament 2026"),
+            homeTeam = TeamInfo(40, "Local Team A", "a.png"),
+            awayTeam = TeamInfo(41, "Local Team B", "b.png"),
+            homeScore = 0,
+            awayScore = 0,
+            startTimeDate = "2026-10-01 14:00:00",
+            status = "8"
+        )
+        fakeMatchApi.responseToReturn = BaseResponse(
+            statusCode = 200,
+            message = "OK",
+            data = MatchInfoDetailResponseBase(
+                data = listOf(ambiguousMatch),
+                meta = MetaResponse(currentPage = 1, totalPage = 1)
+            )
+        )
+
+        val result = syncEngine.syncFullPipelineForDate("2026-10-01")
+
+        assertTrue(result is SyncResult.Success)
+        assertEquals(0, (result as SyncResult.Success).data.matchesSynced)
+        assertEquals(0, fakeMatchDao.matches.size)
+    }
+
+    @Test
+    fun syncFullPipelineForDate_qualityPolicy_acceptsOfficialInternational() = runTest {
+        val internationalMatch = MatchRecord(
+            id = 5005L,
+            competitionId = 2484, // CONCACAF Nations League (Tier 3 Whitelist)
+            competition = CompetitionSummaryInfo(2484, "CONCACAF Nations League"),
+            homeTeam = TeamInfo(50, "USA", "usa.png"),
+            awayTeam = TeamInfo(51, "Mexico", "mex.png"),
+            homeScore = 1,
+            awayScore = 1,
+            startTimeDate = "2026-10-01 20:00:00",
+            status = "8"
+        )
+        fakeMatchApi.responseToReturn = BaseResponse(
+            statusCode = 200,
+            message = "OK",
+            data = MatchInfoDetailResponseBase(
+                data = listOf(internationalMatch),
+                meta = MetaResponse(currentPage = 1, totalPage = 1)
+            )
+        )
+
+        val result = syncEngine.syncFullPipelineForDate("2026-10-01")
+
+        assertTrue(result is SyncResult.Success)
+        assertEquals(1, (result as SyncResult.Success).data.matchesSynced)
+        assertEquals(1, fakeMatchDao.matches.size)
+        assertTrue(fakeMatchDao.matches.containsKey(5005L))
+    }
+
+    @Test
+    fun syncFullPipelineForDate_qualityPolicy_acceptsAseanCupVietnamVsPakistan() = runTest {
+        val aseanCupMatch = MatchRecord(
+            id = 908567L,
+            competitionId = 2239057, // FIFA ASEAN Cup (Tier 3 Whitelist)
+            competition = CompetitionSummaryInfo(2239057, "FIFA ASEAN Cup", "FIFA ASEAN Cup"),
+            homeTeam = TeamInfo(127052, "Vietnam", "vietnam.png"),
+            awayTeam = TeamInfo(137359, "Pakistan", "pakistan.png"),
+            homeScore = 0,
+            awayScore = 0,
+            startTimeDate = "2026-10-02 16:00:00",
+            status = "0" // Scheduled / Pending
+        )
+        fakeMatchApi.responseToReturn = BaseResponse(
+            statusCode = 200,
+            message = "OK",
+            data = MatchInfoDetailResponseBase(
+                data = listOf(aseanCupMatch),
+                meta = MetaResponse(currentPage = 1, totalPage = 1)
+            )
+        )
+
+        val result = syncEngine.syncFullPipelineForDate("2026-10-02")
+
+        assertTrue(result is SyncResult.Success)
+        assertEquals(1, (result as SyncResult.Success).data.matchesSynced)
+        assertEquals(1, fakeMatchDao.matches.size)
+        assertTrue(fakeMatchDao.matches.containsKey(908567L))
+        assertEquals(127052, fakeMatchDao.matches[908567L]?.homeTeamId)
+        assertEquals(137359, fakeMatchDao.matches[908567L]?.awayTeamId)
+        assertEquals(1, fakeLeagueDao.leagues.size)
+        assertTrue(fakeLeagueDao.leagues.containsKey(2239057))
+        assertEquals(2239057, fakeLeagueDao.leagues[2239057]?.id)
+    }
+
+    @Test
+    fun syncFullPipelineForDate_qualityPolicy_preservesLiveAndUpcomingMatchesForAcceptedCompetitions() = runTest {
+        val liveMatch = MatchRecord(
+            id = 5006L,
+            competitionId = 1398, // UEFA Champions League (Tier 1)
+            competition = CompetitionSummaryInfo(1398, "UEFA Champions League"),
+            homeTeam = TeamInfo(60, "Real Madrid", "rma.png"),
+            awayTeam = TeamInfo(61, "Bayern Munich", "bay.png"),
+            homeScore = 1,
+            awayScore = 0,
+            startTimeDate = "2026-10-01 21:00:00",
+            status = "1" // Live (In-Play)
+        )
+        val upcomingMatch = MatchRecord(
+            id = 5007L,
+            competitionId = 1398, // UEFA Champions League (Tier 1)
+            competition = CompetitionSummaryInfo(1398, "UEFA Champions League"),
+            homeTeam = TeamInfo(62, "PSG", "psg.png"),
+            awayTeam = TeamInfo(63, "Inter Milan", "int.png"),
+            homeScore = 0,
+            awayScore = 0,
+            startTimeDate = "2026-10-01 23:00:00",
+            status = "0" // Pending (Upcoming)
+        )
+        fakeMatchApi.responseToReturn = BaseResponse(
+            statusCode = 200,
+            message = "OK",
+            data = MatchInfoDetailResponseBase(
+                data = listOf(liveMatch, upcomingMatch),
+                meta = MetaResponse(currentPage = 1, totalPage = 1)
+            )
+        )
+
+        val result = syncEngine.syncFullPipelineForDate("2026-10-01")
+
+        assertTrue(result is SyncResult.Success)
+        assertEquals(2, (result as SyncResult.Success).data.matchesSynced)
+        assertEquals(2, fakeMatchDao.matches.size)
+        assertEquals("1", fakeMatchDao.matches[5006L]?.status)
+        assertEquals("0", fakeMatchDao.matches[5007L]?.status)
+    }
+
+    @Test
+    fun syncFullPipelineForDate_metadataIsolation_rejectedMatchDoesNotCreateOrphanLeaguesOrTeams() = runTest {
+        val validMatch = MatchRecord(
+            id = 5008L,
+            competitionId = 954, // La Liga (Tier 1)
+            competition = CompetitionSummaryInfo(954, "Spanish La Liga"),
+            homeTeam = TeamInfo(70, "Barcelona", "fcb.png"),
+            awayTeam = TeamInfo(71, "Atletico Madrid", "atm.png"),
+            homeScore = 2,
+            awayScore = 0,
+            startTimeDate = "2026-10-01 16:00:00",
+            status = "8"
+        )
+        val rejectedYouthMatch = MatchRecord(
+            id = 5009L,
+            competitionId = 1379, // CFA U20 League (Blacklisted)
+            competition = CompetitionSummaryInfo(1379, "Chinese Football Association U-20 League"),
+            homeTeam = TeamInfo(80, "Beijing U20", "bj.png"),
+            awayTeam = TeamInfo(81, "Shanghai U20", "sh.png"),
+            homeScore = 0,
+            awayScore = 0,
+            startTimeDate = "2026-10-01 14:00:00",
+            status = "8"
+        )
+        fakeMatchApi.responseToReturn = BaseResponse(
+            statusCode = 200,
+            message = "OK",
+            data = MatchInfoDetailResponseBase(
+                data = listOf(validMatch, rejectedYouthMatch),
+                meta = MetaResponse(currentPage = 1, totalPage = 1)
+            )
+        )
+
+        val result = syncEngine.syncFullPipelineForDate("2026-10-01")
+
+        assertTrue(result is SyncResult.Success)
+        assertEquals(1, (result as SyncResult.Success).data.matchesSynced)
+        assertEquals(2, result.data.teamsSynced)
+        assertEquals(1, fakeMatchDao.matches.size)
+        assertEquals(2, fakeTeamDao.teams.size)
+        assertEquals(1, fakeLeagueDao.leagues.size)
+
+        // Verify ONLY valid match, league and teams were saved
+        assertTrue(fakeMatchDao.matches.containsKey(5008L))
+        assertTrue(!fakeMatchDao.matches.containsKey(5009L))
+        assertTrue(fakeTeamDao.teams.containsKey(70))
+        assertTrue(fakeTeamDao.teams.containsKey(71))
+        assertTrue(!fakeTeamDao.teams.containsKey(80))
+        assertTrue(!fakeTeamDao.teams.containsKey(81))
+        assertTrue(fakeLeagueDao.leagues.containsKey(954))
+        assertTrue(!fakeLeagueDao.leagues.containsKey(1379))
     }
 
     private class FakeDatasetMetadataRepository : dev.anhquocs.truelab.core.domain.metadata.repository.DatasetMetadataRepository {
