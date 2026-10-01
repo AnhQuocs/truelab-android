@@ -6,16 +6,16 @@ import androidx.compose.ui.graphics.Color
 // TrueLab Brand Colors (Football Analytics & Prediction Lab)
 // =============================================================================
 
-// Primary: Emerald Pitch Green (Sân cỏ, Phân tích & Tỷ lệ Thắng)
-val EmeraldLightPrimary = Color(0xFF00875A)
-val EmeraldLightOnPrimary = Color(0xFFFFFFFF)
-val EmeraldLightPrimaryContainer = Color(0xFFD1FADF)
-val EmeraldLightOnPrimaryContainer = Color(0xFF02442C)
+// Primary: Coral Orange (Năng lượng, Dữ liệu & Tốc độ)
+val CoralLightPrimary = Color(0xFFEA580C)         // Orange 600
+val CoralLightOnPrimary = Color(0xFFFFFFFF)
+val CoralLightPrimaryContainer = Color(0xFFFED7AA) // Orange 200
+val CoralLightOnPrimaryContainer = Color(0xFF431407)
 
-val EmeraldDarkPrimary = Color(0xFF10B981)
-val EmeraldDarkOnPrimary = Color(0xFF003822)
-val EmeraldDarkPrimaryContainer = Color(0xFF065F46)
-val EmeraldDarkOnPrimaryContainer = Color(0xFFA7F3D0)
+val CoralDarkPrimary = Color(0xFFFB923C)          // Orange 400
+val CoralDarkOnPrimary = Color(0xFF2D1200)
+val CoralDarkPrimaryContainer = Color(0xFF7C2D12) // Red-Orange 900
+val CoralDarkOnPrimaryContainer = Color(0xFFFDBA74) // Orange 300
 
 // Secondary: Electric Tech Blue (Công nghệ, Dữ liệu & Thống kê)
 val TechBlueLightSecondary = Color(0xFF0284C7)
@@ -48,17 +48,17 @@ val SlateLightSurfaceVariant = Color(0xFFF1F5F9)
 val SlateLightOnSurfaceVariant = Color(0xFF475569)
 val SlateLightOutline = Color(0xFFCBD5E1)
 
-// Neutral & Surfaces (Dark Theme: Deep Midnight Slate)
-val SlateDarkBackground = Color(0xFF0B1120)
-val SlateDarkOnBackground = Color(0xFFF8FAFC)
-val SlateDarkSurface = Color(0xFF151E2E)
-val SlateDarkOnSurface = Color(0xFFF8FAFC)
-val SlateDarkSurfaceVariant = Color(0xFF1E293B)
+// Neutral & Surfaces (Dark Theme: Deep Charcoal & Dark Slate)
+val SlateDarkBackground = Color(0xFF0B0E14)
+val SlateDarkOnBackground = Color(0xFFF1F5F9)
+val SlateDarkSurface = Color(0xFF131720)
+val SlateDarkOnSurface = Color(0xFFF1F5F9)
+val SlateDarkSurfaceVariant = Color(0xFF1B212D)
 val SlateDarkOnSurfaceVariant = Color(0xFF94A3B8)
-val SlateDarkOutline = Color(0xFF334155)
+val SlateDarkOutline = Color(0xFF273142)
 
 // Status Colors
 val StatusError = Color(0xFFEF4444)
 val StatusOnError = Color(0xFFFFFFFF)
-val StatusErrorContainer = Color(0xFFFEE2E2)
-val StatusOnErrorContainer = Color(0xFF991B1B)
+val StatusErrorContainer = Color(0xFF450A0A)
+val StatusOnErrorContainer = Color(0xFFFCA5A5)
