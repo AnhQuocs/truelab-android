@@ -316,7 +316,7 @@ private fun MatchDetailContent(
             ) {
                 DetailInfoRow(
                     label = stringResource(R.string.match_detail_date_label),
-                    value = match.startTimeDate
+                    value = dev.anhquocs.truelab.core.ui.utils.DateTimeFormatterUtils.formatToVietnamDateTime(match.startTimeDate)
                 )
                 DetailInfoRow(
                     label = stringResource(R.string.match_detail_status_label),

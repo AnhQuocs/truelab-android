@@ -121,7 +121,7 @@ object BacktestUiMapper {
         return records.map { record ->
             BacktestMatchUiRecord(
                 matchId = record.matchId,
-                formattedDate = record.matchDate,
+                formattedDate = dev.anhquocs.truelab.core.ui.utils.DateTimeFormatterUtils.formatToVietnamDateTime(record.matchDate),
                 homeTeamName = record.homeTeamName,
                 awayTeamName = record.awayTeamName,
                 predictedOutcomeRes = mapOutcomeToRes(record.predictedOutcome),

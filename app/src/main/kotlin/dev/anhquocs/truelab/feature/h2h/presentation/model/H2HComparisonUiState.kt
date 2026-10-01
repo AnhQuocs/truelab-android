@@ -13,14 +13,14 @@ sealed interface H2HComparisonUiState {
     ) : H2HComparisonUiState
 
     data class TeamSelectionRequired(
-        val availableTeams: List<TeamSummary>,
+        val availableTeams: List<TeamSummary> = emptyList(),
         val selectedTeamAId: Int? = null,
         val selectedTeamBId: Int? = null,
         val message: UiText
     ) : H2HComparisonUiState
 
     data class Success(
-        val availableTeams: List<TeamSummary>,
+        val availableTeams: List<TeamSummary> = emptyList(),
         val teamA: TeamDetail,
         val teamB: TeamDetail,
         val comparison: H2HComparisonRecord,

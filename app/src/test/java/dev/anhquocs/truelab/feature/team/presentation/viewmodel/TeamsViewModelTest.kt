@@ -252,7 +252,7 @@ class TeamsViewModelTest {
     }
 
     @Test
-    fun `formScore is computed via CalculateTeamFormUseCase with windowSize 5`() = runTest {
+    fun `form is mapped from SeasonRanking recently badges`() = runTest {
         val collectJob = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
@@ -260,8 +260,26 @@ class TeamsViewModelTest {
         assertTrue(state is TeamsUiState.Success)
         val successState = state as TeamsUiState.Success
         val manCity = successState.teams.first { it.id == "1" }
-        // Man City played 2 matches: Win vs Arsenal (2-1), Win vs Liverpool (2-0) -> 100.0 form score
-        assertEquals(100, manCity.formScore)
+        assertEquals(listOf('W', 'W', 'W', 'D', 'W'), manCity.form)
+        assertEquals(1, manCity.rank)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `teams list is bounded to max 50 items even when thousands of teams exist`() = runTest {
+        val largeTeamList = (1..500).map { id ->
+            TeamDetail(id = id, name = "Team $id", leagueName = "League", eloRating = 1500.0)
+        }
+        fakeTeamRepository.setTeams(largeTeamList)
+
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is TeamsUiState.Success)
+        val successState = state as TeamsUiState.Success
+        assertTrue("Expected bounded teams <= 50, but was ${successState.teams.size}", successState.teams.size <= 50)
 
         collectJob.cancel()
     }
@@ -288,7 +306,7 @@ class TeamsViewModelTest {
     }
 
     @Test
-    fun `home and away splits are computed via CalculateHomeAwaySplitsUseCase and mapped accurately`() = runTest {
+    fun `team record handles home and away splits gracefully when bounded list is rendered`() = runTest {
         val collectJob = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
@@ -296,26 +314,54 @@ class TeamsViewModelTest {
         assertTrue(state is TeamsUiState.Success)
         val successState = state as TeamsUiState.Success
 
-        // Man City: 1 home win (2-1 vs Arsenal) -> 1W-0D-0L, 100% win rate; 1 away win (2-0 vs Liverpool) -> 1W-0D-0L, 100% win rate
         val manCity = successState.teams.first { it.id == "1" }
-        assertEquals(100.0, manCity.homeWinRate)
+        assertEquals("Manchester City", manCity.name)
+        assertEquals(1, manCity.rank)
+        assertEquals(20, manCity.wins)
+        assertEquals(5, manCity.draws)
+        assertEquals(3, manCity.losses)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `form score and home away splits are calculated from bounded recent matches`() = runTest {
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is TeamsUiState.Success)
+        val successState = state as TeamsUiState.Success
+
+        val manCity = successState.teams.first { it.id == "1" }
+        // Man City won match1 (home: 2-1 vs Arsenal) and match2 (away: 2-0 at Liverpool) -> 2W-0D-0L
         assertEquals("1W-0D-0L", manCity.homeRecord)
-        assertEquals(100.0, manCity.awayWinRate)
         assertEquals("1W-0D-0L", manCity.awayRecord)
+        assertEquals(6, manCity.formPoints) // 2 wins = 6 pts
+        assertEquals(6, manCity.maxFormPoints) // 2 matches * 3 = 6 pts max
+        assertTrue(manCity.formScore > 0)
 
-        // Arsenal: 0 home matches -> 0W-0D-0L, 0% win rate; 1 away loss (1-2 vs Man City) -> 0W-0D-1L, 0% win rate
-        val arsenal = successState.teams.first { it.id == "2" }
-        assertEquals(0.0, arsenal.homeWinRate)
-        assertEquals("0W-0D-0L", arsenal.homeRecord)
-        assertEquals(0.0, arsenal.awayWinRate)
-        assertEquals("0W-0D-1L", arsenal.awayRecord)
+        collectJob.cancel()
+    }
 
-        // Liverpool: 1 home loss (0-2 vs Man City) -> 0W-0D-1L, 0% win rate; 0 away matches -> 0W-0D-0L, 0% win rate
-        val liverpool = successState.teams.first { it.id == "3" }
-        assertEquals(0.0, liverpool.homeWinRate)
-        assertEquals("0W-0D-1L", liverpool.homeRecord)
-        assertEquals(0.0, liverpool.awayWinRate)
-        assertEquals("0W-0D-0L", liverpool.awayRecord)
+    @Test
+    fun `team with no recent match history returns empty form and graceful splits`() = runTest {
+        // Chelsea has no matches in fakeMatchRepository
+        fakeTeamRepository.setTeams(listOf(chelseaDetail))
+        fakeTeamRepository.setRankings(emptyList())
+
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is TeamsUiState.Success)
+        val successState = state as TeamsUiState.Success
+        val chelsea = successState.teams.first { it.id == "4" }
+        assertEquals(0, chelsea.formPoints)
+        assertEquals(15, chelsea.maxFormPoints)
+        assertEquals(0, chelsea.formScore)
+        assertEquals("—", chelsea.homeRecord)
+        assertEquals("—", chelsea.awayRecord)
 
         collectJob.cancel()
     }
@@ -365,9 +411,17 @@ class TeamsViewModelTest {
             emit(teamsFlow.value.find { it.id == teamId })
         }
 
-        override fun getTeams(): Flow<List<TeamDetail>> = flow {
+        override fun getTeams(limit: Int): Flow<List<TeamDetail>> = flow {
             if (shouldThrowError) throw RuntimeException("Database connection failed")
-            teamsFlow.collect { emit(it) }
+            teamsFlow.collect { emit(it.take(limit)) }
+        }
+
+        override fun searchTeams(query: String, limit: Int): Flow<List<TeamDetail>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database connection failed")
+            teamsFlow.collect { list ->
+                val filtered = if (query.isBlank()) list else list.filter { it.name.contains(query, ignoreCase = true) }
+                emit(filtered.take(limit))
+            }
         }
 
         override fun getSeasonRanking(matchId: Long): Flow<List<SeasonRanking>> = flow {
@@ -444,5 +498,19 @@ class TeamsViewModelTest {
                 )
             }
         }
+
+        override fun getPredictableMatchesFiltered(
+            startDateUtc: String?,
+            endDateUtc: String?,
+            isPastDate: Boolean,
+            isFutureDate: Boolean,
+            datePrefix: String?,
+            leagueId: Int?,
+            statusFilter: dev.anhquocs.truelab.core.domain.match.model.PredictionStatusFilter,
+            searchQuery: String?,
+            limit: Int
+        ): Flow<List<Match>> = flow { emit(emptyList()) }
+
+        override suspend fun refreshMatchesForDate(date: String): Result<Unit> = Result.success(Unit)
     }
 }

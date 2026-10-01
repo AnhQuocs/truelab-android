@@ -217,7 +217,16 @@ private class FakeBacktestTeamRepository : TeamRepository {
         teamsFlow.value = teams
     }
 
-    override fun getTeams(): Flow<List<TeamDetail>> = teamsFlow
+    override fun getTeams(limit: Int): Flow<List<TeamDetail>> = kotlinx.coroutines.flow.flow {
+        teamsFlow.collect { list -> emit(list.take(limit)) }
+    }
+
+    override fun searchTeams(query: String, limit: Int): Flow<List<TeamDetail>> = kotlinx.coroutines.flow.flow {
+        teamsFlow.collect { list ->
+            val filtered = if (query.isBlank()) list else list.filter { it.name.contains(query, ignoreCase = true) }
+            emit(filtered.take(limit))
+        }
+    }
 
     override fun getTeamDetail(teamId: Int): Flow<TeamDetail?> = flow {
         emit(teamsFlow.value.firstOrNull { it.id == teamId })

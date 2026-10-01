@@ -66,4 +66,21 @@ class FakeMatchRepository : MatchRepository {
             }.take(limit)
         )
     }
+
+    override fun getPredictableMatchesFiltered(
+        startDateUtc: String?,
+        endDateUtc: String?,
+        isPastDate: Boolean,
+        isFutureDate: Boolean,
+        datePrefix: String?,
+        leagueId: Int?,
+        statusFilter: dev.anhquocs.truelab.core.domain.match.model.PredictionStatusFilter,
+        searchQuery: String?,
+        limit: Int
+    ): Flow<List<Match>> = flow {
+        errorToThrow?.let { throw it }
+        emit(emptyList())
+    }
+
+    override suspend fun refreshMatchesForDate(date: String): Result<Unit> = Result.success(Unit)
 }

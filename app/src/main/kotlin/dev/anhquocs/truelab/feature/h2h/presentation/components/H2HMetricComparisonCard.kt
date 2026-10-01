@@ -28,6 +28,7 @@ import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusSmall
 import dev.anhquocs.truelab.core.ui.utils.bold
+import dev.anhquocs.truelab.core.ui.utils.normal
 import dev.anhquocs.truelab.core.ui.utils.s10
 import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s14
@@ -78,6 +79,23 @@ fun H2HMetricComparisonCard(
                 title = stringResource(R.string.h2h_form_score_label),
                 valueA = comparison.teamAFormScore,
                 valueB = comparison.teamBFormScore
+            )
+
+            // Form Score Explainability
+            Text(
+                text = stringResource(R.string.h2h_form_score_tooltip),
+                style = MaterialTheme.typography.s10.normal(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 2.dp, bottom = 4.dp)
+            )
+
+            // 5 Recent Matches Section
+            RecentMatchesFormSection(
+                teamARecentMatches = comparison.teamARecentMatches,
+                teamBRecentMatches = comparison.teamBRecentMatches
             )
 
             HorizontalDivider(

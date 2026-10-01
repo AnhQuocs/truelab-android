@@ -53,19 +53,17 @@ import dev.anhquocs.truelab.core.ui.utils.semiBold
 @Composable
 fun TeamPickerBottomSheet(
     teams: List<TeamSummary>,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     excludedTeamId: Int?,
     title: String,
     onSelectTeam: (TeamSummary) -> Unit,
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var searchQuery by remember { mutableStateOf("") }
 
-    val filteredTeams = remember(teams, searchQuery, excludedTeamId) {
-        teams.filter { team ->
-            team.id != excludedTeamId &&
-                (searchQuery.isBlank() || team.name.contains(searchQuery.trim(), ignoreCase = true))
-        }.sortedBy { it.name }
+    val displayTeams = remember(teams, excludedTeamId) {
+        if (excludedTeamId == null) teams else teams.filter { it.id != excludedTeamId }
     }
 
     ModalBottomSheet(
@@ -88,7 +86,7 @@ fun TeamPickerBottomSheet(
 
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = onSearchQueryChange,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(stringResource(R.string.h2h_search_team_hint)) },
                 leadingIcon = {
@@ -100,7 +98,7 @@ fun TeamPickerBottomSheet(
                 },
                 trailingIcon = {
                     if (searchQuery.isNotBlank()) {
-                        IconButton(onClick = { searchQuery = "" }) {
+                        IconButton(onClick = { onSearchQueryChange("") }) {
                             Icon(imageVector = Icons.Default.Close, contentDescription = "Clear")
                         }
                     }
@@ -117,7 +115,7 @@ fun TeamPickerBottomSheet(
 
             Spacer(modifier = Modifier.height(Dimen.PaddingM))
 
-            if (filteredTeams.isEmpty()) {
+            if (displayTeams.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -138,7 +136,7 @@ fun TeamPickerBottomSheet(
                     contentPadding = PaddingValues(vertical = Dimen.PaddingXXS),
                     verticalArrangement = Arrangement.spacedBy(Dimen.PaddingXXS)
                 ) {
-                    items(filteredTeams, key = { it.id }) { team ->
+                    items(displayTeams, key = { it.id }) { team ->
                         TeamPickerItem(
                             team = team,
                             onClick = {
@@ -166,19 +164,11 @@ private fun TeamPickerItem(
             .padding(horizontal = Dimen.PaddingS, vertical = Dimen.PaddingS),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = team.name.take(2).uppercase(),
-                style = MaterialTheme.typography.s14.bold(),
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        }
+        dev.anhquocs.truelab.core.ui.components.TeamLogo(
+            logoUrl = team.logo,
+            teamName = team.name,
+            size = 36.dp
+        )
 
         Spacer(modifier = Modifier.width(Dimen.PaddingM))
 

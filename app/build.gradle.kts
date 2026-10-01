@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.appcompat)
+    implementation(libs.coil.compose)
 
     // Hilt DI
     implementation(libs.hilt.android)

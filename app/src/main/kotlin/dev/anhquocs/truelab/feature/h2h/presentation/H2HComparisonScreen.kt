@@ -69,19 +69,22 @@ fun H2HComparisonScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedTeamAId by viewModel.selectedTeamAId.collectAsStateWithLifecycle()
     val selectedTeamBId by viewModel.selectedTeamBId.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
+    val selectedTeamADetail by viewModel.selectedTeamADetail.collectAsStateWithLifecycle()
+    val selectedTeamBDetail by viewModel.selectedTeamBDetail.collectAsStateWithLifecycle()
 
     var showTeamAPicker by remember { mutableStateOf(false) }
     var showTeamBPicker by remember { mutableStateOf(false) }
 
-    val availableTeams = when (val state = uiState) {
-        is H2HComparisonUiState.Loading -> state.availableTeams
-        is H2HComparisonUiState.TeamSelectionRequired -> state.availableTeams
-        is H2HComparisonUiState.Success -> state.availableTeams
-        is H2HComparisonUiState.Error -> state.availableTeams
+    val teamA = when (val state = uiState) {
+        is H2HComparisonUiState.Success -> TeamSummary(state.teamA.id, state.teamA.name, state.teamA.logo)
+        else -> selectedTeamADetail?.let { TeamSummary(it.id, it.name, it.logo) }
     }
-
-    val teamA = availableTeams.find { it.id == selectedTeamAId }
-    val teamB = availableTeams.find { it.id == selectedTeamBId }
+    val teamB = when (val state = uiState) {
+        is H2HComparisonUiState.Success -> TeamSummary(state.teamB.id, state.teamB.name, state.teamB.logo)
+        else -> selectedTeamBDetail?.let { TeamSummary(it.id, it.name, it.logo) }
+    }
 
     TrueLabMainLayout(
         modifier = modifier,
@@ -242,21 +245,31 @@ fun H2HComparisonScreen(
         // Team Pickers Modal Bottom Sheets
         if (showTeamAPicker) {
             TeamPickerBottomSheet(
-                teams = availableTeams,
+                teams = searchResults,
+                searchQuery = searchQuery,
+                onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
                 excludedTeamId = selectedTeamBId,
                 title = stringResource(R.string.h2h_select_team_a),
                 onSelectTeam = { selected -> viewModel.selectTeamA(selected.id) },
-                onDismissRequest = { showTeamAPicker = false }
+                onDismissRequest = {
+                    showTeamAPicker = false
+                    viewModel.onSearchQueryChanged("")
+                }
             )
         }
 
         if (showTeamBPicker) {
             TeamPickerBottomSheet(
-                teams = availableTeams,
+                teams = searchResults,
+                searchQuery = searchQuery,
+                onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
                 excludedTeamId = selectedTeamAId,
                 title = stringResource(R.string.h2h_select_team_b),
                 onSelectTeam = { selected -> viewModel.selectTeamB(selected.id) },
-                onDismissRequest = { showTeamBPicker = false }
+                onDismissRequest = {
+                    showTeamBPicker = false
+                    viewModel.onSearchQueryChanged("")
+                }
             )
         }
     }
