@@ -130,7 +130,163 @@ class PredictMatchOutcomeUseCase(
         // 9. Gọi thuật toán Phase 7 WeightedScorer
         val probabilities = weightedScorer.predictOutcome(signals)
 
-        // 10. Map kết quả sang PredictionResult Domain Entity
+        // 10. Tạo PredictionEvidence lưu lại toàn bộ đầu vào và trọng số thực tế
+        val hElo = context.homeElo ?: 1500.0
+        val aElo = context.awayElo ?: 1500.0
+        val eloEff = eloSignal.weight / totalWeight
+        val homeHistoryCount = context.homeRecentMatches.filter { it.isEnded && it.id != context.matchId }.size
+        val awayHistoryCount = context.awayRecentMatches.filter { it.isEnded && it.id != context.matchId }.size
+        val eloAvailable = (hElo != 1500.0 || aElo != 1500.0 || homeHistoryCount > 0 || awayHistoryCount > 0)
+        val eloEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
+            name = "Elo",
+            homeProb = eloSignal.homeProb,
+            drawProb = eloSignal.drawProb,
+            awayProb = eloSignal.awayProb,
+            rawWeight = config.eloWeight,
+            effectiveWeight = eloEff,
+            contributionHome = eloEff * eloSignal.homeProb,
+            contributionDraw = eloEff * eloSignal.drawProb,
+            contributionAway = eloEff * eloSignal.awayProb,
+            isAvailable = eloAvailable,
+            details = mapOf(
+                "homeElo" to String.format(java.util.Locale.US, "%.1f", hElo),
+                "awayElo" to String.format(java.util.Locale.US, "%.1f", aElo),
+                "diff" to String.format(java.util.Locale.US, "%+.1f", hElo - aElo),
+                "homeHistoryCount" to homeHistoryCount.toString(),
+                "awayHistoryCount" to awayHistoryCount.toString(),
+                "hasHistory" to eloAvailable.toString()
+            )
+        )
+
+        val formEff = formSignal.weight / totalWeight
+        val homeRecentEnded = context.homeRecentMatches.filter { it.isEnded && it.id != context.matchId }.take(5)
+        val awayRecentEnded = context.awayRecentMatches.filter { it.isEnded && it.id != context.matchId }.take(5)
+        val homeMatchesCount = homeRecentEnded.size
+        val awayMatchesCount = awayRecentEnded.size
+        val formAvailable = homeMatchesCount > 0 || awayMatchesCount > 0
+        val homeFormResults = homeRecentEnded.joinToString(" ") { m ->
+            when (m.toOutcomeForTeam(context.homeTeamId)) {
+                MatchOutcome.WIN -> "W"; MatchOutcome.DRAW -> "D"; MatchOutcome.LOSS -> "L"; else -> "?"
+            }
+        }
+        val awayFormResults = awayRecentEnded.joinToString(" ") { m ->
+            when (m.toOutcomeForTeam(context.awayTeamId)) {
+                MatchOutcome.WIN -> "W"; MatchOutcome.DRAW -> "D"; MatchOutcome.LOSS -> "L"; else -> "?"
+            }
+        }
+        val formEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
+            name = "Form",
+            homeProb = formSignal.homeProb,
+            drawProb = formSignal.drawProb,
+            awayProb = formSignal.awayProb,
+            rawWeight = config.formWeight,
+            effectiveWeight = formEff,
+            contributionHome = formEff * formSignal.homeProb,
+            contributionDraw = formEff * formSignal.drawProb,
+            contributionAway = formEff * formSignal.awayProb,
+            isAvailable = formAvailable,
+            details = mapOf(
+                "homeForm" to (homeForm?.let { String.format(java.util.Locale.US, "%.1f", it.score) } ?: "N/A"),
+                "awayForm" to (awayForm?.let { String.format(java.util.Locale.US, "%.1f", it.score) } ?: "N/A"),
+                "homeMatches" to homeMatchesCount.toString(),
+                "awayMatches" to awayMatchesCount.toString(),
+                "homeFormResults" to homeFormResults,
+                "awayFormResults" to awayFormResults
+            )
+        )
+
+
+        val oddsEff = oddsSignal.weight / totalWeight
+        val oddsAvailable = context.latestOdds != null
+        val oddsEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
+            name = "EU Odds",
+            homeProb = oddsSignal.homeProb,
+            drawProb = oddsSignal.drawProb,
+            awayProb = oddsSignal.awayProb,
+            rawWeight = config.oddsWeight,
+            effectiveWeight = oddsEff,
+            contributionHome = oddsEff * oddsSignal.homeProb,
+            contributionDraw = oddsEff * oddsSignal.drawProb,
+            contributionAway = oddsEff * oddsSignal.awayProb,
+            isAvailable = oddsAvailable,
+            details = mapOf(
+                "homeOdds" to (context.latestOdds?.homeWin?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
+                "drawOdds" to (context.latestOdds?.draw?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
+                "awayOdds" to (context.latestOdds?.awayWin?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
+                "bookmaker" to (context.latestOdds?.companyName ?: "N/A")
+            )
+        )
+
+        val goalsEff = goalsSignal.weight / totalWeight
+        val goalsAvailable = homeScored != null || awayScored != null
+        val goalsEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
+            name = "Goals",
+            homeProb = goalsSignal.homeProb,
+            drawProb = goalsSignal.drawProb,
+            awayProb = goalsSignal.awayProb,
+            rawWeight = config.goalsWeight,
+            effectiveWeight = goalsEff,
+            contributionHome = goalsEff * goalsSignal.homeProb,
+            contributionDraw = goalsEff * goalsSignal.drawProb,
+            contributionAway = goalsEff * goalsSignal.awayProb,
+            isAvailable = goalsAvailable,
+            details = mapOf(
+                "homeScored" to (homeScored?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
+                "homeConceded" to (homeConceded?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
+                "awayScored" to (awayScored?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
+                "awayConceded" to (awayConceded?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A")
+            )
+        )
+
+        val h2hEff = h2hSignal.weight / totalWeight
+        val totalH2hCount = hw + d + aw
+        val h2hEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
+            name = "H2H",
+            homeProb = h2hSignal.homeProb,
+            drawProb = h2hSignal.drawProb,
+            awayProb = h2hSignal.awayProb,
+            rawWeight = config.h2hWeight,
+            effectiveWeight = h2hEff,
+            contributionHome = h2hEff * h2hSignal.homeProb,
+            contributionDraw = h2hEff * h2hSignal.drawProb,
+            contributionAway = h2hEff * h2hSignal.awayProb,
+            isAvailable = totalH2hCount > 0,
+            details = mapOf(
+                "homeWins" to hw.toString(),
+                "draws" to d.toString(),
+                "awayWins" to aw.toString(),
+                "totalMatches" to totalH2hCount.toString()
+            )
+        )
+
+        val homeAdvEff = homeAdvSignal.weight / totalWeight
+        val homeAdvEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
+            name = "Home Advantage",
+            homeProb = homeAdvSignal.homeProb,
+            drawProb = homeAdvSignal.drawProb,
+            awayProb = homeAdvSignal.awayProb,
+            rawWeight = config.homeAdvantageWeight,
+            effectiveWeight = homeAdvEff,
+            contributionHome = homeAdvEff * homeAdvSignal.homeProb,
+            contributionDraw = homeAdvEff * homeAdvSignal.drawProb,
+            contributionAway = homeAdvEff * homeAdvSignal.awayProb,
+            isAvailable = !context.isNeutralVenue,
+            details = mapOf(
+                "isNeutralVenue" to context.isNeutralVenue.toString()
+            )
+        )
+
+        val predictionEvidence = dev.anhquocs.truelab.core.domain.prediction.model.PredictionEvidence(
+            elo = eloEvidence,
+            form = formEvidence,
+            odds = oddsEvidence,
+            goals = goalsEvidence,
+            h2h = h2hEvidence,
+            homeAdvantage = homeAdvEvidence,
+            totalWeight = totalWeight
+        )
+
+        // 11. Map kết quả sang PredictionResult Domain Entity
         return PredictionResult(
             matchId = context.matchId,
             algorithmName = "Weighted Scoring",
@@ -138,7 +294,8 @@ class PredictMatchOutcomeUseCase(
             drawProb = probabilities.drawProb,
             awayWinProb = probabilities.awayWinProb,
             predictedOutcome = probabilities.predictedOutcome.name,
-            confidenceScore = probabilities.confidenceScore
+            confidenceScore = probabilities.confidenceScore,
+            evidence = predictionEvidence
         )
     }
 

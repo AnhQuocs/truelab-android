@@ -101,6 +101,19 @@ class GetHeadToHeadComparisonUseCase(
             getTeamStatisticsUseCase(teamB.id, teamBRecentMatches)
         } else null
 
+        // 6. Lấy 5 trận đã kết thúc gần nhất của từng đội, sắp xếp tăng dần theo thời gian (cũ nhất -> mới nhất) cho timeline
+        val validRecentA = teamARecentMatches
+            .filter { it.isEnded && it.homeScore != null && it.awayScore != null && (it.homeTeam.id == teamA.id || it.awayTeam.id == teamA.id) }
+            .sortedByDescending { it.startTimeDate }
+            .take(5)
+            .sortedBy { it.startTimeDate }
+
+        val validRecentB = teamBRecentMatches
+            .filter { it.isEnded && it.homeScore != null && it.awayScore != null && (it.homeTeam.id == teamB.id || it.awayTeam.id == teamB.id) }
+            .sortedByDescending { it.startTimeDate }
+            .take(5)
+            .sortedBy { it.startTimeDate }
+
         return HeadToHeadComparisonSummary(
             teamA = teamA,
             teamB = teamB,
@@ -119,6 +132,8 @@ class GetHeadToHeadComparisonUseCase(
             teamBHomeAwaySplits = teamBSplits,
             teamAStats = teamAStats,
             teamBStats = teamBStats,
+            teamARecentMatches = validRecentA,
+            teamBRecentMatches = validRecentB,
             h2hMatches = validH2h.sortedByDescending { it.startTimeDate }
         )
     }

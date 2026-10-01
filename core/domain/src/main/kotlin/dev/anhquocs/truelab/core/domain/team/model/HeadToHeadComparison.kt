@@ -43,5 +43,8 @@ data class HeadToHeadComparisonSummary(
     val teamBHomeAwaySplits: TeamHomeAwaySplits,
     val teamAStats: TeamPerformanceStatistics?,
     val teamBStats: TeamPerformanceStatistics?,
+    val teamARecentMatches: List<Match> = emptyList(),
+    val teamBRecentMatches: List<Match> = emptyList(),
     val h2hMatches: List<Match>
 )
+

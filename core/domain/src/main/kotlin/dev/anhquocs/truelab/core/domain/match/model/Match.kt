@@ -9,7 +9,10 @@ data class Match(
     val startTimeDate: String,
     val status: MatchStatus,
     val leagueId: Int? = null,
-    val season: String? = null
+    val leagueName: String? = null,
+    val leagueLogo: String? = null,
+    val season: String? = null,
+    val minutes: String? = null
 ) {
     val isEnded: Boolean get() = status == MatchStatus.ENDED
     val totalGoals: Int get() = (homeScore ?: 0) + (awayScore ?: 0)
