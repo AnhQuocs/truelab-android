@@ -11,10 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = EmeraldDarkPrimary,
-    onPrimary = EmeraldDarkOnPrimary,
-    primaryContainer = EmeraldDarkPrimaryContainer,
-    onPrimaryContainer = EmeraldDarkOnPrimaryContainer,
+    primary = CoralDarkPrimary,
+    onPrimary = CoralDarkOnPrimary,
+    primaryContainer = CoralDarkPrimaryContainer,
+    onPrimaryContainer = CoralDarkOnPrimaryContainer,
     secondary = TechBlueDarkSecondary,
     onSecondary = TechBlueDarkOnSecondary,
     secondaryContainer = TechBlueDarkSecondaryContainer,
@@ -35,10 +35,10 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = EmeraldLightPrimary,
-    onPrimary = EmeraldLightOnPrimary,
-    primaryContainer = EmeraldLightPrimaryContainer,
-    onPrimaryContainer = EmeraldLightOnPrimaryContainer,
+    primary = CoralLightPrimary,
+    onPrimary = CoralLightOnPrimary,
+    primaryContainer = CoralLightPrimaryContainer,
+    onPrimaryContainer = CoralLightOnPrimaryContainer,
     secondary = TechBlueLightSecondary,
     onSecondary = TechBlueLightOnSecondary,
     secondaryContainer = TechBlueLightSecondaryContainer,
@@ -61,7 +61,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun TrueLabTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Default false to preserve TrueLab Emerald Brand Identity
+    dynamicColor: Boolean = false, // Default false to preserve TrueLab Coral Brand Identity
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
