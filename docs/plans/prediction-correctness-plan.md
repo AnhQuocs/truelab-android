@@ -120,14 +120,14 @@ Cần đảm bảo không có sự mâu thuẫn giữa định nghĩa "Dữ li�
 | **Home Advantage**| 10% | **Target Match** | Địa điểm thi đấu (sân nhà/sân trung lập của trận $T$) | $P_H=0.46, P_D=0.26, P_A=0.28$ |
 
 ### Exit Criteria Phase 0
-- Xác nhận 100% không sửa đổi công thức cốt lõi của [PredictionWeightConfig.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/model/PredictionWeightConfig.kt) và [DefaultWeightedScorer.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/DefaultWeightedScorer.kt).
+- Xác nhận 100% không sửa đổi công thức cốt lõi của [PredictionWeightConfig.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/model/PredictionWeightConfig.kt) và [DefaultWeightedScorer.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/DefaultWeightedScorer.kt).
 
 ---
 
 ## 6. Phase 1 — Historical Elo Design
 
 ### Objective
-Thiết kế cơ chế tái hiện điểm Elo theo dòng thời gian (Chronological Elo Replay) thuần túy trong bộ nhớ của [BacktestPredictionUseCase.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt).
+Thiết kế cơ chế tái hiện điểm Elo theo dòng thời gian (Chronological Elo Replay) thuần túy trong bộ nhớ của [BacktestPredictionUseCase.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt).
 
 ### Current Problem
 Hiện tại `teamEloMap` là một Map bất biến truyền từ ngoài vào với giá trị 1500.0 cho mọi đội, khiến tín hiệu Elo không mang lại giá trị phân loại giữa các đội mạnh/yếu.
@@ -140,9 +140,9 @@ Hiện tại `teamEloMap` là một Map bất biến truyền từ ngoài vào v
    - Trong cùng mốc thời gian $[i, j)$, với mỗi trận $k$:
      - `homeElo = currentEloMap[homeTeamId] ?: 1500.0`
      - `awayElo = currentEloMap[awayTeamId] ?: 1500.0`
-     - Đưa `homeElo` và `awayElo` vào [MatchPredictionContext](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/model/MatchPredictionContext.kt).
+     - Đưa `homeElo` và `awayElo` vào [MatchPredictionContext](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/model/MatchPredictionContext.kt).
 3. **Cập nhật sau (Post-prediction)**:
-   - Tái sử dụng trực tiếp [EloRatingCalculator](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/EloRatingCalculator.kt) (`kFactor = 32.0`):
+   - Tái sử dụng trực tiếp [EloRatingCalculator](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/EloRatingCalculator.kt) (`kFactor = 32.0`):
      - `actualScoreHome = if (homeScore > awayScore) 1.0 else if (homeScore == awayScore) 0.5 else 0.0`
      - `val matchRating = eloRatingCalculator.calculateMatch(homeElo, awayElo, actualScoreHome, kFactor = 32.0)`
      - `currentEloMap[homeTeamId] = matchRating.newRatingA`
@@ -151,8 +151,8 @@ Hiện tại `teamEloMap` là một Map bất biến truyền từ ngoài vào v
    - Mọi trận đấu diễn ra cùng thời điểm được dự đoán bằng Elo *trước* khi bất kỳ trận nào trong nhóm đó cập nhật điểm mới.
 
 ### Affected Files
-- [BacktestPredictionUseCase.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt)
-- [EloRatingCalculator.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/EloRatingCalculator.kt)
+- [BacktestPredictionUseCase.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt)
+- [EloRatingCalculator.kt](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/rating/EloRatingCalculator.kt)
 
 ### Exit Criteria Phase 1
 - Elo của các đội bóng biến thiên liên tục theo kết quả thực tế qua 15.405 trận.
@@ -163,7 +163,7 @@ Hiện tại `teamEloMap` là một Map bất biến truyền từ ngoài vào v
 ## 7. Phase 2 — Target Match Odds & Final Semantics Design
 
 ### Objective
-Xác định chính xác ngữ nghĩa (Business Semantics) của tỷ lệ cược (Odds) cho trận đấu mục tiêu dựa trên kết quả kiểm toán trực tiếp từ cơ sở dữ liệu SQLite, loại bỏ 100% rủi ro rò rỉ dữ liệu trong/sau trận đấu (Zero Temporal Leakage Invariant), thiết kế cơ chế nạp dữ liệu hiệu quả và giữ nguyên contract của [OddsSignalTransformer.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/OddsSignalTransformer.kt).
+Xác định chính xác ngữ nghĩa (Business Semantics) của tỷ lệ cược (Odds) cho trận đấu mục tiêu dựa trên kết quả kiểm toán trực tiếp từ cơ sở dữ liệu SQLite, loại bỏ 100% rủi ro rò rỉ dữ liệu trong/sau trận đấu (Zero Temporal Leakage Invariant), thiết kế cơ chế nạp dữ liệu hiệu quả và giữ nguyên contract của [OddsSignalTransformer.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/OddsSignalTransformer.kt).
 
 ### Audited Database Facts (Kiểm chứng thực tế từ SQLite)
 Từ kết quả kiểm toán chuyên sâu trên toàn bộ 171.008 bản ghi Kèo Châu Âu 1X2 (`oddsType = 'eu'`):
@@ -195,10 +195,10 @@ Một bản ghi tỷ lệ cược được chấp nhận cho trận đấu mục
    - Ưu tiên 3 (Tie-breaking): Bản ghi có `id` lớn nhất (`id DESC`) để đảm bảo tính tất định 100%.
 6. **Cơ chế Fallback khi không có Odds**:
    - Nếu trận đấu không có bản ghi nào thỏa mãn 5 điều kiện trên $\rightarrow$ `latestOdds = null`.
-   - [OddsSignalTransformer.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/OddsSignalTransformer.kt) tự động gán `weight = 0.0`. 5 tín hiệu còn lại chiếm trọn 80% tổng trọng số và được chuẩn hóa thành 100% trong [DefaultWeightedScorer](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/DefaultWeightedScorer.kt).
+   - [OddsSignalTransformer.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/OddsSignalTransformer.kt) tự động gán `weight = 0.0`. 5 tín hiệu còn lại chiếm trọn 80% tổng trọng số và được chuẩn hóa thành 100% trong [DefaultWeightedScorer](../../core/algorithm/src/main/kotlin/dev/anhquocs/truelab/core/algorithm/prediction/DefaultWeightedScorer.kt).
 
 ### Scalable Bulk Query Implementation
-Thêm truy vấn Room Window Function tối ưu vào [OddsDao.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/odds/local/dao/OddsDao.kt):
+Thêm truy vấn Room Window Function tối ưu vào [OddsDao.kt](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/odds/local/dao/OddsDao.kt):
 ```sql
 @Query("""
     SELECT matchId, companyId, companyName, oddsType, handicap, over, under, homeWin, draw, awayWin, changeTime, marketPhase, id
@@ -227,24 +227,24 @@ fun getLatestPreMatchEuropeanOddsForAllMatches(): List<OddsEntity>
   - Truy vấn 1 lần duy nhất qua SQLite, hoàn thành trong $\approx 200\text{ ms}$.
   - Trả về đúng 130 bản ghi đại diện ($\approx 15\text{ KB}$ bộ nhớ), không nạp 632K dòng dư thừa.
   - Zero truy vấn lặp lại ($N+1$).
-  - Giữ nguyên 100% contract của [OddsSignalTransformer.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/OddsSignalTransformer.kt) (nhận 1 `OddsRecordItem?`).
+  - Giữ nguyên 100% contract của [OddsSignalTransformer.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/OddsSignalTransformer.kt) (nhận 1 `OddsRecordItem?`).
 
 ### Affected Files
-- [OddsDao.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/odds/local/dao/OddsDao.kt)
-- [OddsRepository.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/odds/repository/OddsRepository.kt)
-- [OddsRepositoryImpl.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/odds/repository/OddsRepositoryImpl.kt)
-- [BacktestViewModel.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/app/src/main/kotlin/dev/anhquocs/truelab/feature/backtest/presentation/viewmodel/BacktestViewModel.kt)
+- [OddsDao.kt](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/odds/local/dao/OddsDao.kt)
+- [OddsRepository.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/odds/repository/OddsRepository.kt)
+- [OddsRepositoryImpl.kt](../../core/data/src/main/kotlin/dev/anhquocs/truelab/core/data/odds/repository/OddsRepositoryImpl.kt)
+- [BacktestViewModel.kt](../../app/src/main/kotlin/dev/anhquocs/truelab/feature/backtest/presentation/viewmodel/BacktestViewModel.kt)
 
 ### Exit Criteria Phase 2
 - DAO truy vấn đúng 1 lần duy nhất, loại bỏ hoàn toàn `rolling_ball` và các bản ghi sau giờ bóng lăn.
-- Map trả về nhỏ gọn ($\approx 15\text{ KB}$), sẵn sàng nạp vào [BacktestPredictionUseCase](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt).
+- Map trả về nhỏ gọn ($\approx 15\text{ KB}$), sẵn sàng nạp vào [BacktestPredictionUseCase](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt).
 
 ---
 
 ## 8. Phase 3 — Backtest Integration & Dataset Scalability
 
 ### Objective
-Tích hợp toàn diện Historical Elo và Target Match Odds vào đường ống tính toán [BacktestPredictionUseCase.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt) và điều phối từ [BacktestViewModel.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/app/src/main/kotlin/dev/anhquocs/truelab/feature/backtest/presentation/viewmodel/BacktestViewModel.kt), đảm bảo mở rộng mượt mà khi scale dataset lên 30K/50K/75K trận.
+Tích hợp toàn diện Historical Elo và Target Match Odds vào đường ống tính toán [BacktestPredictionUseCase.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt) và điều phối từ [BacktestViewModel.kt](../../app/src/main/kotlin/dev/anhquocs/truelab/feature/backtest/presentation/viewmodel/BacktestViewModel.kt), đảm bảo mở rộng mượt mà khi scale dataset lên 30K/50K/75K trận.
 
 ### Dataset Verification & Scalability Strategy
 1. **Xác thực trực tiếp từ Database**:
@@ -283,9 +283,9 @@ Tích hợp toàn diện Historical Elo và Target Match Odds vào đường ố
 ```
 
 ### Affected Files
-- [BacktestPredictionUseCase.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt)
-- [BacktestViewModel.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/app/src/main/kotlin/dev/anhquocs/truelab/feature/backtest/presentation/viewmodel/BacktestViewModel.kt)
-- [BacktestUiMapper.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/app/src/main/kotlin/dev/anhquocs/truelab/feature/backtest/presentation/mapper/BacktestUiMapper.kt)
+- [BacktestPredictionUseCase.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/evaluation/usecase/BacktestPredictionUseCase.kt)
+- [BacktestViewModel.kt](../../app/src/main/kotlin/dev/anhquocs/truelab/feature/backtest/presentation/viewmodel/BacktestViewModel.kt)
+- [BacktestUiMapper.kt](../../app/src/main/kotlin/dev/anhquocs/truelab/feature/backtest/presentation/mapper/BacktestUiMapper.kt)
 
 ### Exit Criteria Phase 3
 - Backtest chạy trơn tru trên 15.405 trận, không gây out-of-memory hay freeze UI.
@@ -428,9 +428,9 @@ Thiết lập phương pháp kiểm thử hồi quy (Regression Strategy) để 
 ## 16. Acceptance Criteria
 
 - [x] **A. Historical Elo**: Khởi tạo 1500, cập nhật tuần tự sau từng trận đấu, cùng mốc thời gian không rò rỉ kết quả của nhau, không sửa đổi dữ liệu bảng `teams` trong SQLite.
-- [x] **B. Target Odds**: Truy vấn hiệu quả 1 lần duy nhất từ DAO, đưa vào [OddsSignalTransformer](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/OddsSignalTransformer.kt), chiếm 20% trọng số khi có odds, fallback an toàn 0% khi không có odds.
+- [x] **B. Target Odds**: Truy vấn hiệu quả 1 lần duy nhất từ DAO, đưa vào [OddsSignalTransformer](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/transformer/OddsSignalTransformer.kt), chiếm 20% trọng số khi có odds, fallback an toàn 0% khi không có odds.
 - [x] **C. Temporal Invariant**: Form, Goals, H2H, Elo chỉ lấy từ các trận diễn ra *trước* thời điểm trận đấu mục tiêu.
-- [x] **D. Prediction Semantics**: Giữ nguyên toàn bộ cấu hình trọng số chuẩn theo [PredictionWeightConfig.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/model/PredictionWeightConfig.kt), `confidence = max(P_H, P_D, P_A)`.
+- [x] **D. Prediction Semantics**: Giữ nguyên toàn bộ cấu hình trọng số chuẩn theo [PredictionWeightConfig.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/model/PredictionWeightConfig.kt), `confidence = max(P_H, P_D, P_A)`.
 - [x] **E. Scalability & Resilience**: Thuật toán $O(N \log N)$ duy trì hiệu năng cao, không $N+1$ query, không load thừa odds data, không gây ANR hay lag UI.
 - [x] **F. Testing & Build**: Build thành công, 100% Unit test pass, chạy mượt mà trên thiết bị thật.
 
@@ -449,7 +449,7 @@ Thiết lập phương pháp kiểm thử hồi quy (Regression Strategy) để 
 ## 18. Out of Scope
 
 - Không tạo model Machine Learning mới.
-- Không thay đổi công thức toán học hay trọng số trong [PredictionWeightConfig.kt](file:///d:/Android%20Studio/Jetpack%20Compose/TrueLab/core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/model/PredictionWeightConfig.kt).
+- Không thay đổi công thức toán học hay trọng số trong [PredictionWeightConfig.kt](../../core/domain/src/main/kotlin/dev/anhquocs/truelab/core/domain/prediction/model/PredictionWeightConfig.kt).
 - Không tạo bảng cơ sở dữ liệu mới (ví dụ: `HistoricalEloSnapshot`).
 - Không sửa đổi giao diện người dùng (UI) ngoài việc liên kết dữ liệu chính xác.
 - Không crawl thêm dữ liệu mới hay thay đổi asset database.
