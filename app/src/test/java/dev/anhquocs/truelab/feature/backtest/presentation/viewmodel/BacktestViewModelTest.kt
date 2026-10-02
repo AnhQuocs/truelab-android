@@ -245,4 +245,6 @@ private class FakeBacktestOddsRepository : OddsRepository {
     override fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?): Flow<List<OddsRecordItem>> = flowOf(emptyList())
 
     override suspend fun getLatestEuropeanOddsMap(): Map<Long, OddsRecordItem> = oddsMapToReturn
+
+    override suspend fun fetchAndCacheOddsForMatch(matchId: Long): Result<Unit> = Result.success(Unit)
 }

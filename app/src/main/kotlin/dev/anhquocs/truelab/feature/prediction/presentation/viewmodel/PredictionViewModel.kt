@@ -12,6 +12,7 @@ import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
 import dev.anhquocs.truelab.core.domain.match.model.PredictionStatusFilter
 import dev.anhquocs.truelab.core.domain.match.repository.MatchRepository
 import dev.anhquocs.truelab.core.domain.odds.repository.OddsRepository
+import dev.anhquocs.truelab.core.domain.odds.selector.PreMatchOddsSelector
 import dev.anhquocs.truelab.core.domain.prediction.model.MatchPredictionContext
 import dev.anhquocs.truelab.core.domain.prediction.usecase.PredictMatchOutcomeUseCase
 import dev.anhquocs.truelab.core.domain.team.repository.TeamRepository
@@ -152,6 +153,11 @@ class PredictionViewModel @Inject constructor(
         } else {
             val selectedMatch = autoSelectMatch(matches, userMatchId, selectedDate)
 
+            // Trigger on-demand odds hydration for selected match in background
+            viewModelScope.launch(Dispatchers.IO) {
+                oddsRepository.fetchAndCacheOddsForMatch(selectedMatch.id)
+            }
+
             val homeTeamId = selectedMatch.homeTeam.id
             val awayTeamId = selectedMatch.awayTeam.id
 
@@ -181,6 +187,12 @@ class PredictionViewModel @Inject constructor(
                     .filter { it.isEnded && it.id != selectedMatch.id && ((it.homeTeam.id == homeTeamId && it.awayTeam.id == awayTeamId) || (it.homeTeam.id == awayTeamId && it.awayTeam.id == homeTeamId)) && (targetTime.isBlank() || it.startTimeDate < targetTime) }
                     .sortedByDescending { it.startTimeDate }
 
+                // 3. Select valid Pre-Match European 1X2 Odds
+                val preMatchOdds = PreMatchOddsSelector.selectPreMatchEuropeanOdds(
+                    oddsList = matchOdds.oddsList,
+                    kickoffTime = selectedMatch.startTimeDate
+                )
+
                 val context = MatchPredictionContext(
                     matchId = selectedMatch.id,
                     homeTeamId = homeTeamId,
@@ -190,7 +202,7 @@ class PredictionViewModel @Inject constructor(
                     homeRecentMatches = homeHistory,
                     awayRecentMatches = awayHistory,
                     h2hMatches = h2hMatches,
-                    latestOdds = matchOdds.oddsList.firstOrNull()
+                    latestOdds = preMatchOdds
                 )
 
                 val result = predictMatchOutcomeUseCase(context)

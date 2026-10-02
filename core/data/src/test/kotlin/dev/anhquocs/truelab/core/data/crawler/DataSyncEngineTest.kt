@@ -119,6 +119,8 @@ class DataSyncEngineTest {
             return LongArray(odds.size) { (it + 1).toLong() }
         }
         override fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?): Flow<List<OddsEntity>> = flowOf(emptyList())
+        override fun getOddsForMatch(matchId: Long): Flow<List<OddsEntity>> = flowOf(oddsList.filter { it.matchId == matchId })
+        override fun getOddsListForMatch(matchId: Long): List<OddsEntity> = oddsList.filter { it.matchId == matchId }
         override fun getLatestOddsForMatch(matchId: Long): Flow<List<OddsEntity>> = flowOf(emptyList())
         override fun getLatestPreMatchEuropeanOddsForAllMatches(): Flow<List<OddsEntity>> = flowOf(emptyList())
     }

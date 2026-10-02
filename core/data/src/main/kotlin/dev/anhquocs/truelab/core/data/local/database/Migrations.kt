@@ -90,3 +90,56 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
     }
 }
 
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // 1. Create new odds table with nullable fields and correct types matching OddsEntity
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `odds_new` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `matchId` INTEGER NOT NULL,
+                `companyId` INTEGER NOT NULL,
+                `companyName` TEXT NOT NULL,
+                `oddsType` TEXT NOT NULL,
+                `handicap` REAL,
+                `over` REAL,
+                `under` REAL,
+                `homeWin` REAL,
+                `draw` REAL,
+                `awayWin` REAL,
+                `changeTime` INTEGER NOT NULL,
+                `marketPhase` TEXT,
+                FOREIGN KEY(`matchId`) REFERENCES `matches`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+
+        // 2. Copy data from old table to new table (casting changeTime to INTEGER)
+        db.execSQL(
+            """
+            INSERT INTO `odds_new` (
+                `id`, `matchId`, `companyId`, `companyName`, `oddsType`,
+                `handicap`, `over`, `under`, `homeWin`, `draw`, `awayWin`,
+                `changeTime`, `marketPhase`
+            )
+            SELECT
+                `id`, `matchId`, `companyId`, `companyName`, `oddsType`,
+                `handicap`, `over`, `under`, `homeWin`, `draw`, `awayWin`,
+                CAST(`changeTime` AS INTEGER), `marketPhase`
+            FROM `odds`
+            """.trimIndent()
+        )
+
+        // 3. Drop old table
+        db.execSQL("DROP TABLE `odds`")
+
+        // 4. Rename new table to original name
+        db.execSQL("ALTER TABLE `odds_new` RENAME TO `odds`")
+
+        // 5. Recreate indexes
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_odds_matchId` ON `odds` (`matchId`)")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_odds_matchId_companyId_oddsType_changeTime` ON `odds` (`matchId`, `companyId`, `oddsType`, `changeTime`)")
+    }
+}
+
+

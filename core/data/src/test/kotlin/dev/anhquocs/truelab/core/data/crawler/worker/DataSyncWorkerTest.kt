@@ -159,6 +159,8 @@ class DataSyncWorkerTest {
             return LongArray(odds.size) { (it + 1).toLong() }
         }
         override fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?) = throw NotImplementedError()
+        override fun getOddsForMatch(matchId: Long) = throw NotImplementedError()
+        override fun getOddsListForMatch(matchId: Long): List<dev.anhquocs.truelab.core.data.odds.local.entity.OddsEntity> = odds.filter { it.matchId == matchId }
         override fun getLatestOddsForMatch(matchId: Long) = throw NotImplementedError()
         override fun getLatestPreMatchEuropeanOddsForAllMatches(): Flow<List<dev.anhquocs.truelab.core.data.odds.local.entity.OddsEntity>> = flowOf(emptyList())
     }

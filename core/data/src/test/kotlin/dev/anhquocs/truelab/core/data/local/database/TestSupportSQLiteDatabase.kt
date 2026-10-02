@@ -38,6 +38,8 @@ internal class TestSupportSQLiteDatabase : SupportSQLiteDatabase {
             upper.startsWith("CREATE TABLE") -> parseCreateTable(trimmed)
             upper.startsWith("CREATE INDEX") || upper.startsWith("CREATE UNIQUE INDEX") -> parseCreateIndex(trimmed)
             upper.startsWith("ALTER TABLE") -> parseAlterTable(trimmed)
+            upper.startsWith("DROP TABLE") -> parseDropTable(trimmed)
+            upper.startsWith("INSERT INTO") -> parseInsert(trimmed)
         }
     }
 
@@ -67,6 +69,31 @@ internal class TestSupportSQLiteDatabase : SupportSQLiteDatabase {
         }
     }
 
+    private fun parseDropTable(sql: String) {
+        val cleanSql = sql.replace("`", "")
+        val match = Regex("DROP\\s+TABLE\\s+(?:IF\\s+EXISTS\\s+)?(\\w+)", RegexOption.IGNORE_CASE).find(cleanSql)
+        if (match != null) {
+            val tableName = match.groupValues[1].trim()
+            tables.remove(tableName)
+            rows.remove(tableName)
+            indexes.entries.removeIf { it.value.tableName == tableName }
+        }
+    }
+
+    private fun parseInsert(sql: String) {
+        val cleanSql = sql.replace("`", "")
+        val match = Regex("INSERT\\s+INTO\\s+(\\w+)\\s*\\(([^)]+)\\)\\s*SELECT\\s+.*\\s+FROM\\s+(\\w+)", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)).find(cleanSql)
+        if (match != null) {
+            val targetTable = match.groupValues[1].trim()
+            val sourceTable = match.groupValues[3].trim()
+            val sourceRows = rows[sourceTable] ?: emptyList()
+            val targetList = rows.getOrPut(targetTable) { mutableListOf() }
+            sourceRows.forEach { row ->
+                targetList.add(row.toMutableMap())
+            }
+        }
+    }
+
     private fun parseCreateIndex(sql: String) {
         val isUnique = sql.uppercase().contains("UNIQUE")
         val cleanSql = sql.replace("`", "")
@@ -81,6 +108,21 @@ internal class TestSupportSQLiteDatabase : SupportSQLiteDatabase {
 
     private fun parseAlterTable(sql: String) {
         val cleanSql = sql.replace("`", "")
+        val renameMatch = Regex("ALTER\\s+TABLE\\s+(\\w+)\\s+RENAME\\s+TO\\s+(\\w+)", RegexOption.IGNORE_CASE).find(cleanSql)
+        if (renameMatch != null) {
+            val oldName = renameMatch.groupValues[1].trim()
+            val newName = renameMatch.groupValues[2].trim()
+            val table = tables.remove(oldName)
+            if (table != null) {
+                tables[newName] = table.copy(name = newName)
+            }
+            val existingRows = rows.remove(oldName)
+            if (existingRows != null) {
+                rows[newName] = existingRows
+            }
+            return
+        }
+
         val match = Regex("ALTER\\s+TABLE\\s+(\\w+)\\s+ADD\\s+COLUMN\\s+(\\w+)\\s+([^\\s,]+)(.*)", RegexOption.IGNORE_CASE).find(cleanSql)
         if (match != null) {
             val tableName = match.groupValues[1].trim()

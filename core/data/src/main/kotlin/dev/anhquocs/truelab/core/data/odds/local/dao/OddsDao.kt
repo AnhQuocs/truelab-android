@@ -25,6 +25,20 @@ interface OddsDao {
     @Query("""
         SELECT * FROM odds
         WHERE matchId = :matchId
+        ORDER BY changeTime DESC
+    """)
+    fun getOddsForMatch(matchId: Long): Flow<List<OddsEntity>>
+
+    @Query("""
+        SELECT * FROM odds
+        WHERE matchId = :matchId
+        ORDER BY changeTime DESC
+    """)
+    fun getOddsListForMatch(matchId: Long): List<OddsEntity>
+
+    @Query("""
+        SELECT * FROM odds
+        WHERE matchId = :matchId
           AND id IN (
               SELECT id FROM (
                   SELECT id, MAX(changeTime)
