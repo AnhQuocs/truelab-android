@@ -76,6 +76,7 @@ class MatchRepositoryImplTest {
                     (endDateUtc == null || normalizedStart < endDateUtc)
                 val leagueMatch = leagueId == null || item.match.leagueId == leagueId
                 val statusMatch = when {
+                    statusFilter == "FINISHED" -> item.match.status in listOf("8", "ended", "determined", "finished", "ft", "aet", "pen")
                     isPastDate -> true
                     isFutureDate -> true
                     statusFilter == "LIVE_AND_UPCOMING" -> item.match.status in listOf("live", "pending", "1", "0")

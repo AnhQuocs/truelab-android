@@ -91,8 +91,8 @@ class MatchRepositoryImpl @Inject constructor(
     override suspend fun refreshMatchesForDate(date: String): Result<Unit> {
         val syncEngine = dataSyncEngine ?: return Result.success(Unit)
         return try {
-            val syncResult = syncEngine.syncFullPipelineForDate(
-                date = date,
+            val syncResult = syncEngine.syncMatchesForLocalDate(
+                localDate = date,
                 forceRefresh = true
             )
             when (syncResult) {

@@ -22,6 +22,9 @@ import dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.toSeasonEntity
 import dev.anhquocs.truelab.core.data.match.remote.api.MatchApi
 import dev.anhquocs.truelab.core.data.odds.remote.api.OddsApi
 import dev.anhquocs.truelab.core.data.ranking.remote.api.RankingApi
+import dev.anhquocs.truelab.core.data.crawler.util.LocalDateRangeMapper
+import dev.anhquocs.truelab.core.data.match.remote.dto.MatchRecord
+import java.time.ZoneId
 import dev.anhquocs.truelab.core.domain.metadata.model.DatasetMetadata
 import dev.anhquocs.truelab.core.domain.metadata.repository.DatasetMetadataRepository
 import kotlinx.coroutines.CancellationException
@@ -50,6 +53,105 @@ class DataSyncEngine(
     private val qualityPolicy: CompetitionQualityPolicy = DefaultCompetitionQualityPolicy(),
     internal var timeProvider: () -> Long = { System.currentTimeMillis() }
 ) {
+
+    /**
+     * Đồng bộ trực tiếp các trận đấu cho một ngày cục bộ (Local Calendar Date) với Timezone mapping:
+     * 1. Chuyển đổi [localDate] sang dải [UtcQueryWindow] (thường gồm 2 ngày UTC).
+     * 2. Lặp qua các ngày UTC và duyệt pagination đầy đủ (`meta.lastPage`).
+     * 3. Lọc chỉ giữ các trận đấu nằm đúng trong khung giờ local [startInstant <= matchInstant < endInstant].
+     * 4. Áp dụng [CompetitionQualityPolicy] để loại trừ các giải đấu không đạt chuẩn.
+     * 5. Lưu đồng thời Leagues, Teams và Matches trong Transaction (Tuyệt đối KHÔNG đồng bộ toàn bộ seasons).
+     */
+    suspend fun syncMatchesForLocalDate(
+        localDate: String,
+        zoneId: ZoneId = LocalDateRangeMapper.DEFAULT_ZONE_ID,
+        forceRefresh: Boolean = false,
+        category: DatasetCategory = DatasetCategory.DEFAULT
+    ): SyncResult<SyncSummary> = withContext(Dispatchers.IO) {
+        try {
+            // 0. Cache Freshness Check
+            if (!forceRefresh && metadataRepository != null) {
+                val currentMetadata = metadataRepository.getMetadata(DatasetMetadata.DEFAULT_KEY).firstOrNull()
+                val lastSyncTimestamp = currentMetadata?.lastSyncTimestamp ?: 0L
+                val currentTime = timeProvider()
+                val ttlMs = freshnessPolicy.getTtlMs(category)
+
+                if (cacheFreshnessChecker.isFresh(lastSyncTimestamp, currentTime, ttlMs)) {
+                    return@withContext SyncResult.Success(
+                        SyncSummary(
+                            matchesSynced = 0,
+                            teamsSynced = 0,
+                            oddsRecordsSynced = 0,
+                            rankingsSynced = 0,
+                            timestamp = lastSyncTimestamp
+                        )
+                    )
+                }
+            }
+
+            val window = LocalDateRangeMapper.toUtcQueryWindow(localDate, zoneId)
+            var totalMatchesSynced = 0
+            var totalTeamsSynced = 0
+
+            val collectedAcceptedRecords = mutableListOf<MatchRecord>()
+
+            for (utcDate in window.utcDates) {
+                var currentPage = 1
+                var totalPages = 1
+
+                while (currentPage <= totalPages) {
+                    val response = retryExecutor.execute {
+                        matchApi.getMatches(date = utcDate, page = currentPage, pageSize = 50)
+                    }
+                    val matchRecords = response.data.data
+                    if (matchRecords.isEmpty()) break
+
+                    val acceptedInPage = matchRecords
+                        .filter { qualityPolicy.isAccepted(it) }
+                        .filter { window.isInWindow(it.startTimeDate) }
+
+                    if (acceptedInPage.isNotEmpty()) {
+                        val matchLeagues = acceptedInPage.mapNotNull { it.toLeagueEntity() }.distinctBy { it.id }
+                        val teams = acceptedInPage.flatMap {
+                            listOf(it.toHomeTeamEntity(), it.toAwayTeamEntity())
+                        }.distinctBy { it.id }
+                        val matches = acceptedInPage.map { it.toMatchEntity() }
+
+                        database.runInTransaction {
+                            if (matchLeagues.isNotEmpty()) {
+                                database.leagueDao().insertLeagues(matchLeagues)
+                            }
+                            database.teamDao().insertTeams(teams)
+                            database.matchDao().upsertMatches(matches)
+                        }
+
+                        totalMatchesSynced += matches.size
+                        totalTeamsSynced += teams.size
+                    }
+
+                    totalPages = response.data.meta?.effectiveLastPage ?: 1
+                    currentPage++
+                }
+            }
+
+            val timestamp = timeProvider()
+            metadataRepository?.refreshSnapshot(timestamp)
+
+            SyncResult.Success(
+                SyncSummary(
+                    matchesSynced = totalMatchesSynced,
+                    teamsSynced = totalTeamsSynced,
+                    oddsRecordsSynced = 0,
+                    rankingsSynced = 0,
+                    timestamp = timestamp
+                )
+            )
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            SyncResult.Failure(e)
+        }
+    }
 
     /**
      * Đồng bộ đầy đủ danh sách trận đấu và dữ liệu liên quan theo ngày với thứ tự phụ thuộc xác định:

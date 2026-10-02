@@ -81,7 +81,10 @@ interface MatchDao {
         SELECT m.* FROM matches m
         JOIN teams ht ON m.homeTeamId = ht.id
         JOIN teams at ON m.awayTeamId = at.id
-        WHERE ht.name LIKE '%' || :query || '%' OR at.name LIKE '%' || :query || '%'
+        LEFT JOIN leagues l ON m.leagueId = l.id
+        WHERE ht.name LIKE '%' || :query || '%' 
+           OR at.name LIKE '%' || :query || '%'
+           OR l.name LIKE '%' || :query || '%'
         ORDER BY m.startTimeDate DESC 
         LIMIT :limit
     """)
@@ -96,17 +99,23 @@ interface MatchDao {
         )
           AND (:leagueId IS NULL OR m.leagueId = :leagueId)
           AND (
-              (:isPastDate = 1)
-              OR (:isFutureDate = 1)
-              OR (:statusFilter = 'LIVE_AND_UPCOMING' AND m.status IN ('live', 'pending', '1', '0'))
+              (:statusFilter = 'FINISHED' AND m.status IN ('8', 'ended', 'determined', 'finished', 'ft', 'aet', 'pen'))
+              OR (:statusFilter = 'LIVE_AND_UPCOMING' AND ((:isPastDate = 1) OR (:isFutureDate = 1) OR m.status IN ('live', 'pending', '1', '0')))
               OR (:statusFilter = 'LIVE' AND m.status IN ('live', '1'))
               OR (:statusFilter = 'UPCOMING' AND m.status IN ('pending', '0'))
               OR (:statusFilter = 'ALL')
           )
-          AND (:searchQuery IS NULL OR :searchQuery = '' OR EXISTS (
-              SELECT 1 FROM teams t 
-              WHERE (t.id = m.homeTeamId OR t.id = m.awayTeamId) 
-                AND t.name LIKE '%' || :searchQuery || '%'
+          AND (:searchQuery IS NULL OR :searchQuery = '' OR (
+              EXISTS (
+                  SELECT 1 FROM teams t 
+                  WHERE (t.id = m.homeTeamId OR t.id = m.awayTeamId) 
+                    AND t.name LIKE '%' || :searchQuery || '%'
+              )
+              OR EXISTS (
+                  SELECT 1 FROM leagues l
+                  WHERE l.id = m.leagueId
+                    AND l.name LIKE '%' || :searchQuery || '%'
+              )
           ))
         ORDER BY 
           CASE 

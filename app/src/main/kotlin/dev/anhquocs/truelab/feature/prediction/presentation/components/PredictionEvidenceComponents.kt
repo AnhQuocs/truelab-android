@@ -369,6 +369,7 @@ private fun FlatSignalRow(
 
 /**
  * Colored W / D / L badge sequence for team form.
+ * Arranged in chronological order: oldest match on the left -> newest match on the right.
  * W: Green (#22C55E), D: Amber (#F59E0B), L: Red (#EF4444).
  */
 @Composable

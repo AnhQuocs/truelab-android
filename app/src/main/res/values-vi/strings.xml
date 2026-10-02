@@ -161,9 +161,11 @@
     <string name="prediction_filter_live_upcoming">Trực tiếp &amp; Sắp tới</string>
     <string name="prediction_filter_live">Trực tiếp</string>
     <string name="prediction_filter_upcoming">Sắp diễn ra</string>
+    <string name="prediction_filter_finished">Đã kết thúc</string>
     <string name="prediction_filter_all">Tất cả trận</string>
     <string name="prediction_all_competitions">Tất cả giải đấu</string>
     <string name="prediction_select_competition">Chọn giải đấu</string>
+    <string name="prediction_search_competition_hint">Tìm giải đấu...</string>
     <string name="prediction_today">Hôm nay</string>
     <string name="prediction_yesterday">Hôm qua</string>
     <string name="prediction_tomorrow">Ngày mai</string>
@@ -171,13 +173,14 @@
     <string name="prediction_refresh_success">Đã cập nhật danh sách trận</string>
     <string name="prediction_refresh_failed">Cập nhật thất bại. Đang hiển thị dữ liệu lưu đệm.</string>
     <string name="prediction_reset_filters">Đặt lại bộ lọc</string>
-    <string name="prediction_empty_filter_desc">Không tìm thấy trận đấu trực tiếp hoặc sắp diễn ra trong ngày này. Hãy thử đổi ngày hoặc bộ lọc.</string>
+    <string name="prediction_empty_filter_desc">Không tìm thấy trận đấu trong ngày này. Hãy thử đổi ngày hoặc bộ lọc.</string>
     <string name="prediction_cta_predict">Dự đoán trận này →</string>
     <string name="prediction_selected_badge">Đã chọn</string>
     <string name="prediction_search_hint">Tìm đội bóng hoặc giải đấu...</string>
     <string name="prediction_status_started">Đã bắt đầu</string>
     <string name="prediction_default_competition">Giải đấu / Cúp</string>
     <string name="prediction_sheet_title">DỰ ĐOÁN TRẬN ĐẤU</string>
+    <string name="prediction_sheet_subtitle">Phân tích dựa trên dữ liệu có trước giờ thi đấu</string>
     <string name="prediction_sheet_conclusion">Kết luận Dự đoán</string>
     <string name="prediction_sheet_evidence_title">Phân tích tín hiệu</string>
     <string name="prediction_sheet_evidence_subtitle"></string>

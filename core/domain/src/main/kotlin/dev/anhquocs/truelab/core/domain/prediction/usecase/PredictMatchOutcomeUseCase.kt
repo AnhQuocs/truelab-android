@@ -164,12 +164,12 @@ class PredictMatchOutcomeUseCase(
         val homeMatchesCount = homeRecentEnded.size
         val awayMatchesCount = awayRecentEnded.size
         val formAvailable = homeMatchesCount > 0 || awayMatchesCount > 0
-        val homeFormResults = homeRecentEnded.joinToString(" ") { m ->
+        val homeFormResults = homeRecentEnded.reversed().joinToString(" ") { m ->
             when (m.toOutcomeForTeam(context.homeTeamId)) {
                 MatchOutcome.WIN -> "W"; MatchOutcome.DRAW -> "D"; MatchOutcome.LOSS -> "L"; else -> "?"
             }
         }
-        val awayFormResults = awayRecentEnded.joinToString(" ") { m ->
+        val awayFormResults = awayRecentEnded.reversed().joinToString(" ") { m ->
             when (m.toOutcomeForTeam(context.awayTeamId)) {
                 MatchOutcome.WIN -> "W"; MatchOutcome.DRAW -> "D"; MatchOutcome.LOSS -> "L"; else -> "?"
             }

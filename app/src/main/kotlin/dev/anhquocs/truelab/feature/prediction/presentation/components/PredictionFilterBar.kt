@@ -326,6 +326,23 @@ fun PredictionFilterBar(
                 )
             )
 
+            // Status Filter Chip: Finished
+            FilterChip(
+                selected = selectedStatusFilter == PredictionStatusFilter.FINISHED,
+                onClick = { onStatusFilterSelected(PredictionStatusFilter.FINISHED) },
+                label = {
+                    Text(
+                        text = stringResource(R.string.prediction_filter_finished),
+                        style = MaterialTheme.typography.s12.medium()
+                    )
+                },
+                shape = RoundedCornerShape(RadiusPill),
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    selectedLabelColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+
             // Status Filter Chip: All
             FilterChip(
                 selected = selectedStatusFilter == PredictionStatusFilter.ALL,

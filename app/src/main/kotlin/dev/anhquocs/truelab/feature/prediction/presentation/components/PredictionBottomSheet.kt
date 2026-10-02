@@ -1,6 +1,7 @@
 package dev.anhquocs.truelab.feature.prediction.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,14 +18,17 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.match.model.Match
+import dev.anhquocs.truelab.core.domain.prediction.model.PredictionEvidence
 import dev.anhquocs.truelab.core.domain.prediction.model.PredictionResult
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusExtraLarge
 import dev.anhquocs.truelab.core.ui.theme.SpacingXXL
 import dev.anhquocs.truelab.core.ui.utils.bold
+import dev.anhquocs.truelab.core.ui.utils.s10
 import dev.anhquocs.truelab.core.ui.utils.s12
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,14 +61,21 @@ fun PredictionBottomSheet(
                 .padding(horizontal = Dimen.PaddingM),
             verticalArrangement = Arrangement.spacedBy(Dimen.PaddingS)
         ) {
-            // 1. Sheet label
+            // 1. Sheet label & Pre-match note
             item {
-                Text(
-                    text = stringResource(R.string.prediction_sheet_title),
-                    style = MaterialTheme.typography.s12.bold(),
-                    color = MaterialTheme.colorScheme.primary,
-                    letterSpacing = 1.2.sp
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = stringResource(R.string.prediction_sheet_title),
+                        style = MaterialTheme.typography.s12.bold(),
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = 1.2.sp
+                    )
+                    Text(
+                        text = stringResource(R.string.prediction_sheet_subtitle),
+                        style = MaterialTheme.typography.s10,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+                    )
+                }
             }
 
             // 2. Matchup Overview Card

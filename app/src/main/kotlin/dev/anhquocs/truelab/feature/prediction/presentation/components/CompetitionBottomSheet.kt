@@ -18,15 +18,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SportsSoccer
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,13 +43,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.league.model.League
+import dev.anhquocs.truelab.core.ui.components.CompetitionLogo
 import dev.anhquocs.truelab.core.ui.theme.Dimen
+import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusSmall
 import dev.anhquocs.truelab.core.ui.theme.SpacingM
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
 import dev.anhquocs.truelab.core.ui.utils.bold
-import dev.anhquocs.truelab.core.ui.utils.s13
+import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.s16
 import dev.anhquocs.truelab.core.ui.utils.semiBold
@@ -55,6 +66,16 @@ fun CompetitionBottomSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredLeagues = remember(leagues, searchQuery) {
+        if (searchQuery.isBlank()) {
+            leagues
+        } else {
+            val query = searchQuery.trim().lowercase()
+            leagues.filter { it.name.lowercase().contains(query) }
+        }
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -84,6 +105,52 @@ fun CompetitionBottomSheet(
                 modifier = Modifier.padding(bottom = SpacingS)
             )
 
+            // Search Bar for Competitions
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = {
+                    Text(
+                        text = stringResource(R.string.prediction_search_competition_hint),
+                        style = MaterialTheme.typography.s12,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(Dimen.SizeSM)
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Clear",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(Dimen.SizeS)
+                            )
+                        }
+                    }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(RadiusLarge),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(Dimen.Height.FilterBar)
+            )
+
+            Spacer(modifier = Modifier.height(SpacingS))
+
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
                 modifier = Modifier.padding(bottom = SpacingS)
@@ -95,25 +162,31 @@ fun CompetitionBottomSheet(
                     .padding(bottom = Dimen.PaddingXXL),
                 verticalArrangement = Arrangement.spacedBy(SpacingXS)
             ) {
-                // "All Competitions" Item
-                item {
-                    CompetitionItemRow(
-                        title = stringResource(R.string.prediction_all_competitions),
-                        isSelected = selectedLeagueId == null,
-                        onClick = {
-                            onLeagueSelected(null)
-                            onDismiss()
-                        }
-                    )
+                // "All Competitions" Item (shown when search is blank)
+                if (searchQuery.isBlank()) {
+                    item {
+                        CompetitionItemRow(
+                            title = stringResource(R.string.prediction_all_competitions),
+                            logoUrl = null,
+                            isAllItem = true,
+                            isSelected = selectedLeagueId == null,
+                            onClick = {
+                                onLeagueSelected(null)
+                                onDismiss()
+                            }
+                        )
+                    }
                 }
 
                 // Individual League Items
                 items(
-                    items = leagues,
+                    items = filteredLeagues,
                     key = { it.id }
                 ) { league ->
                     CompetitionItemRow(
                         title = league.name,
+                        logoUrl = league.logo,
+                        isAllItem = false,
                         isSelected = league.id == selectedLeagueId,
                         onClick = {
                             onLeagueSelected(league.id)
@@ -129,6 +202,8 @@ fun CompetitionBottomSheet(
 @Composable
 private fun CompetitionItemRow(
     title: String,
+    logoUrl: String?,
+    isAllItem: Boolean = false,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -152,21 +227,21 @@ private fun CompetitionItemRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(1f)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(Dimen.SizeML)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
-                contentAlignment = Alignment.Center
-            ) {
+            if (isAllItem) {
                 Icon(
                     imageVector = Icons.Default.SportsSoccer,
                     contentDescription = null,
-                    modifier = Modifier.size(Dimen.SizeS),
+                    modifier = Modifier.size(Dimen.SizeM),
                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            } else {
+                CompetitionLogo(
+                    logoUrl = logoUrl,
+                    leagueName = title,
+                    size = Dimen.SizeM
+                )
             }
-            Spacer(modifier = Modifier.width(Dimen.PaddingM))
+            Spacer(modifier = Modifier.width(Dimen.PaddingSM))
             Text(
                 text = title,
                 style = if (isSelected) MaterialTheme.typography.s14.semiBold() else MaterialTheme.typography.s14,
