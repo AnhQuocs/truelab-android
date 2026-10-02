@@ -223,7 +223,7 @@ private fun BacktestLoadingContent(
             verticalArrangement = Arrangement.Center
         ) {
             CircularProgressIndicator(
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(Dimen.SizeButtonM),
                 color = MaterialTheme.colorScheme.primary,
                 strokeWidth = 4.dp
             )

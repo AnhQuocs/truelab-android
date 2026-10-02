@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
@@ -62,7 +61,7 @@ fun MatchDataCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation1)
     ) {
         Column(
             modifier = Modifier
@@ -78,7 +77,7 @@ fun MatchDataCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(6.dp)
+                            .size(Dimen.SizeDot)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary)
                     )
@@ -236,9 +235,9 @@ private fun OddsMarketBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         OddsCell(label = "1 (Home)", value = homeOdds)
-        Box(modifier = Modifier.width(1.dp).height(14.dp).background(MaterialTheme.colorScheme.outlineVariant))
+        Box(modifier = Modifier.width(Dimen.Width.Divider).height(Dimen.Height.VerticalSeparator).background(MaterialTheme.colorScheme.outlineVariant))
         OddsCell(label = "X (Draw)", value = drawOdds)
-        Box(modifier = Modifier.width(1.dp).height(14.dp).background(MaterialTheme.colorScheme.outlineVariant))
+        Box(modifier = Modifier.width(Dimen.Width.Divider).height(Dimen.Height.VerticalSeparator).background(MaterialTheme.colorScheme.outlineVariant))
         OddsCell(label = "2 (Away)", value = awayOdds)
     }
 }
@@ -281,7 +280,7 @@ private fun FeaturePill(
             imageVector = icon,
             contentDescription = null,
             tint = tint,
-            modifier = Modifier.size(12.dp)
+            modifier = Modifier.size(Dimen.SizeBadge)
         )
         Text(
             text = label,

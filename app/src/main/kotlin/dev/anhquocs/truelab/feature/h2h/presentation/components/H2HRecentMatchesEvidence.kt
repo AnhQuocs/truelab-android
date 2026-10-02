@@ -33,11 +33,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.components.TeamLogo
 import dev.anhquocs.truelab.core.ui.theme.Dimen
+import dev.anhquocs.truelab.core.ui.theme.RadiusExtraSmall
 import dev.anhquocs.truelab.core.ui.theme.RadiusSmall
+import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.core.ui.theme.SpacingXXS
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.medium
 import dev.anhquocs.truelab.core.ui.utils.normal
@@ -61,7 +63,7 @@ fun RecentMatchesFormSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp),
+                .padding(vertical = SpacingXS),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -87,7 +89,7 @@ fun RecentMatchesFormSection(
                 modifier = Modifier
                     .clip(RoundedCornerShape(RadiusSmall))
                     .clickable { isExpanded = !isExpanded }
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                    .padding(horizontal = Dimen.PaddingXSPlus, vertical = Dimen.PaddingXXS)
             ) {
                 Text(
                     text = stringResource(R.string.h2h_recent_5_matches_title),
@@ -110,7 +112,7 @@ fun RecentMatchesFormSection(
                     Icon(
                         imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = null,
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(Dimen.SizeXS),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -142,7 +144,7 @@ fun RecentMatchesFormSection(
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(SpacingXS)
                 ) {
                     teamARecentMatches.forEach { matchItem ->
                         RecentMatchEvidenceItem(matchItem)
@@ -150,7 +152,7 @@ fun RecentMatchesFormSection(
                 }
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(SpacingXS)
                 ) {
                     teamBRecentMatches.forEach { matchItem ->
                         RecentMatchEvidenceItem(matchItem)
@@ -169,7 +171,7 @@ fun OutcomeBadgeRow(
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
+        horizontalArrangement = Arrangement.spacedBy(SpacingXXS),
         verticalAlignment = Alignment.CenterVertically
     ) {
         matches.forEach { match ->
@@ -192,8 +194,8 @@ fun OutcomeBadge(
 
     Box(
         modifier = modifier
-            .size(18.dp)
-            .clip(RoundedCornerShape(4.dp))
+            .size(Dimen.SizeS2)
+            .clip(RoundedCornerShape(RadiusExtraSmall))
             .background(bgColor),
         contentAlignment = Alignment.Center
     ) {
@@ -221,7 +223,7 @@ fun RecentMatchEvidenceItem(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 6.dp, vertical = 4.dp)
+                .padding(horizontal = Dimen.PaddingXSPlus, vertical = SpacingXS)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -233,13 +235,13 @@ fun RecentMatchEvidenceItem(
                     modifier = Modifier.weight(1f, fill = false)
                 ) {
                     OutcomeBadge(result = matchItem.result)
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(SpacingXS))
                     TeamLogo(
                         logoUrl = matchItem.opponentLogo,
                         teamName = matchItem.opponentName,
-                        size = 16.dp
+                        size = Dimen.SizeS
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(SpacingXS))
                     Text(
                         text = "${if (matchItem.isHome) "vs" else "@"} ${matchItem.opponentName}",
                         style = MaterialTheme.typography.s10.medium(),

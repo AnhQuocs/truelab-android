@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
+import dev.anhquocs.truelab.core.ui.theme.SpacingS
+import dev.anhquocs.truelab.core.ui.theme.SpacingXS
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.medium
 import dev.anhquocs.truelab.core.ui.utils.s10
@@ -78,11 +80,11 @@ fun OddsTrendLineChart(
         ) {
             Box(
                 modifier = Modifier
-                    .size(8.dp)
+                    .size(SpacingS)
                     .clip(CircleShape)
                     .background(rawColor)
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(SpacingXS))
             Text(
                 text = "Raw Odds",
                 style = MaterialTheme.typography.s10.medium(),
@@ -91,11 +93,11 @@ fun OddsTrendLineChart(
             Spacer(modifier = Modifier.width(Dimen.PaddingM))
             Box(
                 modifier = Modifier
-                    .size(8.dp)
+                    .size(SpacingS)
                     .clip(CircleShape)
                     .background(smaColor)
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(SpacingXS))
             Text(
                 text = "SMA($windowSize)",
                 style = MaterialTheme.typography.s10.bold(),
@@ -107,12 +109,12 @@ fun OddsTrendLineChart(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(130.dp)
+                .height(Dimen.Height.ChartCompact)
         ) {
             // Y-Axis Labels
             Column(
                 modifier = Modifier
-                    .height(130.dp)
+                    .height(Dimen.Height.ChartCompact)
                     .padding(end = Dimen.PaddingXS),
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.End
@@ -138,7 +140,7 @@ fun OddsTrendLineChart(
             Canvas(
                 modifier = Modifier
                     .weight(1f)
-                    .height(130.dp)
+                    .height(Dimen.Height.ChartCompact)
             ) {
                 val width = size.width
                 val height = size.height
@@ -284,7 +286,7 @@ fun OddsTrendLineChart(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = Dimen.PaddingXXS, start = 36.dp),
+                .padding(top = Dimen.PaddingXXS, start = Dimen.Width.ChartLeftMargin),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(

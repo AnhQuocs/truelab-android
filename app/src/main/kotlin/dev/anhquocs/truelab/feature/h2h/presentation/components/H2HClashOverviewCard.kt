@@ -22,7 +22,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.team.model.TeamDetail
 import dev.anhquocs.truelab.core.ui.theme.Dimen
@@ -47,7 +46,7 @@ fun H2HClashOverviewCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(RadiusLarge),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation2)
     ) {
         Column(
             modifier = Modifier
@@ -97,7 +96,7 @@ fun H2HClashOverviewCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(10.dp)
+                        .height(Dimen.Height.ProgressBarThick)
                         .clip(RoundedCornerShape(RadiusSmall))
                 ) {
                     Box(

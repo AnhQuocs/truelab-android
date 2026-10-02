@@ -363,7 +363,7 @@ private fun AnalyticsFeedbackCard(
                 imageVector = icon,
                 contentDescription = null,
                 tint = iconTint,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(Dimen.SizeXLPlus)
             )
             Text(
                 text = title,

@@ -74,7 +74,7 @@ fun PredictionFactorsCard(
         shape = RoundedCornerShape(RadiusLarge),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation0)
     ) {
         Column(
             modifier = Modifier
@@ -121,7 +121,7 @@ fun PredictionFactorsCard(
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = null,
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(Dimen.SizeXS),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(SpacingXS))

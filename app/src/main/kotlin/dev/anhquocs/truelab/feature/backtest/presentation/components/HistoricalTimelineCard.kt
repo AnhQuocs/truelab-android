@@ -33,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
@@ -64,7 +63,7 @@ fun HistoricalTimelineCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation1)
     ) {
         Column(
             modifier = Modifier
@@ -312,7 +311,7 @@ private fun StatusBadge(
         modifier = modifier
             .clip(RoundedCornerShape(RadiusSmall))
             .background(bgColor)
-            .padding(horizontal = Dimen.PaddingS, vertical = 2.dp),
+            .padding(horizontal = Dimen.PaddingS, vertical = Dimen.PaddingXXS),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXXS)
     ) {
@@ -320,7 +319,7 @@ private fun StatusBadge(
             imageVector = icon,
             contentDescription = null,
             tint = contentColor,
-            modifier = Modifier.size(12.dp)
+            modifier = Modifier.size(Dimen.SizeBadge)
         )
         Text(
             text = text,
@@ -340,15 +339,15 @@ private fun ProbabilitiesBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(6.dp)
-            .clip(RoundedCornerShape(3.dp)),
-        horizontalArrangement = Arrangement.spacedBy(1.dp)
+            .height(Dimen.Height.TimelineBar)
+            .clip(RoundedCornerShape(Dimen.Height.SegmentBar)),
+        horizontalArrangement = Arrangement.spacedBy(Dimen.Width.Divider)
     ) {
         if (homePct > 0) {
             Box(
                 modifier = Modifier
                     .weight(homePct.toFloat())
-                    .height(6.dp)
+                    .height(Dimen.Height.TimelineBar)
                     .background(MaterialTheme.colorScheme.primary)
             )
         }
@@ -356,7 +355,7 @@ private fun ProbabilitiesBar(
             Box(
                 modifier = Modifier
                     .weight(drawPct.toFloat())
-                    .height(6.dp)
+                    .height(Dimen.Height.TimelineBar)
                     .background(MaterialTheme.colorScheme.tertiary)
             )
         }
@@ -364,7 +363,7 @@ private fun ProbabilitiesBar(
             Box(
                 modifier = Modifier
                     .weight(awayPct.toFloat())
-                    .height(6.dp)
+                    .height(Dimen.Height.TimelineBar)
                     .background(MaterialTheme.colorScheme.secondary)
             )
         }

@@ -21,7 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
@@ -43,7 +42,7 @@ fun H2HMatchHistoryCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(RadiusLarge),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation2)
     ) {
         Column(
             modifier = Modifier
@@ -144,7 +143,7 @@ private fun H2HMatchHistoryItem(
             modifier = Modifier
                 .clip(RoundedCornerShape(RadiusSmall))
                 .background(badgeBg)
-                .padding(horizontal = Dimen.PaddingS, vertical = 2.dp),
+                .padding(horizontal = Dimen.PaddingS, vertical = Dimen.PaddingXXS),
             contentAlignment = Alignment.Center
         ) {
             Text(

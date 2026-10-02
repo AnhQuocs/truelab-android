@@ -24,13 +24,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.prediction.model.PredictionResult
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusPill
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.core.ui.theme.SpacingXXS
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.medium
 import dev.anhquocs.truelab.core.ui.utils.s11
@@ -103,25 +103,25 @@ fun PredictionHeroProbabilityCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(3.dp)
+                .height(Dimen.Height.SegmentBar)
                 .clip(RoundedCornerShape(RadiusPill))
         ) {
             Box(
                 modifier = Modifier
                     .weight(predictionResult.homeWinProb.toFloat().coerceAtLeast(0.02f))
-                    .height(3.dp)
+                    .height(Dimen.Height.SegmentBar)
                     .background(MaterialTheme.colorScheme.primary)
             )
             Box(
                 modifier = Modifier
                     .weight(predictionResult.drawProb.toFloat().coerceAtLeast(0.02f))
-                    .height(3.dp)
+                    .height(Dimen.Height.SegmentBar)
                     .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.6f))
             )
             Box(
                 modifier = Modifier
                     .weight(predictionResult.awayWinProb.toFloat().coerceAtLeast(0.02f))
-                    .height(3.dp)
+                    .height(Dimen.Height.SegmentBar)
                     .background(MaterialTheme.colorScheme.secondary)
             )
         }
@@ -137,9 +137,9 @@ fun PredictionHeroProbabilityCard(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(13.dp)
+                    modifier = Modifier.size(Dimen.SizeStar)
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(SpacingXS))
                 Text(
                     text = stringResource(R.string.prediction_confidence, confPct.toDouble()),
                     style = MaterialTheme.typography.s11.medium(),
@@ -166,7 +166,7 @@ private fun FlatProbColumn(
     Column(
         modifier = modifier.padding(vertical = Dimen.PaddingXS),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+        verticalArrangement = Arrangement.spacedBy(SpacingXXS)
     ) {
         Text(
             text = "$percent%",

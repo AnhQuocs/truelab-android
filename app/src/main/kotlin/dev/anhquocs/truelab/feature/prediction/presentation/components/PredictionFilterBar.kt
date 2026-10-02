@@ -46,13 +46,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.league.model.League
 import dev.anhquocs.truelab.core.domain.match.model.PredictionStatusFilter
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusPill
+import dev.anhquocs.truelab.core.ui.theme.RadiusSmall
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXXS
@@ -119,7 +119,7 @@ fun PredictionFilterBar(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(RadiusLarge),
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 1.dp
+            tonalElevation = Dimen.Elevation1
         ) {
             Row(
                 modifier = Modifier
@@ -134,7 +134,7 @@ fun PredictionFilterBar(
                         val prev = currentDateObj.minusDays(1)
                         onDateChanged(prev.toString())
                     },
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(Dimen.SizeXL)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -148,7 +148,7 @@ fun PredictionFilterBar(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(Dimen.PaddingS))
+                        .clip(RoundedCornerShape(RadiusSmall))
                         .clickable {
                             val year = currentDateObj.year
                             val month = currentDateObj.monthValue - 1
@@ -193,7 +193,7 @@ fun PredictionFilterBar(
                         val next = currentDateObj.plusDays(1)
                         onDateChanged(next.toString())
                     },
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(Dimen.SizeXL)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
@@ -232,7 +232,7 @@ fun PredictionFilterBar(
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown,
                             contentDescription = "Dropdown",
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(Dimen.SizeXS)
                         )
                     }
                 },
@@ -240,12 +240,12 @@ fun PredictionFilterBar(
                     {
                         IconButton(
                             onClick = { onLeagueSelected(null) },
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(Dimen.SizeS)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Clear League",
-                                modifier = Modifier.size(12.dp)
+                                modifier = Modifier.size(Dimen.SizeBadge)
                             )
                         }
                     }
@@ -265,7 +265,7 @@ fun PredictionFilterBar(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(6.dp)
+                                .size(Dimen.SizeDot)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.error)
                         )
@@ -291,7 +291,7 @@ fun PredictionFilterBar(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(6.dp)
+                                .size(Dimen.SizeDot)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.error)
                         )
@@ -370,7 +370,7 @@ fun PredictionFilterBar(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Clear",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(Dimen.SizeS)
                         )
                     }
                 }
@@ -385,7 +385,7 @@ fun PredictionFilterBar(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
+                .height(Dimen.Height.FilterBar)
         )
     }
 }

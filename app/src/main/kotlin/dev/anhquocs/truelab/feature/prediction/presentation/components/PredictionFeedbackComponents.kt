@@ -46,7 +46,7 @@ import dev.anhquocs.truelab.core.ui.utils.s16
 import dev.anhquocs.truelab.core.ui.utils.s18
 import dev.anhquocs.truelab.core.ui.utils.semiBold
 
-val PREDICTION_HEADER_HEIGHT = 76.dp
+val PREDICTION_HEADER_HEIGHT = Dimen.Height.PredictionHeader
 
 @Composable
 fun PredictionHeader(
@@ -63,12 +63,12 @@ fun PredictionHeader(
     ) {
         IconButton(
             onClick = onNavigateBack,
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(Dimen.SizeXLPlus)
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_back),
                 contentDescription = "Back",
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(Dimen.SizeSM),
                 tint = MaterialTheme.colorScheme.onSurface
             )
         }
@@ -86,7 +86,7 @@ fun PredictionHeader(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(SpacingXXS))
             Text(
                 text = stringResource(R.string.prediction_subtitle),
                 style = MaterialTheme.typography.s12,
@@ -101,11 +101,11 @@ fun PredictionHeader(
         IconButton(
             onClick = onRefresh,
             enabled = !isRefreshing,
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(Dimen.SizeXLPlus)
         ) {
             if (isRefreshing) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier.size(Dimen.SizeS2),
                     strokeWidth = 2.dp,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -114,7 +114,7 @@ fun PredictionHeader(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = "Refresh",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(Dimen.SizeSM)
                 )
             }
         }
@@ -142,7 +142,7 @@ fun PredictionEmptyCard(
                 imageVector = Icons.Default.Info,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(Dimen.SizeXL)
             )
             Text(
                 text = stringResource(R.string.prediction_title),
@@ -193,7 +193,7 @@ fun PredictionFeedbackCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(SpacingS)
         ) {
-            Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(36.dp))
+            Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(Dimen.SizeXL))
             Text(text = title, style = MaterialTheme.typography.s16.bold(), color = titleColor)
             Text(text = message, style = MaterialTheme.typography.s14, color = messageColor, textAlign = TextAlign.Center)
         }

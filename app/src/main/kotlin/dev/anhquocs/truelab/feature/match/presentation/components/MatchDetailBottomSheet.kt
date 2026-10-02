@@ -38,7 +38,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
@@ -115,12 +114,12 @@ fun MatchDetailBottomSheet(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(180.dp),
+                            .height(Dimen.Height.ListMedium),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(36.dp)
+                            modifier = Modifier.size(Dimen.SizeXL)
                         )
                     }
                 }
@@ -136,7 +135,7 @@ fun MatchDetailBottomSheet(
                             imageVector = Icons.Default.Info,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(40.dp)
+                            modifier = Modifier.size(Dimen.SizeXLPlus)
                         )
                         Spacer(modifier = Modifier.height(SpacingS))
                         Text(
@@ -159,7 +158,7 @@ fun MatchDetailBottomSheet(
                             imageVector = Icons.Default.ErrorOutline,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(40.dp)
+                            modifier = Modifier.size(Dimen.SizeXLPlus)
                         )
                         Spacer(modifier = Modifier.height(SpacingS))
                         Text(
@@ -215,7 +214,7 @@ private fun MatchDetailContent(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(Dimen.SizeAvatar)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
@@ -224,7 +223,7 @@ private fun MatchDetailContent(
                             imageVector = Icons.Default.SportsSoccer,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(Dimen.SizeM)
                         )
                     }
                     Spacer(modifier = Modifier.height(SpacingXS))
@@ -276,7 +275,7 @@ private fun MatchDetailContent(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(Dimen.SizeAvatar)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.secondaryContainer),
                         contentAlignment = Alignment.Center
@@ -285,7 +284,7 @@ private fun MatchDetailContent(
                             imageVector = Icons.Default.SportsSoccer,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(Dimen.SizeM)
                         )
                     }
                     Spacer(modifier = Modifier.height(SpacingXS))

@@ -17,12 +17,13 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.prediction.model.PredictionResult
 import dev.anhquocs.truelab.core.ui.theme.Dimen
+import dev.anhquocs.truelab.core.ui.theme.RadiusExtraLarge
+import dev.anhquocs.truelab.core.ui.theme.SpacingXXL
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.s12
 
@@ -46,7 +47,7 @@ fun PredictionBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        shape = RoundedCornerShape(topStart = RadiusExtraLarge, topEnd = RadiusExtraLarge),
         containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
@@ -80,7 +81,7 @@ fun PredictionBottomSheet(
             if (predictionResult != null) {
                 item {
                     HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 2.dp),
+                        modifier = Modifier.padding(vertical = Dimen.PaddingXXS),
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
                     )
                     PredictionHeroProbabilityCard(predictionResult = predictionResult)
@@ -99,7 +100,7 @@ fun PredictionBottomSheet(
             }
 
             item {
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(SpacingXXL))
             }
         }
     }

@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.ui.components.CompetitionLogo
 import dev.anhquocs.truelab.core.ui.theme.Dimen
@@ -61,7 +60,7 @@ fun CompetitionSectionHeader(
             CompetitionLogo(
                 logoUrl = group.leagueLogo,
                 leagueName = group.leagueName,
-                size = 20.dp
+                size = Dimen.SizeSM
             )
             Spacer(modifier = Modifier.width(SpacingXS))
             Text(
@@ -83,7 +82,7 @@ fun CompetitionSectionHeader(
                 text = "${group.matches.size}",
                 style = MaterialTheme.typography.s11.medium(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = Dimen.PaddingS, vertical = 2.dp)
+                modifier = Modifier.padding(horizontal = Dimen.PaddingS, vertical = Dimen.PaddingXXS)
             )
         }
     }

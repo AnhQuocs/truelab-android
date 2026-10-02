@@ -80,7 +80,7 @@ fun MatchupOverviewCard(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f, fill = false)
                 ) {
-                    CompetitionLogo(logoUrl = leagueLogo, leagueName = leagueName, size = 18.dp)
+                    CompetitionLogo(logoUrl = leagueLogo, leagueName = leagueName, size = Dimen.SizeS2)
                     Spacer(modifier = Modifier.width(SpacingXS))
                     Text(
                         text = leagueName ?: (if (match.leagueId != null) "League #${match.leagueId}" else stringResource(R.string.prediction_default_competition)),
@@ -117,7 +117,7 @@ fun MatchupOverviewCard(
                     TeamLogo(
                         logoUrl = match.homeTeam.logo,
                         teamName = match.homeTeam.name,
-                        size = 38.dp
+                        size = Dimen.SizeHero
                     )
                     Spacer(modifier = Modifier.height(SpacingXS))
                     Text(
@@ -158,7 +158,7 @@ fun MatchupOverviewCard(
                     TeamLogo(
                         logoUrl = match.awayTeam.logo,
                         teamName = match.awayTeam.name,
-                        size = 38.dp
+                        size = Dimen.SizeHero
                     )
                     Spacer(modifier = Modifier.height(SpacingXS))
                     Text(
@@ -188,7 +188,7 @@ fun MatchupOverviewCard(
                             imageVector = Icons.Default.Info,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(Dimen.SizeXS)
                         )
                         Spacer(modifier = Modifier.width(SpacingXS))
                         Text(
