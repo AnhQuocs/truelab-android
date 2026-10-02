@@ -32,10 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.league.model.League
 import dev.anhquocs.truelab.core.ui.theme.Dimen
+import dev.anhquocs.truelab.core.ui.theme.RadiusSmall
 import dev.anhquocs.truelab.core.ui.theme.SpacingM
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
@@ -64,8 +64,8 @@ fun CompetitionBottomSheet(
             Box(
                 modifier = Modifier
                     .padding(vertical = SpacingM)
-                    .width(36.dp)
-                    .height(4.dp)
+                    .width(Dimen.Width.DragHandle)
+                    .height(Dimen.Height.DragHandle)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.outlineVariant)
             )
@@ -141,7 +141,7 @@ private fun CompetitionItemRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(Dimen.PaddingS))
+            .clip(RoundedCornerShape(RadiusSmall))
             .background(rowBackground)
             .clickable(onClick = onClick)
             .padding(horizontal = Dimen.PaddingM, vertical = Dimen.PaddingM),
@@ -154,7 +154,7 @@ private fun CompetitionItemRow(
         ) {
             Box(
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(Dimen.SizeML)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
                 contentAlignment = Alignment.Center
@@ -162,7 +162,7 @@ private fun CompetitionItemRow(
                 Icon(
                     imageVector = Icons.Default.SportsSoccer,
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(Dimen.SizeS),
                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

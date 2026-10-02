@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.match.model.TeamSummary
 import dev.anhquocs.truelab.core.ui.theme.Dimen
@@ -119,7 +118,7 @@ fun TeamPickerBottomSheet(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp),
+                        .height(Dimen.Height.ListCompact),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -132,7 +131,7 @@ fun TeamPickerBottomSheet(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(350.dp),
+                        .height(Dimen.Height.ModalMaxHeight),
                     contentPadding = PaddingValues(vertical = Dimen.PaddingXXS),
                     verticalArrangement = Arrangement.spacedBy(Dimen.PaddingXXS)
                 ) {
@@ -167,7 +166,7 @@ private fun TeamPickerItem(
         dev.anhquocs.truelab.core.ui.components.TeamLogo(
             logoUrl = team.logo,
             teamName = team.name,
-            size = 36.dp
+            size = Dimen.SizeXL
         )
 
         Spacer(modifier = Modifier.width(Dimen.PaddingM))

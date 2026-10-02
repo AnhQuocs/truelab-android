@@ -74,7 +74,7 @@ fun PredictionEvidenceSection(
         )
         val subtitle = stringResource(R.string.prediction_sheet_evidence_subtitle)
         if (subtitle.isNotBlank()) {
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(SpacingXXS))
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.s11,
@@ -336,7 +336,7 @@ private fun FlatSignalRow(
                     imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = if (isExpanded) "Collapse" else "Expand",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(Dimen.SizeS2)
                 )
             } else {
                 Text(
@@ -397,7 +397,7 @@ fun FormBadgeSequence(
                 color = color
             )
             if (index < items.lastIndex) {
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(Dimen.PaddingXSPlus))
             }
         }
     }
@@ -446,17 +446,17 @@ fun FlatComparisonRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(SpacingXXS))
             Text(
                 text = homeValue,
                 style = MaterialTheme.typography.s15.bold(),
                 color = MaterialTheme.colorScheme.onSurface
             )
             if (homeSubContent != null) {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SpacingXS))
                 homeSubContent()
             } else if (!homeSubtext.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SpacingXS))
                 Text(
                     text = homeSubtext,
                     style = MaterialTheme.typography.s12,
@@ -507,7 +507,7 @@ fun FlatComparisonRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(SpacingXXS))
             Text(
                 text = awayValue,
                 style = MaterialTheme.typography.s15.bold(),
@@ -515,10 +515,10 @@ fun FlatComparisonRow(
                 textAlign = TextAlign.End
             )
             if (awaySubContent != null) {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SpacingXS))
                 awaySubContent()
             } else if (!awaySubtext.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SpacingXS))
                 Text(
                     text = awaySubtext,
                     style = MaterialTheme.typography.s12,

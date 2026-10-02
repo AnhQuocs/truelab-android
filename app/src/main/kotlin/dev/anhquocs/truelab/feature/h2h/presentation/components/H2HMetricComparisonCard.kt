@@ -21,12 +21,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.team.model.TeamDetail
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusSmall
+import dev.anhquocs.truelab.core.ui.theme.SpacingXS
+import dev.anhquocs.truelab.core.ui.theme.SpacingXXS
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.normal
 import dev.anhquocs.truelab.core.ui.utils.s10
@@ -46,7 +47,7 @@ fun H2HMetricComparisonCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(RadiusLarge),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation2)
     ) {
         Column(
             modifier = Modifier
@@ -89,7 +90,7 @@ fun H2HMetricComparisonCard(
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 2.dp, bottom = 4.dp)
+                    .padding(top = SpacingXXS, bottom = SpacingXS)
             )
 
             // 5 Recent Matches Section
@@ -175,7 +176,7 @@ private fun MetricComparisonRow(
                     modifier = Modifier
                         .clip(RoundedCornerShape(RadiusSmall))
                         .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
-                        .padding(horizontal = Dimen.PaddingXS, vertical = 2.dp),
+                        .padding(horizontal = Dimen.PaddingXS, vertical = Dimen.PaddingXXS),
                     textAlign = TextAlign.Center
                 )
             }

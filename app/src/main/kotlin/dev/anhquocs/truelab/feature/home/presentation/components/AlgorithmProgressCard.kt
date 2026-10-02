@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
@@ -39,7 +38,7 @@ fun AlgorithmProgressCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation1)
     ) {
         Column(
             modifier = Modifier
@@ -101,13 +100,13 @@ private fun ProgressItem(
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(Dimen.PaddingXSPlus))
 
         LinearProgressIndicator(
             progress = { progress },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(4.dp)
+                .height(Dimen.Height.ProgressBar)
                 .clip(RoundedCornerShape(RadiusSmall)),
             color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),

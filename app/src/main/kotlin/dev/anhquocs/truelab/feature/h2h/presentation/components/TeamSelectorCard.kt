@@ -29,7 +29,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.match.model.TeamSummary
 import dev.anhquocs.truelab.core.ui.theme.Dimen
@@ -55,7 +54,7 @@ fun TeamSelectorCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(RadiusLarge),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation2)
     ) {
         Column(
             modifier = Modifier
@@ -92,7 +91,7 @@ fun TeamSelectorCard(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(Dimen.SizeXL)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
@@ -107,13 +106,13 @@ fun TeamSelectorCard(
                     if (teamA != null && teamB != null) {
                         IconButton(
                             onClick = onSwap,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(Dimen.SizeML)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.SwapHoriz,
                                 contentDescription = "Swap Teams",
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(Dimen.SizeS2)
                             )
                         }
                     }
@@ -168,12 +167,12 @@ private fun TeamSelectionBox(
                 dev.anhquocs.truelab.core.ui.components.TeamLogo(
                     logoUrl = team.logo,
                     teamName = team.name,
-                    size = 44.dp
+                    size = Dimen.SizeAvatar
                 )
             } else {
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(Dimen.SizeAvatar)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center

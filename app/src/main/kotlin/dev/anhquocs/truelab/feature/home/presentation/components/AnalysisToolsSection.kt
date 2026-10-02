@@ -30,10 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
+import dev.anhquocs.truelab.core.ui.theme.SpacingXXS
 import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.semiBold
@@ -60,7 +60,7 @@ fun AnalysisToolsSection(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation1)
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth()
@@ -153,7 +153,7 @@ private fun ToolItemRow(
                     style = MaterialTheme.typography.s14.semiBold(),
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(SpacingXXS))
                 Text(
                     text = description,
                     style = MaterialTheme.typography.s12,

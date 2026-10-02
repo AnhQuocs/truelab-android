@@ -35,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.anhquocs.truelab.R
@@ -125,7 +124,7 @@ fun H2HComparisonScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp),
+                                .height(Dimen.Height.ContainerMedium),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
@@ -150,7 +149,7 @@ fun H2HComparisonScreen(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(56.dp)
+                                        .size(Dimen.SizeLargeAvatar)
                                         .clip(CircleShape)
                                         .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
                                     contentAlignment = Alignment.Center
@@ -159,7 +158,7 @@ fun H2HComparisonScreen(
                                         imageVector = Icons.AutoMirrored.Filled.CompareArrows,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(32.dp)
+                                        modifier = Modifier.size(Dimen.SizeL)
                                     )
                                 }
 

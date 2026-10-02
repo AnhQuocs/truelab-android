@@ -40,7 +40,6 @@ import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
 import dev.anhquocs.truelab.core.ui.theme.Dimen
-import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
 import dev.anhquocs.truelab.core.ui.theme.RadiusPill
 import dev.anhquocs.truelab.core.ui.theme.RadiusSmall
@@ -160,12 +159,12 @@ fun PredictableMatchCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(RadiusLarge))
+            .clip(RoundedCornerShape(RadiusSmall))
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(RadiusLarge),
+        shape = RoundedCornerShape(RadiusSmall),
         border = cardBorder,
         colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation0)
     ) {
         Column(
             modifier = Modifier
@@ -187,7 +186,7 @@ fun PredictableMatchCard(
                         dev.anhquocs.truelab.core.ui.components.CompetitionLogo(
                             logoUrl = effectiveLeagueLogo,
                             leagueName = effectiveLeagueName,
-                            size = 18.dp
+                            size = Dimen.SizeS2
                         )
                         Spacer(modifier = Modifier.width(SpacingXS))
                         Text(
@@ -261,7 +260,7 @@ fun PredictableMatchCard(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = stringResource(R.string.prediction_selected_badge),
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(Dimen.SizeS)
                         )
                     }
                 }
@@ -293,7 +292,7 @@ fun PredictableMatchCard(
                     dev.anhquocs.truelab.core.ui.components.TeamLogo(
                         logoUrl = match.homeTeam.logo,
                         teamName = match.homeTeam.name,
-                        size = 32.dp
+                        size = Dimen.SizeL
                     )
                 }
 
@@ -327,7 +326,7 @@ fun PredictableMatchCard(
                     dev.anhquocs.truelab.core.ui.components.TeamLogo(
                         logoUrl = match.awayTeam.logo,
                         teamName = match.awayTeam.name,
-                        size = 32.dp
+                        size = Dimen.SizeL
                     )
                     Spacer(modifier = Modifier.width(SpacingXS))
                     Text(
@@ -361,12 +360,12 @@ fun PredictableMatchCard(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
-                        modifier = Modifier.height(34.dp)
+                        modifier = Modifier.height(Dimen.Height.ActionPill)
                     ) {
                         Icon(
                             imageVector = Icons.Default.ElectricBolt,
                             contentDescription = null,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(Dimen.SizeXS)
                         )
                         Spacer(modifier = Modifier.width(SpacingXXS))
                         Text(

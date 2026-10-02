@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
@@ -48,7 +47,7 @@ fun BacktestOverviewCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation1)
     ) {
         Column(
             modifier = Modifier
@@ -116,7 +115,7 @@ fun BacktestOverviewCard(
                         style = MaterialTheme.typography.s12,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
                     Text(
                         text = overview.formattedAccuracy,
                         style = MaterialTheme.typography.s20.bold(),

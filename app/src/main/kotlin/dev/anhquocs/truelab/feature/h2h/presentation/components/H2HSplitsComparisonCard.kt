@@ -23,12 +23,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.team.model.TeamDetail
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
+import dev.anhquocs.truelab.core.ui.theme.SpacingXXS
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.s10
 import dev.anhquocs.truelab.core.ui.utils.s12
@@ -47,7 +47,7 @@ fun H2HSplitsComparisonCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(RadiusLarge),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.Elevation2)
     ) {
         Column(
             modifier = Modifier
@@ -131,7 +131,7 @@ private fun TeamSplitsBox(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(SpacingXXS))
             Text(
                 text = homeRecord,
                 style = MaterialTheme.typography.s12.bold(),
@@ -157,7 +157,7 @@ private fun TeamSplitsBox(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(SpacingXXS))
             Text(
                 text = awayRecord,
                 style = MaterialTheme.typography.s12.bold(),

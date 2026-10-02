@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
+import dev.anhquocs.truelab.core.ui.theme.Dimen
+import dev.anhquocs.truelab.core.ui.theme.RadiusExtraSmall
 import dev.anhquocs.truelab.core.ui.utils.medium
 import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s14
@@ -33,7 +35,7 @@ fun TeamLogo(
     logoUrl: String?,
     teamName: String,
     modifier: Modifier = Modifier,
-    size: Dp = 36.dp
+    size: Dp = Dimen.SizeXL
 ) {
     val initial = teamName.take(2).uppercase().ifBlank { "?" }
 
@@ -64,7 +66,7 @@ fun TeamLogo(
                     ) {
                         Text(
                             text = initial,
-                            style = if (size >= 32.dp) MaterialTheme.typography.s14.medium() else MaterialTheme.typography.s12.medium(),
+                            style = if (size >= Dimen.SizeL) MaterialTheme.typography.s14.medium() else MaterialTheme.typography.s12.medium(),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -78,7 +80,7 @@ fun TeamLogo(
                     ) {
                         Text(
                             text = initial,
-                            style = if (size >= 32.dp) MaterialTheme.typography.s14.medium() else MaterialTheme.typography.s12.medium(),
+                            style = if (size >= Dimen.SizeL) MaterialTheme.typography.s14.medium() else MaterialTheme.typography.s12.medium(),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -87,7 +89,7 @@ fun TeamLogo(
         } else {
             Text(
                 text = initial,
-                style = if (size >= 32.dp) MaterialTheme.typography.s14.medium() else MaterialTheme.typography.s12.medium(),
+                style = if (size >= Dimen.SizeL) MaterialTheme.typography.s14.medium() else MaterialTheme.typography.s12.medium(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -102,12 +104,12 @@ fun CompetitionLogo(
     logoUrl: String?,
     leagueName: String?,
     modifier: Modifier = Modifier,
-    size: Dp = 20.dp
+    size: Dp = Dimen.SizeSM
 ) {
     Box(
         modifier = modifier
             .size(size)
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(RadiusExtraSmall))
             .background(MaterialTheme.colorScheme.surfaceContainerHighest),
         contentAlignment = Alignment.Center
     ) {
@@ -121,7 +123,7 @@ fun CompetitionLogo(
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .size(size)
-                    .clip(RoundedCornerShape(4.dp)),
+                    .clip(RoundedCornerShape(RadiusExtraSmall)),
                 loading = {
                     Icon(
                         imageVector = Icons.Default.EmojiEvents,

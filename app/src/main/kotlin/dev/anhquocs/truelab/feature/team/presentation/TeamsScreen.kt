@@ -87,7 +87,7 @@ fun TeamsScreen(
                 .fillMaxSize()
                 .padding(horizontal = Dimen.PaddingM),
             verticalArrangement = Arrangement.spacedBy(Dimen.PaddingM),
-            contentPadding = PaddingValues(bottom = 100.dp)
+            contentPadding = PaddingValues(bottom = Dimen.PaddingBottomNav)
         ) {
             item {
                 Spacer(modifier = Modifier.height(Dimen.PaddingS))
@@ -113,12 +113,12 @@ fun TeamsScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp),
+                                .height(Dimen.Height.ContainerMedium),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(36.dp)
+                                modifier = Modifier.size(Dimen.SizeXL)
                             )
                         }
                     }
@@ -313,7 +313,7 @@ private fun TeamsFeedbackCard(
                 imageVector = icon,
                 contentDescription = null,
                 tint = iconTint,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(Dimen.SizeXLPlus)
             )
             Text(
                 text = title,

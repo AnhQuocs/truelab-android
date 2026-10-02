@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusPill
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
@@ -73,7 +72,7 @@ fun LiveMinuteBadge(
         // Red Pulsing Indicator Dot
         Box(
             modifier = Modifier
-                .size(6.dp)
+                .size(Dimen.SizeDot)
                 .clip(CircleShape)
                 .background(liveRed)
         )
