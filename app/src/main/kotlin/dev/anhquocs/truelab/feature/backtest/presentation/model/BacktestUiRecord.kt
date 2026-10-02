@@ -63,6 +63,17 @@ data class ClassMetricUiRecord(
 )
 
 /**
+ * UI representation of odds coverage metrics.
+ */
+data class OddsCoverageUiRecord(
+    val totalMatches: Int,
+    val matchesWithOdds: Int,
+    val matchesWithoutOdds: Int,
+    val coveragePercent: Double,
+    val formattedCoverage: String
+)
+
+/**
  * UI representation of an individual backtested match.
  */
 data class BacktestMatchUiRecord(
@@ -76,5 +87,7 @@ data class BacktestMatchUiRecord(
     val drawPct: Int,
     val awayWinPct: Int,
     val confidencePct: Int,
-    val isCorrect: Boolean
+    val isCorrect: Boolean,
+    val scoreDisplay: String = "",
+    val hasUsableOdds: Boolean = false
 )

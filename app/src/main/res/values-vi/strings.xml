@@ -326,9 +326,23 @@
     <string name="backtest_predicted_label">Đoán: %1$s</string>
     <string name="backtest_actual_label">Thực tế: %1$s</string>
     <string name="backtest_confidence_format">Tin cậy: %1$d%%</string>
-    <string name="backtest_empty_title">Không Có Dữ Liệu Trận Đấu Lịch Sử</string>
-    <string name="backtest_empty_desc">Không tìm thấy trận đấu đã kết thúc có đầy đủ tỷ số trong cơ sở dữ liệu để thực hiện kiểm thử ngược.</string>
-    <string name="backtest_error_default">Đã xảy ra lỗi trong quá trình thực thi kiểm thử ngược.</string>
+    <string name="backtest_empty_title">Không Có Trận Đấu FT Nào Trong Ngày</string>
+    <string name="backtest_empty_desc">Không tìm thấy trận đấu nào đã kết thúc (FT) có đầy đủ tỷ số trong ngày này để thực hiện đánh giá.</string>
+    <string name="backtest_error_default">Đã xảy ra lỗi trong quá trình thực thi đánh giá mô hình.</string>
     <string name="backtest_retry_btn">Thử Lại</string>
-    <string name="backtest_zero_leakage_note">Cô lập thời gian: Chỉ sử dụng các trận đấu diễn ra trước đó làm bối cảnh đặc trưng. Điểm Elo áp dụng theo snapshot hiện tại.</string>
+    <string name="backtest_zero_leakage_note">Bảo toàn thời gian: Chỉ sử dụng các trận đấu và kèo cược trước giờ bóng lăn. Tuyệt đối không rò rỉ dữ liệu.</string>
+    <string name="backtest_idle_title">Đánh Giá Dự Đoán Theo Ngày</string>
+    <string name="backtest_idle_desc">Đánh giá độ chính xác và hiệu năng mô hình 6 tín hiệu trên các trận đấu đã kết thúc trong ngày.</string>
+    <string name="backtest_start_btn">Bắt Đầu Đánh Giá</string>
+    <string name="backtest_ft_matches_count">%1$d trận FT sẵn sàng</string>
+    <string name="backtest_cancel_btn">Hủy Đánh Giá</string>
+    <string name="backtest_phase_odds">Nạp Tỷ Lệ Kèo (Odds)</string>
+    <string name="backtest_phase_context">Dữ Liệu Lịch Sử</string>
+    <string name="backtest_phase_predict">Dự Đoán Mô Hình</string>
+    <string name="backtest_phase_eval">Đối Soát Kết Quả FT</string>
+    <string name="backtest_odds_coverage_title">Độ Phủ Tỷ Lệ Kèo (Odds)</string>
+    <string name="backtest_odds_usable_count">%1$d / %2$d trận có Odds tiền trận (%3$s)</string>
+    <string name="backtest_odds_missing_count">%1$d trận thiếu Odds (xử lý missing-signal)</string>
+    <string name="backtest_btn_re_evaluate">Đánh Giá Lại Ngày Này</string>
+    <string name="backtest_analyzing_progress">Đang phân tích %1$d / %2$d (%3$d%%)</string>
 </resources>

@@ -79,8 +79,9 @@ class FakeMatchRepository : MatchRepository {
         limit: Int
     ): Flow<List<Match>> = flow {
         errorToThrow?.let { throw it }
-        emit(emptyList())
+        emit(matchesFlow.value.take(limit))
     }
+
 
     override suspend fun refreshMatchesForDate(date: String): Result<Unit> = Result.success(Unit)
 }

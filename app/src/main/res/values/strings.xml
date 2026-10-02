@@ -327,8 +327,22 @@
     <string name="backtest_actual_label">Actual: %1$s</string>
     <string name="backtest_confidence_format">Conf: %1$d%%</string>
     <string name="backtest_empty_title">No Historical Matches Available</string>
-    <string name="backtest_empty_desc">There are no ended matches in the database with complete scores to perform backtesting.</string>
+    <string name="backtest_empty_desc">There are no ended matches on this date with complete scores to perform backtesting.</string>
     <string name="backtest_error_default">An error occurred while executing the backtest pipeline.</string>
     <string name="backtest_retry_btn">Retry</string>
-    <string name="backtest_zero_leakage_note">Temporal Isolation: Strictly prior matches used for feature contexts. Current snapshot Elo ratings applied.</string>
+    <string name="backtest_zero_leakage_note">Temporal Isolation: Strictly prior matches and pre-match odds used. Zero data leakage guaranteed.</string>
+    <string name="backtest_idle_title">Daily Prediction Backtest</string>
+    <string name="backtest_idle_desc">Evaluate prediction accuracy and 6-signal performance on completed matches for this date.</string>
+    <string name="backtest_start_btn">Start Evaluation</string>
+    <string name="backtest_ft_matches_count">%1$d FT matches available</string>
+    <string name="backtest_cancel_btn">Cancel Evaluation</string>
+    <string name="backtest_phase_odds">Odds Hydration</string>
+    <string name="backtest_phase_context">Historical Context</string>
+    <string name="backtest_phase_predict">Model Prediction</string>
+    <string name="backtest_phase_eval">Evaluating FT Result</string>
+    <string name="backtest_odds_coverage_title">Odds Coverage</string>
+    <string name="backtest_odds_usable_count">%1$d / %2$d matches with usable odds (%3$s)</string>
+    <string name="backtest_odds_missing_count">%1$d matches without odds (missing-signal fallback)</string>
+    <string name="backtest_btn_re_evaluate">Re-evaluate Date</string>
+    <string name="backtest_analyzing_progress">Analyzing %1$d / %2$d (%3$d%%)</string>
 </resources>
