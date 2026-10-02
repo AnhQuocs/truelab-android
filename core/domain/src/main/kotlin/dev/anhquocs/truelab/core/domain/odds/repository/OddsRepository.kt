@@ -8,4 +8,5 @@ interface OddsRepository {
     fun getMatchOdds(matchId: Long): Flow<MatchOdds>
     fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?): Flow<List<OddsRecordItem>>
     suspend fun getLatestEuropeanOddsMap(): Map<Long, OddsRecordItem>
+    suspend fun fetchAndCacheOddsForMatch(matchId: Long): Result<Unit>
 }

@@ -309,4 +309,70 @@ class MigrationTest {
         assertEquals(39, newMatch?.get("leagueId"))
         assertEquals("2023-2024", newMatch?.get("season"))
     }
+
+    @Test
+    fun migration_3_4_recreates_odds_table_and_indexes() {
+        // Run migration 1->2 first
+        MIGRATION_1_2.migrate(db)
+
+        // Seed some initial odds in legacy schema
+        db.insertRow("odds", mapOf(
+            "id" to 1L,
+            "matchId" to 1001L,
+            "companyId" to 2,
+            "companyName" to "Bet365",
+            "oddsType" to "eu",
+            "handicap" to null,
+            "over" to null,
+            "under" to null,
+            "homeWin" to 2.10,
+            "draw" to 3.40,
+            "awayWin" to 3.20,
+            "changeTime" to 1715340000L,
+            "marketPhase" to "instant"
+        ))
+
+        // Execute MIGRATION_3_4
+        MIGRATION_3_4.migrate(db)
+
+        val oddsTable = db.tables["odds"]
+        assertNotNull("odds table should exist after migration 3->4", oddsTable)
+        assertEquals("INTEGER", oddsTable?.columns?.get("id"))
+        assertEquals("INTEGER", oddsTable?.columns?.get("matchId"))
+        assertEquals("INTEGER", oddsTable?.columns?.get("companyId"))
+        assertEquals("TEXT", oddsTable?.columns?.get("companyName"))
+        assertEquals("TEXT", oddsTable?.columns?.get("oddsType"))
+        assertEquals("REAL", oddsTable?.columns?.get("handicap"))
+        assertEquals("REAL", oddsTable?.columns?.get("over"))
+        assertEquals("REAL", oddsTable?.columns?.get("under"))
+        assertEquals("REAL", oddsTable?.columns?.get("homeWin"))
+        assertEquals("REAL", oddsTable?.columns?.get("draw"))
+        assertEquals("REAL", oddsTable?.columns?.get("awayWin"))
+        assertEquals("INTEGER", oddsTable?.columns?.get("changeTime"))
+        assertEquals("TEXT", oddsTable?.columns?.get("marketPhase"))
+
+        // Verify FK
+        assertTrue("odds table should have CASCADE FK to matches",
+            oddsTable?.foreignKeys?.any { it.contains("matches", ignoreCase = true) && it.contains("CASCADE", ignoreCase = true) } == true
+        )
+
+        // Verify indices
+        assertNotNull("index_odds_matchId should exist", db.indexes["index_odds_matchId"])
+        val uniqueIndex = db.indexes["index_odds_matchId_companyId_oddsType_changeTime"]
+        assertNotNull("index_odds_matchId_companyId_oddsType_changeTime should exist", uniqueIndex)
+        assertTrue("index_odds_matchId_companyId_oddsType_changeTime should be unique", uniqueIndex?.isUnique == true)
+        assertEquals(listOf("matchId", "companyId", "oddsType", "changeTime"), uniqueIndex?.columns)
+
+        // Verify data preserved
+        val oddsRows = db.rows["odds"]
+        assertNotNull(oddsRows)
+        assertEquals(1, oddsRows?.size)
+        val row = oddsRows?.first()
+        assertEquals(1L, row?.get("id"))
+        assertEquals(1001L, row?.get("matchId"))
+        assertEquals("Bet365", row?.get("companyName"))
+        assertEquals(2.10, row?.get("homeWin"))
+        assertNull(row?.get("handicap"))
+    }
 }
+

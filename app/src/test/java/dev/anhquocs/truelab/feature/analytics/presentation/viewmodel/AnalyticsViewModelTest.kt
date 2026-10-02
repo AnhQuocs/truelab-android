@@ -485,5 +485,7 @@ class AnalyticsViewModelTest {
         }
 
         override suspend fun getLatestEuropeanOddsMap(): Map<Long, OddsRecordItem> = emptyMap()
+
+        override suspend fun fetchAndCacheOddsForMatch(matchId: Long): Result<Unit> = Result.success(Unit)
     }
 }

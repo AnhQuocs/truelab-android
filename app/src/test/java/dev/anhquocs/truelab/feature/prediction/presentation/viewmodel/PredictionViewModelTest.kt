@@ -97,7 +97,7 @@ class PredictionViewModelTest {
     private val match1Odds = MatchOdds(
         matchId = 101L,
         oddsList = listOf(
-            OddsRecordItem(companyId = 1, companyName = "Provider A", oddsType = "1x2", homeWin = 1.85, draw = 3.40, awayWin = 4.20)
+            OddsRecordItem(companyId = 1, companyName = "Provider A", oddsType = "eu", homeWin = 1.85, draw = 3.40, awayWin = 4.20, marketPhase = "immediate")
         )
     )
 
@@ -580,6 +580,93 @@ class PredictionViewModelTest {
         assertEquals(listOf(2L, 3L, 4L, 1L, 5L), sorted.map { it.id })
     }
 
+    @Test
+    fun `on-demand odds hydration is triggered when match is selected`() = runTest {
+        viewModel = PredictionViewModel(
+            savedStateHandle = SavedStateHandle(),
+            matchRepository = fakeMatchRepository,
+            teamRepository = fakeTeamRepository,
+            oddsRepository = fakeOddsRepository,
+            leagueRepository = fakeLeagueRepository,
+            predictMatchOutcomeUseCase = predictMatchOutcomeUseCase
+        )
+
+        val job = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        // autoSelectMatch picks match1 (101L)
+        assertTrue(fakeOddsRepository.fetchedMatchIds.contains(101L))
+
+        // When selecting match2 (102L)
+        viewModel.onSelectMatch(102L)
+        advanceUntilIdle()
+
+        assertTrue(fakeOddsRepository.fetchedMatchIds.contains(102L))
+        job.cancel()
+    }
+
+    @Test
+    fun `prediction with valid pre-match EU odds includes odds signal evidence with 20 percent weight`() = runTest {
+        viewModel = PredictionViewModel(
+            savedStateHandle = SavedStateHandle(),
+            matchRepository = fakeMatchRepository,
+            teamRepository = fakeTeamRepository,
+            oddsRepository = fakeOddsRepository,
+            leagueRepository = fakeLeagueRepository,
+            predictMatchOutcomeUseCase = predictMatchOutcomeUseCase
+        )
+
+        val job = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is PredictionUiState.Success)
+        val success = state as PredictionUiState.Success
+
+        val oddsEvidence = success.predictionResult.evidence?.signals?.find { it.name == "EU Odds" }
+        assertNotNull(oddsEvidence)
+        assertTrue(oddsEvidence!!.isAvailable)
+        assertEquals(0.20, oddsEvidence.rawWeight, 0.001)
+
+        job.cancel()
+    }
+
+    @Test
+    fun `prediction with AH and OU in matchOdds only consumes EU for scoring`() = runTest {
+        val multiMarketOdds = MatchOdds(
+            matchId = 101L,
+            oddsList = listOf(
+                OddsRecordItem(companyId = 1, companyName = "Bet365", oddsType = "eu", homeWin = 1.85, draw = 3.40, awayWin = 4.20, marketPhase = "immediate"),
+                OddsRecordItem(companyId = 1, companyName = "Bet365", oddsType = "asia", handicap = -0.5, homeWin = 1.90, awayWin = 1.95, marketPhase = "immediate"),
+                OddsRecordItem(companyId = 1, companyName = "Bet365", oddsType = "bs", over = 1.85, under = 1.95, marketPhase = "immediate")
+            )
+        )
+        fakeOddsRepository.setMatchOdds(101L, multiMarketOdds)
+
+        viewModel = PredictionViewModel(
+            savedStateHandle = SavedStateHandle(),
+            matchRepository = fakeMatchRepository,
+            teamRepository = fakeTeamRepository,
+            oddsRepository = fakeOddsRepository,
+            leagueRepository = fakeLeagueRepository,
+            predictMatchOutcomeUseCase = predictMatchOutcomeUseCase
+        )
+
+        val job = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is PredictionUiState.Success)
+        val success = state as PredictionUiState.Success
+
+        // Scoring must strictly match the EU implied probability
+        val oddsEvidence = success.predictionResult.evidence?.signals?.find { it.name == "EU Odds" }
+        assertNotNull(oddsEvidence)
+        assertTrue(oddsEvidence!!.isAvailable)
+
+        job.cancel()
+    }
+
     // --- Fakes ---
 
     private class FakeMatchRepository : MatchRepository {
@@ -668,10 +755,16 @@ class PredictionViewModelTest {
 
     private class FakeOddsRepository : OddsRepository {
         private val matchOddsMap = mutableMapOf<Long, MatchOdds>()
+        val fetchedMatchIds = mutableListOf<Long>()
+
         fun setMatchOdds(matchId: Long, matchOdds: MatchOdds) { matchOddsMap[matchId] = matchOdds }
         override fun getMatchOdds(matchId: Long): Flow<MatchOdds> = flow { emit(matchOddsMap[matchId] ?: MatchOdds(matchId, emptyList())) }
         override fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?): Flow<List<OddsRecordItem>> = flow { emit(emptyList()) }
         override suspend fun getLatestEuropeanOddsMap(): Map<Long, OddsRecordItem> = emptyMap()
+        override suspend fun fetchAndCacheOddsForMatch(matchId: Long): Result<Unit> {
+            fetchedMatchIds.add(matchId)
+            return Result.success(Unit)
+        }
     }
 
     private class FakeLeagueRepository : LeagueRepository {

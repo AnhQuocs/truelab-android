@@ -30,7 +30,7 @@ import dev.anhquocs.truelab.core.data.team.local.entity.TeamEntity
         SeasonEntity::class,
         DatasetMetadataEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 abstract class TrueLabDatabase : RoomDatabase() {
