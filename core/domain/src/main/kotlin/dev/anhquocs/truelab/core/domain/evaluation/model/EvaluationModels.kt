@@ -100,6 +100,9 @@ data class ModelEvaluationResult(
  * @property awayWinProb Xác suất thắng của đội khách theo mô hình [0.0, 1.0].
  * @property confidenceScore Độ tin cậy của dự đoán [0.0, 1.0].
  * @property isCorrect Cờ đánh dấu dự đoán có trùng khớp với kết quả thực tế không.
+ * @property homeScore Tỷ số thực tế đội nhà (nếu có).
+ * @property awayScore Tỷ số thực tế đội khách (nếu có).
+ * @property hasUsableOdds Cờ đánh dấu trận đấu có tỷ lệ cược tiền trận hợp lệ không.
  */
 data class BacktestMatchRecord(
     val matchId: Long,
@@ -112,7 +115,10 @@ data class BacktestMatchRecord(
     val drawProb: Double,
     val awayWinProb: Double,
     val confidenceScore: Double,
-    val isCorrect: Boolean
+    val isCorrect: Boolean,
+    val homeScore: Int? = null,
+    val awayScore: Int? = null,
+    val hasUsableOdds: Boolean = false
 )
 
 /**
@@ -128,5 +134,67 @@ data class PredictionBacktestResult(
     val records: List<BacktestMatchRecord>,
     val totalMatches: Int,
     val correctMatches: Int
+)
+
+/**
+ * Thống kê mức độ phủ tỷ lệ cược pre-match trong tập đánh giá.
+ *
+ * @property totalMatches Tổng số trận được đánh giá.
+ * @property matchesWithUsableOdds Số trận có tỷ lệ cược pre-match hợp lệ.
+ * @property matchesWithoutOdds Số trận không có tỷ lệ cược pre-match.
+ * @property coveragePercentage Tỷ lệ phần trăm độ phủ Odds [0.0, 100.0].
+ */
+data class OddsCoverageStats(
+    val totalMatches: Int,
+    val matchesWithUsableOdds: Int,
+    val matchesWithoutOdds: Int,
+    val coveragePercentage: Double
+)
+
+/**
+ * Các giai đoạn xử lý cho từng trận đấu trong quá trình Daily Backtest.
+ */
+enum class EvaluationPhase {
+    FETCHING_ODDS,
+    PREPARING_CONTEXT,
+    PREDICTING,
+    EVALUATING
+}
+
+/**
+ * Sự kiện tiến độ trả về theo thời gian thực từ [RunDailyBacktestUseCase].
+ */
+sealed interface DailyBacktestProgressEvent {
+    data class Progress(
+        val completedCount: Int,
+        val totalCount: Int,
+        val currentMatchName: String,
+        val currentPhase: EvaluationPhase
+    ) : DailyBacktestProgressEvent
+
+    data class Completed(
+        val result: DailyBacktestResult
+    ) : DailyBacktestProgressEvent
+}
+
+/**
+ * Kết quả đánh giá Backtest theo ngày (Daily Backtest Result).
+ *
+ * @property evaluationDate Ngày được đánh giá (ISO yyyy-MM-dd).
+ * @property totalMatches Tổng số trận đấu đã được đánh giá.
+ * @property correctMatches Số trận đấu dự đoán chính xác.
+ * @property accuracy Độ chính xác tổng thể [0.0, 1.0].
+ * @property oddsCoverage Thống kê độ phủ Odds của tập trận.
+ * @property evaluationResult Kết quả ma trận nhầm lẫn và các chỉ số Macro/Class.
+ * @property records Danh sách bản ghi chi tiết từng trận.
+ */
+data class DailyBacktestResult(
+    val evaluationDate: String,
+    val totalMatches: Int,
+    val correctMatches: Int,
+    val accuracy: Double,
+    val oddsCoverage: OddsCoverageStats,
+    val evaluationResult: ModelEvaluationResult,
+    val records: List<BacktestMatchRecord>
 )
 

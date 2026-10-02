@@ -3,8 +3,10 @@ package dev.anhquocs.truelab.feature.backtest.presentation.mapper
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.evaluation.model.BacktestMatchRecord
 import dev.anhquocs.truelab.core.domain.evaluation.model.ConfusionMatrix3Way
+import dev.anhquocs.truelab.core.domain.evaluation.model.DailyBacktestResult
 import dev.anhquocs.truelab.core.domain.evaluation.model.ModelEvaluationResult
 import dev.anhquocs.truelab.core.domain.evaluation.model.PredictionBacktestResult
+
 import dev.anhquocs.truelab.core.domain.evaluation.usecase.CalculateEvaluationMetricsUseCase
 import dev.anhquocs.truelab.feature.backtest.presentation.model.BacktestMatchUiRecord
 import dev.anhquocs.truelab.feature.backtest.presentation.model.BacktestOverviewUiRecord
@@ -19,6 +21,27 @@ import kotlin.math.roundToInt
  * Mapper formatting Domain evaluation and backtest models into clean Presentation UI records.
  */
 object BacktestUiMapper {
+
+    fun toOverviewUiRecord(result: DailyBacktestResult): BacktestOverviewUiRecord {
+        val eval = result.evaluationResult
+        val accPct = eval.accuracy * 100.0
+        val macroP = eval.macroPrecision * 100.0
+        val macroR = eval.macroRecall * 100.0
+        val macroF1 = eval.macroF1 * 100.0
+
+        return BacktestOverviewUiRecord(
+            totalMatches = result.totalMatches,
+            correctMatches = result.correctMatches,
+            accuracyPercent = accPct,
+            formattedAccuracy = String.format(Locale.US, "%.1f%%", accPct),
+            macroPrecisionPercent = macroP,
+            formattedMacroPrecision = String.format(Locale.US, "%.1f%%", macroP),
+            macroRecallPercent = macroR,
+            formattedMacroRecall = String.format(Locale.US, "%.1f%%", macroR),
+            macroF1Percent = macroF1,
+            formattedMacroF1 = String.format(Locale.US, "%.1f%%", macroF1)
+        )
+    }
 
     fun toOverviewUiRecord(result: PredictionBacktestResult): BacktestOverviewUiRecord {
         val eval = result.evaluationResult
@@ -40,6 +63,17 @@ object BacktestUiMapper {
             formattedMacroF1 = String.format(Locale.US, "%.1f%%", macroF1)
         )
     }
+
+    fun toOddsCoverageUiRecord(stats: dev.anhquocs.truelab.core.domain.evaluation.model.OddsCoverageStats): dev.anhquocs.truelab.feature.backtest.presentation.model.OddsCoverageUiRecord {
+        return dev.anhquocs.truelab.feature.backtest.presentation.model.OddsCoverageUiRecord(
+            totalMatches = stats.totalMatches,
+            matchesWithOdds = stats.matchesWithUsableOdds,
+            matchesWithoutOdds = stats.matchesWithoutOdds,
+            coveragePercent = stats.coveragePercentage,
+            formattedCoverage = String.format(Locale.US, "%.1f%%", stats.coveragePercentage)
+        )
+    }
+
 
     fun toConfusionMatrixUiRecord(matrix: ConfusionMatrix3Way): ConfusionMatrixUiRecord {
         val total = matrix.totalSamples
@@ -119,6 +153,11 @@ object BacktestUiMapper {
 
     fun toMatchUiRecords(records: List<BacktestMatchRecord>): List<BacktestMatchUiRecord> {
         return records.map { record ->
+            val scoreText = if (record.homeScore != null && record.awayScore != null) {
+                "${record.homeScore} - ${record.awayScore}"
+            } else {
+                ""
+            }
             BacktestMatchUiRecord(
                 matchId = record.matchId,
                 formattedDate = dev.anhquocs.truelab.core.ui.utils.DateTimeFormatterUtils.formatToVietnamDateTime(record.matchDate),
@@ -130,10 +169,13 @@ object BacktestUiMapper {
                 drawPct = (record.drawProb * 100).roundToInt(),
                 awayWinPct = (record.awayWinProb * 100).roundToInt(),
                 confidencePct = (record.confidenceScore * 100).roundToInt(),
-                isCorrect = record.isCorrect
+                isCorrect = record.isCorrect,
+                scoreDisplay = scoreText,
+                hasUsableOdds = record.hasUsableOdds
             )
         }
     }
+
 
     private fun mapOutcomeToRes(outcome: String): Int {
         return when (outcome) {

@@ -245,7 +245,7 @@ private fun BacktestMatchItem(
 
         Spacer(modifier = Modifier.height(Dimen.PaddingXS))
 
-        // Teams & Confidence
+        // Teams, Score & Confidence
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -258,6 +258,15 @@ private fun BacktestMatchItem(
                 modifier = Modifier.weight(1f)
             )
 
+            if (match.scoreDisplay.isNotBlank()) {
+                Text(
+                    text = match.scoreDisplay,
+                    style = MaterialTheme.typography.s14.bold(),
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = Dimen.PaddingS)
+                )
+            }
+
             Text(
                 text = stringResource(R.string.backtest_confidence_format, match.confidencePct),
                 style = MaterialTheme.typography.s10.semiBold(),
@@ -267,24 +276,38 @@ private fun BacktestMatchItem(
 
         Spacer(modifier = Modifier.height(Dimen.PaddingXS))
 
-        // Outcome Details (Pred vs Actual)
+        // Outcome Details (Pred vs Actual + Odds indicator)
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingM)
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = stringResource(R.string.backtest_predicted_label, stringResource(match.predictedOutcomeRes)),
-                style = MaterialTheme.typography.s12,
-                color = if (match.isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingM)
+            ) {
+                Text(
+                    text = stringResource(R.string.backtest_predicted_label, stringResource(match.predictedOutcomeRes)),
+                    style = MaterialTheme.typography.s12,
+                    color = if (match.isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                )
 
-            Text(
-                text = stringResource(R.string.backtest_actual_label, stringResource(match.actualOutcomeRes)),
-                style = MaterialTheme.typography.s12,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                Text(
+                    text = stringResource(R.string.backtest_actual_label, stringResource(match.actualOutcomeRes)),
+                    style = MaterialTheme.typography.s12,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (match.hasUsableOdds) {
+                Text(
+                    text = "Odds ✓",
+                    style = MaterialTheme.typography.s10.semiBold(),
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
         }
+
 
         Spacer(modifier = Modifier.height(Dimen.PaddingXS))
 

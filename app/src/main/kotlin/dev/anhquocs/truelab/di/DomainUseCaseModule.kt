@@ -98,4 +98,18 @@ object DomainUseCaseModule {
             predictMatchOutcomeUseCase = predictMatchOutcomeUseCase,
             calculateEvaluationMetricsUseCase = dev.anhquocs.truelab.core.domain.evaluation.usecase.CalculateEvaluationMetricsUseCase()
         )
+
+    @Provides
+    @Singleton
+    fun provideRunDailyBacktestUseCase(
+        oddsRepository: dev.anhquocs.truelab.core.domain.odds.repository.OddsRepository,
+        predictMatchOutcomeUseCase: PredictMatchOutcomeUseCase,
+        calculateDynamicEloUseCase: dev.anhquocs.truelab.core.domain.team.usecase.CalculateDynamicEloUseCase
+    ): dev.anhquocs.truelab.core.domain.evaluation.usecase.RunDailyBacktestUseCase =
+        dev.anhquocs.truelab.core.domain.evaluation.usecase.RunDailyBacktestUseCase(
+            oddsRepository = oddsRepository,
+            predictMatchOutcomeUseCase = predictMatchOutcomeUseCase,
+            calculateDynamicEloUseCase = calculateDynamicEloUseCase,
+            calculateEvaluationMetricsUseCase = dev.anhquocs.truelab.core.domain.evaluation.usecase.CalculateEvaluationMetricsUseCase()
+        )
 }

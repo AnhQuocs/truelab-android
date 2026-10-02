@@ -157,4 +157,21 @@ class BacktestUiMapperTest {
         assertEquals(R.string.prediction_outcome_away, uiMatches[1].actualOutcomeRes)
         assertFalse(uiMatches[1].isCorrect)
     }
+
+    @Test
+    fun toOddsCoverageUiRecord_mapsCorrectly() {
+        val stats = dev.anhquocs.truelab.core.domain.evaluation.model.OddsCoverageStats(
+            totalMatches = 35,
+            matchesWithUsableOdds = 31,
+            matchesWithoutOdds = 4,
+            coveragePercentage = 88.5714
+        )
+
+        val uiRecord = BacktestUiMapper.toOddsCoverageUiRecord(stats)
+
+        assertEquals(35, uiRecord.totalMatches)
+        assertEquals(31, uiRecord.matchesWithOdds)
+        assertEquals(4, uiRecord.matchesWithoutOdds)
+        assertEquals("88.6%", uiRecord.formattedCoverage)
+    }
 }
