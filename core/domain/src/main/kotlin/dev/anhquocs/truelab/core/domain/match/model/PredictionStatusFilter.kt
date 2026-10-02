@@ -7,5 +7,6 @@ enum class PredictionStatusFilter {
     LIVE_AND_UPCOMING,
     LIVE,
     UPCOMING,
+    FINISHED,
     ALL
 }

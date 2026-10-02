@@ -54,6 +54,8 @@ class PredictionViewModelTest {
     private val manCity = TeamDetail(id = 1, name = "Manchester City", leagueName = "Premier League", eloRating = 1980.0)
     private val arsenal = TeamDetail(id = 2, name = "Arsenal", leagueName = "Premier League", eloRating = 1945.0)
     private val liverpool = TeamDetail(id = 3, name = "Liverpool", leagueName = "Premier League", eloRating = 1920.0)
+    private val vietnam = TeamDetail(id = 4, name = "Vietnam", leagueName = "FIFA ASEAN Cup", eloRating = 1500.0)
+    private val pakistan = TeamDetail(id = 5, name = "Pakistan", leagueName = "FIFA ASEAN Cup", eloRating = 1300.0)
 
     private val match1 = Match(
         id = 101L,
@@ -64,6 +66,7 @@ class PredictionViewModelTest {
         startTimeDate = "${today}T15:00:00",
         status = MatchStatus.IN_PROGRESS,
         leagueId = 10,
+        leagueName = "Premier League",
         minutes = "65"
     )
 
@@ -75,7 +78,20 @@ class PredictionViewModelTest {
         awayScore = null,
         startTimeDate = "${today}T17:30:00",
         status = MatchStatus.SCHEDULED,
-        leagueId = 10
+        leagueId = 10,
+        leagueName = "Premier League"
+    )
+
+    private val match3 = Match(
+        id = 103L,
+        homeTeam = TeamSummary(id = 4, name = "Vietnam"),
+        awayTeam = TeamSummary(id = 5, name = "Pakistan"),
+        homeScore = 2,
+        awayScore = 0,
+        startTimeDate = "${today}T12:00:00",
+        status = MatchStatus.ENDED,
+        leagueId = 20,
+        leagueName = "FIFA ASEAN Cup"
     )
 
     private val match1Odds = MatchOdds(
@@ -94,10 +110,13 @@ class PredictionViewModelTest {
         fakeLeagueRepository = FakeLeagueRepository()
         predictMatchOutcomeUseCase = PredictMatchOutcomeUseCase()
 
-        fakeMatchRepository.setMatches(listOf(match1, match2))
-        fakeTeamRepository.setTeams(listOf(manCity, arsenal, liverpool))
+        fakeMatchRepository.setMatches(listOf(match1, match2, match3))
+        fakeTeamRepository.setTeams(listOf(manCity, arsenal, liverpool, vietnam, pakistan))
         fakeOddsRepository.setMatchOdds(101L, match1Odds)
-        fakeLeagueRepository.setLeagues(listOf(League(id = 10, name = "Premier League", country = "England")))
+        fakeLeagueRepository.setLeagues(listOf(
+            League(id = 10, name = "Premier League", country = "England"),
+            League(id = 20, name = "FIFA ASEAN Cup", country = "Asia")
+        ))
 
         viewModel = PredictionViewModel(
             savedStateHandle = SavedStateHandle(),
@@ -319,6 +338,63 @@ class PredictionViewModelTest {
     }
 
     @Test
+    fun `search query matches competition name properly`() = runTest {
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        // Show ALL status filter so ended FIFA match is included
+        viewModel.onStatusFilterSelected(PredictionStatusFilter.ALL)
+        viewModel.onSearchQueryChanged("fifa")
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as PredictionUiState.Success
+        assertEquals(1, state.availableMatches.size)
+        assertEquals(103L, state.availableMatches[0].id)
+        assertEquals("Vietnam", state.availableMatches[0].homeTeam.name)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `finished status filter only returns ended matches for selected date`() = runTest {
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        viewModel.onStatusFilterSelected(PredictionStatusFilter.FINISHED)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as PredictionUiState.Success
+        assertEquals(1, state.availableMatches.size)
+        assertEquals(103L, state.availableMatches[0].id)
+        assertEquals(MatchStatus.ENDED, state.availableMatches[0].status)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `combined filter date, competition, finished status, and search query works together`() = runTest {
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        viewModel.onLeagueSelected(20) // FIFA ASEAN Cup
+        viewModel.onStatusFilterSelected(PredictionStatusFilter.FINISHED)
+        viewModel.onSearchQueryChanged("vietnam")
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as PredictionUiState.Success
+        assertEquals(1, state.availableMatches.size)
+        assertEquals(103L, state.availableMatches[0].id)
+
+        // Change search to something not matching Vietnam in FIFA
+        viewModel.onSearchQueryChanged("Arsenal")
+        advanceUntilIdle()
+
+        assertTrue("Expected Empty state for non-matching search", viewModel.uiState.value is PredictionUiState.Empty)
+
+        collectJob.cancel()
+    }
+
+    @Test
     fun `prediction evidence in uiState is properly populated with team elo and odds details`() = runTest {
         val collectJob = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
@@ -394,23 +470,23 @@ class PredictionViewModelTest {
     }
 
     @Test
-    fun `today kickoff time comparison at 08-50 correctly determines statuses`() {
+    fun `today kickoff time comparison strictly respects server status`() {
         // Mock current time: 2026-10-01 08:50:00 Asia/Ho_Chi_Minh
         val testZone = dev.anhquocs.truelab.core.ui.utils.DateTimeFormatterUtils.VIETNAM_ZONE_ID
         val now = java.time.ZonedDateTime.of(2026, 10, 1, 8, 50, 0, 0, testZone)
         val selectedDate = "2026-10-01"
 
-        // Match A: 07:00 GMT+7 pending -> NOT UPCOMING (STARTED)
+        // Match A: 07:00 GMT+7 pending (kickoff passed) -> UPCOMING (Never LIVE)
         val matchA = match1.copy(startTimeDate = "2026-10-01T07:00:00+07:00", status = MatchStatus.SCHEDULED)
         val statusA = dev.anhquocs.truelab.feature.prediction.presentation.components.resolveDisplayStatus(matchA, selectedDate, now)
-        assertEquals(dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.STARTED, statusA)
+        assertEquals(dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.UPCOMING, statusA)
 
-        // Match B: 07:30 GMT+7 pending -> NOT UPCOMING (STARTED)
+        // Match B: 07:30 GMT+7 pending -> UPCOMING
         val matchB = match1.copy(startTimeDate = "2026-10-01T07:30:00+07:00", status = MatchStatus.SCHEDULED)
         val statusB = dev.anhquocs.truelab.feature.prediction.presentation.components.resolveDisplayStatus(matchB, selectedDate, now)
-        assertEquals(dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.STARTED, statusB)
+        assertEquals(dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.UPCOMING, statusB)
 
-        // Match C: 08:30 GMT+7 live -> LIVE
+        // Match C: 08:30 GMT+7 server confirmed IN_PROGRESS -> LIVE
         val matchC = match1.copy(startTimeDate = "2026-10-01T08:30:00+07:00", status = MatchStatus.IN_PROGRESS, minutes = "20")
         val statusC = dev.anhquocs.truelab.feature.prediction.presentation.components.resolveDisplayStatus(matchC, selectedDate, now)
         assertEquals(dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.LIVE, statusC)
@@ -420,7 +496,7 @@ class PredictionViewModelTest {
         val statusD = dev.anhquocs.truelab.feature.prediction.presentation.components.resolveDisplayStatus(matchD, selectedDate, now)
         assertEquals(dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.UPCOMING, statusD)
 
-        // Match E: 06:00 GMT+7 ended -> ENDED
+        // Match E: 06:00 GMT+7 server confirmed ENDED -> ENDED
         val matchE = match1.copy(startTimeDate = "2026-10-01T06:00:00+07:00", status = MatchStatus.ENDED, homeScore = 2, awayScore = 1)
         val statusE = dev.anhquocs.truelab.feature.prediction.presentation.components.resolveDisplayStatus(matchE, selectedDate, now)
         assertEquals(dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.ENDED, statusE)
@@ -430,10 +506,16 @@ class PredictionViewModelTest {
         val statusF = dev.anhquocs.truelab.feature.prediction.presentation.components.resolveDisplayStatus(matchF, selectedDate, now)
         assertEquals(dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.UPCOMING, statusF)
 
-        // Match G: 08:50 GMT+7 (exact now) pending -> NOT UPCOMING (STARTED)
+        // Match G: 08:50 GMT+7 (exact now) pending -> UPCOMING
         val matchG = match1.copy(startTimeDate = "2026-10-01T08:50:00+07:00", status = MatchStatus.SCHEDULED)
         val statusG = dev.anhquocs.truelab.feature.prediction.presentation.components.resolveDisplayStatus(matchG, selectedDate, now)
-        assertEquals(dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.STARTED, statusG)
+        assertEquals(dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.UPCOMING, statusG)
+
+        // Match H: 01:45 GMT+7 pending (e.g. at 10:30am) -> UPCOMING (Never LIVE)
+        val now1030 = java.time.ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, testZone)
+        val matchH = match1.copy(startTimeDate = "2026-10-01T01:45:00+07:00", status = MatchStatus.SCHEDULED)
+        val statusH = dev.anhquocs.truelab.feature.prediction.presentation.components.resolveDisplayStatus(matchH, selectedDate, now1030)
+        assertEquals(dev.anhquocs.truelab.feature.prediction.presentation.components.DisplayMatchStatus.UPCOMING, statusH)
     }
 
     @Test
@@ -482,13 +564,13 @@ class PredictionViewModelTest {
     }
 
     @Test
-    fun `today sorting puts LIVE first, STARTED second, UPCOMING in kickoff ASC third, ENDED last`() {
+    fun `today sorting puts LIVE first, UPCOMING in kickoff ASC second, ENDED last`() {
         val now = java.time.ZonedDateTime.of(2026, 10, 1, 8, 50, 0, 0, dev.anhquocs.truelab.core.ui.utils.DateTimeFormatterUtils.VIETNAM_ZONE_ID)
         val selectedDate = "2026-10-01"
 
         val m1 = match1.copy(id = 1L, startTimeDate = "2026-10-01T10:00:00+07:00", status = MatchStatus.SCHEDULED) // UPCOMING 10:00
-        val m2 = match1.copy(id = 2L, startTimeDate = "2026-10-01T08:30:00+07:00", status = MatchStatus.IN_PROGRESS, minutes = "20") // LIVE
-        val m3 = match1.copy(id = 3L, startTimeDate = "2026-10-01T07:00:00+07:00", status = MatchStatus.SCHEDULED) // STARTED 07:00
+        val m2 = match1.copy(id = 2L, startTimeDate = "2026-10-01T08:30:00+07:00", status = MatchStatus.IN_PROGRESS, minutes = "20") // LIVE 08:30
+        val m3 = match1.copy(id = 3L, startTimeDate = "2026-10-01T07:00:00+07:00", status = MatchStatus.SCHEDULED) // UPCOMING 07:00
         val m4 = match1.copy(id = 4L, startTimeDate = "2026-10-01T09:00:00+07:00", status = MatchStatus.SCHEDULED) // UPCOMING 09:00
         val m5 = match1.copy(id = 5L, startTimeDate = "2026-10-01T06:00:00+07:00", status = MatchStatus.ENDED) // ENDED 06:00
 
@@ -527,6 +609,7 @@ class PredictionViewModelTest {
                         ((startDateUtc == null || match.startTimeDate >= startDateUtc) && (endDateUtc == null || match.startTimeDate < endDateUtc))
                     val leagueMatch = leagueId == null || match.leagueId == leagueId
                     val statusMatch = when {
+                        statusFilter == PredictionStatusFilter.FINISHED -> match.status == MatchStatus.ENDED
                         isPastDate -> true
                         isFutureDate -> true
                         statusFilter == PredictionStatusFilter.LIVE_AND_UPCOMING -> match.status in listOf(MatchStatus.IN_PROGRESS, MatchStatus.SCHEDULED)
@@ -537,7 +620,8 @@ class PredictionViewModelTest {
                     }
                     val searchMatch = searchQuery.isNullOrBlank() ||
                         match.homeTeam.name.contains(searchQuery, ignoreCase = true) ||
-                        match.awayTeam.name.contains(searchQuery, ignoreCase = true)
+                        match.awayTeam.name.contains(searchQuery, ignoreCase = true) ||
+                        (match.leagueName != null && match.leagueName!!.contains(searchQuery, ignoreCase = true))
                     dateMatch && leagueMatch && statusMatch && searchMatch
                 }.take(limit)
                 emit(filtered)

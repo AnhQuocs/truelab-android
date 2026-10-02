@@ -53,6 +53,7 @@ object Dimen {
     val SizeS = 16.dp
     val SizeS2 = 18.dp
     val SizeSM = 20.dp
+    val SizeMD = 22.dp
     val SizeM = 24.dp
     val SizeML = 28.dp
     val SizeL = 32.dp
@@ -78,6 +79,8 @@ object Dimen {
         val Divider = 1.dp
         val DragHandle = 36.dp
         val ChartLeftMargin = 36.dp
+        val ScoreColumn = 36.dp
+        val StatusColumn = 52.dp
     }
 
     // Height

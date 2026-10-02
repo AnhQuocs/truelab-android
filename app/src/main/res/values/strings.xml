@@ -161,9 +161,11 @@
     <string name="prediction_filter_live_upcoming">Live &amp; Upcoming</string>
     <string name="prediction_filter_live">Live</string>
     <string name="prediction_filter_upcoming">Upcoming</string>
+    <string name="prediction_filter_finished">Finished</string>
     <string name="prediction_filter_all">All Matches</string>
     <string name="prediction_all_competitions">All Competitions</string>
     <string name="prediction_select_competition">Select Competition</string>
+    <string name="prediction_search_competition_hint">Search competition...</string>
     <string name="prediction_today">Today</string>
     <string name="prediction_yesterday">Yesterday</string>
     <string name="prediction_tomorrow">Tomorrow</string>
@@ -171,13 +173,14 @@
     <string name="prediction_refresh_success">Matches updated</string>
     <string name="prediction_refresh_failed">Update failed. Showing cached data.</string>
     <string name="prediction_reset_filters">Reset Filters</string>
-    <string name="prediction_empty_filter_desc">No upcoming or live matches found for this date. Try changing date or filters.</string>
+    <string name="prediction_empty_filter_desc">No matches found for this date. Try changing date or filters.</string>
     <string name="prediction_cta_predict">Predict Match →</string>
     <string name="prediction_selected_badge">Selected</string>
     <string name="prediction_search_hint">Search team or league...</string>
     <string name="prediction_status_started">Started</string>
     <string name="prediction_default_competition">International / Cup</string>
     <string name="prediction_sheet_title">MATCH PREDICTION</string>
+    <string name="prediction_sheet_subtitle">Analysis based on data available before kickoff</string>
     <string name="prediction_sheet_conclusion">Prediction Conclusion</string>
     <string name="prediction_sheet_evidence_title">Signal Analysis</string>
     <string name="prediction_sheet_evidence_subtitle"></string>

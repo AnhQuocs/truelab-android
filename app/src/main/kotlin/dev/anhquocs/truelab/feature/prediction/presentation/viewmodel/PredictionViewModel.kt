@@ -292,15 +292,20 @@ class PredictionViewModel @Inject constructor(
         _selectedMatchId.value = null
     }
 
+    private var syncJob: kotlinx.coroutines.Job? = null
+
     fun refresh() {
         if (_isRefreshing.value) return
-        viewModelScope.launch {
+        syncJob?.cancel()
+        syncJob = viewModelScope.launch {
             _isRefreshing.value = true
             try {
                 val result = matchRepository.refreshMatchesForDate(_selectedDate.value)
                 if (result.isFailure) {
                     _refreshErrorEvent.emit(UiText.StringResource(R.string.prediction_refresh_failed))
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 val message = if (!e.message.isNullOrBlank()) {
                     UiText.DynamicString(e.message!!)
@@ -315,9 +320,12 @@ class PredictionViewModel @Inject constructor(
     }
 
     private fun syncDateIfNeeded(date: String) {
-        viewModelScope.launch {
+        syncJob?.cancel()
+        syncJob = viewModelScope.launch {
             try {
                 matchRepository.refreshMatchesForDate(date)
+            } catch (_: kotlinx.coroutines.CancellationException) {
+                // Ignore cancellation
             } catch (_: Exception) {
                 // Ignore silent background sync errors
             }

@@ -1,103 +1,69 @@
 package dev.anhquocs.truelab.core.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.SportsSoccer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import dev.anhquocs.truelab.core.ui.theme.Dimen
-import dev.anhquocs.truelab.core.ui.theme.RadiusExtraSmall
-import dev.anhquocs.truelab.core.ui.utils.medium
-import dev.anhquocs.truelab.core.ui.utils.s12
-import dev.anhquocs.truelab.core.ui.utils.s14
 
 /**
- * Reusable Team Logo component utilizing Coil Image Loading with robust fallback mechanisms.
+ * Reusable Team Logo component utilizing Coil Image Loading.
+ * Minimalist design: renders direct team crest without bulky containers.
  */
 @Composable
 fun TeamLogo(
     logoUrl: String?,
     teamName: String,
     modifier: Modifier = Modifier,
-    size: Dp = Dimen.SizeXL
+    size: Dp = Dimen.SizeMD
 ) {
-    val initial = teamName.take(2).uppercase().ifBlank { "?" }
-
-    Box(
-        modifier = modifier
-            .size(size)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-        contentAlignment = Alignment.Center
-    ) {
-        if (!logoUrl.isNullOrBlank()) {
-            SubcomposeAsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(logoUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = teamName,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .size(size)
-                    .clip(CircleShape),
-                loading = {
-                    Box(
-                        modifier = Modifier
-                            .size(size)
-                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = initial,
-                            style = if (size >= Dimen.SizeL) MaterialTheme.typography.s14.medium() else MaterialTheme.typography.s12.medium(),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                error = {
-                    Box(
-                        modifier = Modifier
-                            .size(size)
-                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = initial,
-                            style = if (size >= Dimen.SizeL) MaterialTheme.typography.s14.medium() else MaterialTheme.typography.s12.medium(),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            )
-        } else {
-            Text(
-                text = initial,
-                style = if (size >= Dimen.SizeL) MaterialTheme.typography.s14.medium() else MaterialTheme.typography.s12.medium(),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+    if (!logoUrl.isNullOrBlank()) {
+        SubcomposeAsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(logoUrl)
+                .crossfade(true)
+                .build(),
+            contentDescription = teamName,
+            contentScale = ContentScale.Fit,
+            modifier = modifier.size(size),
+            loading = {
+                Icon(
+                    imageVector = Icons.Default.SportsSoccer,
+                    contentDescription = teamName,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier.size(size)
+                )
+            },
+            error = {
+                Icon(
+                    imageVector = Icons.Default.SportsSoccer,
+                    contentDescription = teamName,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier.size(size)
+                )
+            }
+        )
+    } else {
+        Icon(
+            imageVector = Icons.Default.SportsSoccer,
+            contentDescription = teamName,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            modifier = modifier.size(size)
+        )
     }
 }
 
 /**
  * Reusable Competition/League Logo component.
+ * Minimalist design: displays logo image directly without container background or frame.
  */
 @Composable
 fun CompetitionLogo(
@@ -106,48 +72,38 @@ fun CompetitionLogo(
     modifier: Modifier = Modifier,
     size: Dp = Dimen.SizeSM
 ) {
-    Box(
-        modifier = modifier
-            .size(size)
-            .clip(RoundedCornerShape(RadiusExtraSmall))
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-        contentAlignment = Alignment.Center
-    ) {
-        if (!logoUrl.isNullOrBlank()) {
-            SubcomposeAsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(logoUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = leagueName,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .size(size)
-                    .clip(RoundedCornerShape(RadiusExtraSmall)),
-                loading = {
-                    Icon(
-                        imageVector = Icons.Default.EmojiEvents,
-                        contentDescription = leagueName,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(size * 0.75f)
-                    )
-                },
-                error = {
-                    Icon(
-                        imageVector = Icons.Default.EmojiEvents,
-                        contentDescription = leagueName,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(size * 0.75f)
-                    )
-                }
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Default.EmojiEvents,
-                contentDescription = leagueName,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(size * 0.75f)
-            )
-        }
+    if (!logoUrl.isNullOrBlank()) {
+        SubcomposeAsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(logoUrl)
+                .crossfade(true)
+                .build(),
+            contentDescription = leagueName,
+            contentScale = ContentScale.Fit,
+            modifier = modifier.size(size),
+            loading = {
+                Icon(
+                    imageVector = Icons.Default.SportsSoccer,
+                    contentDescription = leagueName,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(size)
+                )
+            },
+            error = {
+                Icon(
+                    imageVector = Icons.Default.SportsSoccer,
+                    contentDescription = leagueName,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(size)
+                )
+            }
+        )
+    } else {
+        Icon(
+            imageVector = Icons.Default.SportsSoccer,
+            contentDescription = leagueName,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = modifier.size(size)
+        )
     }
 }

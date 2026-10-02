@@ -206,9 +206,6 @@ fun PredictionScreen(
                             PredictableMatchCard(
                                 match = match,
                                 isSelected = match.id == currentSelectedId,
-                                showLeagueHeader = false,
-                                leagueName = group.leagueName,
-                                leagueLogo = group.leagueLogo,
                                 selectedDate = selectedDate,
                                 onClick = {
                                     viewModel.onSelectMatch(match.id)
