@@ -3,7 +3,7 @@ package dev.anhquocs.truelab.core.domain.prediction.model
 /**
  * Chi tiết bằng chứng và đóng góp của từng tín hiệu dự đoán (Signal Evidence).
  *
- * @property name Tên tín hiệu (Elo, Form, Odds, Goals, H2H, Home Advantage).
+ * @property name Tên tín hiệu (Elo, Form, Odds, Goals, H2H, Rest Advantage).
  * @property homeProb Xác suất đội nhà thắng từ riêng tín hiệu này.
  * @property drawProb Xác suất hòa từ riêng tín hiệu này.
  * @property awayProb Xác suất đội khách thắng từ riêng tín hiệu này.
@@ -13,7 +13,7 @@ package dev.anhquocs.truelab.core.domain.prediction.model
  * @property contributionDraw Đóng góp của tín hiệu vào xác suất hòa chung (effectiveWeight * drawProb).
  * @property contributionAway Đóng góp của tín hiệu vào xác suất chung của đội khách (effectiveWeight * awayProb).
  * @property isAvailable Trạng thái khả dụng của tín hiệu (false nếu thiếu dữ liệu odds hoặc không áp dụng).
- * @property details Thông tin chi tiết các giá trị đầu vào cụ thể (Elo ratings, form scores, odds snapshot, goals, h2h counts).
+ * @property details Thông tin chi tiết các giá trị đầu vào cụ thể (Elo ratings, form scores, odds snapshot, goals, h2h counts, rest days).
  */
 data class SignalEvidence(
     val name: String,
@@ -38,7 +38,7 @@ data class PredictionEvidence(
     val odds: SignalEvidence,
     val goals: SignalEvidence,
     val h2h: SignalEvidence,
-    val homeAdvantage: SignalEvidence,
+    val restAdvantage: SignalEvidence,
     val totalWeight: Double,
-    val signals: List<SignalEvidence> = listOf(elo, form, odds, goals, h2h, homeAdvantage)
+    val signals: List<SignalEvidence> = listOf(elo, form, odds, goals, h2h, restAdvantage)
 )

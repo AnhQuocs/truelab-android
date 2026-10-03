@@ -90,6 +90,7 @@ class BacktestPredictionUseCase(
                     matchId = target.id,
                     homeTeamId = homeTeamId,
                     awayTeamId = awayTeamId,
+                    matchStartTimeDate = target.startTimeDate,
                     homeElo = homeElo,
                     awayElo = awayElo,
                     homeRecentMatches = homeRecent,

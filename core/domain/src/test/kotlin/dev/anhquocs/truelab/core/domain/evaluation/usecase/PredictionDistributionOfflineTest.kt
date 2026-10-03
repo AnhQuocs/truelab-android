@@ -57,7 +57,7 @@ class PredictionDistributionOfflineTest {
             awayRecentMatches = recentMatchesAway,
             h2hMatches = emptyList(),
             latestOdds = null,
-            isNeutralVenue = false
+            matchStartTimeDate = "2026-01-15T15:00:00"
         )
 
         val result = predictUseCase(context)
@@ -73,7 +73,7 @@ class PredictionDistributionOfflineTest {
         assertTrue("Form drawProb > 0", (evidence?.form?.drawProb ?: 0.0) > 0.0)
         assertTrue("Goals drawProb > 0", (evidence?.goals?.drawProb ?: 0.0) > 0.0)
         assertTrue("H2H drawProb > 0", (evidence?.h2h?.drawProb ?: 0.0) > 0.0)
-        assertTrue("HomeAdv drawProb > 0", (evidence?.homeAdvantage?.drawProb ?: 0.0) > 0.0)
+        assertTrue("RestAdv drawProb > 0", (evidence?.restAdvantage?.drawProb ?: 0.0) > 0.0)
     }
 
     @Test
@@ -121,8 +121,7 @@ class PredictionDistributionOfflineTest {
                 homeRecentMatches = emptyList(),
                 awayRecentMatches = emptyList(),
                 h2hMatches = emptyList(),
-                latestOdds = odds,
-                isNeutralVenue = (i % 5 == 0)
+                latestOdds = odds
             )
 
             val res = predictUseCase(context)

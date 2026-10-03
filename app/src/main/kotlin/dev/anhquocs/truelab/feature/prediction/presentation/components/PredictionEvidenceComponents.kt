@@ -262,18 +262,29 @@ fun PredictionEvidenceSection(
             }
         }
 
-        // 6. Home Advantage
-        val isNeutral = evidence.homeAdvantage.details["isNeutralVenue"] == "true"
-        val homeAdvSummary = if (isNeutral) stringResource(R.string.prediction_signal_neutral_venue) else "+0.10"
+        // 6. Rest Advantage
+        val homeRest = evidence.restAdvantage.details["homeRestDays"]
+        val awayRest = evidence.restAdvantage.details["awayRestDays"]
+        val deltaRest = evidence.restAdvantage.details["deltaRestDays"]
+
+        val restAdvSummary = if (evidence.restAdvantage.isAvailable && deltaRest != null) {
+            "${deltaRest}d"
+        } else {
+            stringResource(R.string.prediction_signal_neutral_fallback)
+        }
 
         FlatSignalRow(
-            title = stringResource(R.string.prediction_signal_home_adv_title),
-            evidence = evidence.homeAdvantage,
-            quickSummary = homeAdvSummary
+            title = stringResource(R.string.prediction_signal_rest_adv_title),
+            evidence = evidence.restAdvantage,
+            quickSummary = restAdvSummary
         ) {
+            val detailText = if (evidence.restAdvantage.isAvailable && homeRest != null && awayRest != null) {
+                stringResource(R.string.prediction_signal_rest_adv_detail, homeRest, awayRest)
+            } else {
+                stringResource(R.string.prediction_signal_rest_adv_no_history)
+            }
             Text(
-                text = if (isNeutral) stringResource(R.string.prediction_signal_neutral_venue)
-                else stringResource(R.string.prediction_signal_standard_home_adv),
+                text = detailText,
                 style = MaterialTheme.typography.s12,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
