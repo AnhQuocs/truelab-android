@@ -190,6 +190,10 @@
     <string name="prediction_signal_goals_title">Goals (15%)</string>
     <string name="prediction_signal_h2h_title">H2H (10%)</string>
     <string name="prediction_signal_home_adv_title">Home Advantage (10%)</string>
+    <string name="prediction_signal_rest_adv_title">Ưu thế ngày nghỉ (10%)</string>
+    <string name="prediction_signal_rest_adv_detail">Chủ nhà nghỉ: %1$s ngày • Khách nghỉ: %2$s ngày</string>
+    <string name="prediction_signal_rest_adv_no_history">Chưa có dữ liệu trận trước (Trung tính)</string>
+    <string name="prediction_signal_neutral_fallback">Cân bằng</string>
     <string name="prediction_signal_unavailable">Không có dữ liệu</string>
     <string name="prediction_signal_weight_badge">Trọng số: %1$s</string>
     <string name="prediction_signal_weight_effective">(Thực tế: %1$s)</string>

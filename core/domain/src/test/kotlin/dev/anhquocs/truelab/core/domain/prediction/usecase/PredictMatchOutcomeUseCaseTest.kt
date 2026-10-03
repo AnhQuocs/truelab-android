@@ -1,14 +1,12 @@
 package dev.anhquocs.truelab.core.domain.prediction.usecase
 
-import dev.anhquocs.truelab.core.algorithm.evaluation.FormScore
-import dev.anhquocs.truelab.core.algorithm.evaluation.LinearDecayFormEvaluator
-import dev.anhquocs.truelab.core.algorithm.prediction.DefaultWeightedScorer
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
 import dev.anhquocs.truelab.core.domain.match.model.TeamSummary
 import dev.anhquocs.truelab.core.domain.odds.model.OddsRecordItem
 import dev.anhquocs.truelab.core.domain.prediction.model.MatchPredictionContext
 import dev.anhquocs.truelab.core.domain.prediction.model.PredictionWeightConfig
+import dev.anhquocs.truelab.core.domain.prediction.model.SixthSignalMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -21,11 +19,7 @@ class PredictMatchOutcomeUseCaseTest {
 
     @Before
     fun setUp() {
-        useCase = PredictMatchOutcomeUseCase(
-            weightedScorer = DefaultWeightedScorer(),
-            formEvaluator = LinearDecayFormEvaluator(),
-            defaultConfig = PredictionWeightConfig.DEFAULT
-        )
+        useCase = PredictMatchOutcomeUseCase()
     }
 
     private fun createMatch(
@@ -34,6 +28,7 @@ class PredictMatchOutcomeUseCaseTest {
         awayTeamId: Int,
         homeScore: Int?,
         awayScore: Int?,
+        startTimeDate: String = "2026-09-20 20:00",
         status: MatchStatus = MatchStatus.ENDED
     ): Match {
         return Match(
@@ -42,7 +37,7 @@ class PredictMatchOutcomeUseCaseTest {
             awayTeam = TeamSummary(id = awayTeamId, name = "Team $awayTeamId"),
             homeScore = homeScore,
             awayScore = awayScore,
-            startTimeDate = "2026-09-20 20:00",
+            startTimeDate = startTimeDate,
             status = status
         )
     }
@@ -50,25 +45,25 @@ class PredictMatchOutcomeUseCaseTest {
     @Test
     fun `happy path with all 6 signals produces valid prediction result summing to 1_0`() {
         val homeRecentMatches = listOf(
-            createMatch(101, homeTeamId = 1, awayTeamId = 10, homeScore = 2, awayScore = 0),
-            createMatch(102, homeTeamId = 11, awayTeamId = 1, homeScore = 1, awayScore = 3),
-            createMatch(103, homeTeamId = 1, awayTeamId = 12, homeScore = 1, awayScore = 1),
-            createMatch(104, homeTeamId = 13, awayTeamId = 1, homeScore = 0, awayScore = 2),
-            createMatch(105, homeTeamId = 1, awayTeamId = 14, homeScore = 3, awayScore = 1)
+            createMatch(101, homeTeamId = 1, awayTeamId = 10, homeScore = 2, awayScore = 0, startTimeDate = "2026-10-01 20:00"),
+            createMatch(102, homeTeamId = 11, awayTeamId = 1, homeScore = 1, awayScore = 3, startTimeDate = "2026-09-25 20:00"),
+            createMatch(103, homeTeamId = 1, awayTeamId = 12, homeScore = 1, awayScore = 1, startTimeDate = "2026-09-20 20:00"),
+            createMatch(104, homeTeamId = 13, awayTeamId = 1, homeScore = 0, awayScore = 2, startTimeDate = "2026-09-15 20:00"),
+            createMatch(105, homeTeamId = 1, awayTeamId = 14, homeScore = 3, awayScore = 1, startTimeDate = "2026-09-10 20:00")
         )
 
         val awayRecentMatches = listOf(
-            createMatch(201, homeTeamId = 2, awayTeamId = 20, homeScore = 0, awayScore = 1),
-            createMatch(202, homeTeamId = 21, awayTeamId = 2, homeScore = 2, awayScore = 0),
-            createMatch(203, homeTeamId = 2, awayTeamId = 22, homeScore = 1, awayScore = 1),
-            createMatch(204, homeTeamId = 23, awayTeamId = 2, homeScore = 3, awayScore = 0),
-            createMatch(205, homeTeamId = 2, awayTeamId = 24, homeScore = 0, awayScore = 2)
+            createMatch(201, homeTeamId = 2, awayTeamId = 20, homeScore = 0, awayScore = 1, startTimeDate = "2026-10-03 20:00"),
+            createMatch(202, homeTeamId = 21, awayTeamId = 2, homeScore = 2, awayScore = 0, startTimeDate = "2026-09-27 20:00"),
+            createMatch(203, homeTeamId = 2, awayTeamId = 22, homeScore = 1, awayScore = 1, startTimeDate = "2026-09-22 20:00"),
+            createMatch(204, homeTeamId = 23, awayTeamId = 2, homeScore = 3, awayScore = 0, startTimeDate = "2026-09-17 20:00"),
+            createMatch(205, homeTeamId = 2, awayTeamId = 24, homeScore = 0, awayScore = 2, startTimeDate = "2026-09-12 20:00")
         )
 
         val h2hMatches = listOf(
-            createMatch(301, homeTeamId = 1, awayTeamId = 2, homeScore = 2, awayScore = 1),
-            createMatch(302, homeTeamId = 2, awayTeamId = 1, homeScore = 0, awayScore = 0),
-            createMatch(303, homeTeamId = 1, awayTeamId = 2, homeScore = 1, awayScore = 0)
+            createMatch(301, homeTeamId = 1, awayTeamId = 2, homeScore = 2, awayScore = 1, startTimeDate = "2026-05-01 20:00"),
+            createMatch(302, homeTeamId = 2, awayTeamId = 1, homeScore = 0, awayScore = 0, startTimeDate = "2026-01-01 20:00"),
+            createMatch(303, homeTeamId = 1, awayTeamId = 2, homeScore = 1, awayScore = 0, startTimeDate = "2025-09-01 20:00")
         )
 
         val latestOdds = OddsRecordItem(
@@ -95,7 +90,7 @@ class PredictMatchOutcomeUseCaseTest {
             awayRecentMatches = awayRecentMatches,
             h2hMatches = h2hMatches,
             latestOdds = latestOdds,
-            isNeutralVenue = false
+            matchStartTimeDate = "2026-10-06 20:00"
         )
 
         val result = useCase(context)
@@ -110,7 +105,7 @@ class PredictMatchOutcomeUseCaseTest {
         val sum = result.homeWinProb + result.drawProb + result.awayWinProb
         assertEquals(1.0, sum, 1e-4)
 
-        // With stronger Elo, Form, Odds, H2H, and HomeAdvantage, Home Win should be predicted
+        // With stronger Elo, Form, Odds, H2H, and Rest Advantage, Home Win should be predicted
         assertTrue(result.homeWinProb > result.awayWinProb)
         assertTrue(result.homeWinProb > result.drawProb)
         assertEquals("HOME_WIN", result.predictedOutcome)
@@ -130,7 +125,37 @@ class PredictMatchOutcomeUseCaseTest {
         assertTrue(ev.odds.effectiveWeight > 0.0)
         assertTrue(ev.goals.effectiveWeight > 0.0)
         assertTrue(ev.h2h.effectiveWeight > 0.0)
-        assertTrue(ev.homeAdvantage.effectiveWeight > 0.0)
+        assertTrue(ev.restAdvantage.effectiveWeight > 0.0)
+        assertEquals("Rest Advantage", ev.restAdvantage.name)
+        assertTrue(ev.restAdvantage.isAvailable)
+        assertEquals("5.0", ev.restAdvantage.details["homeRestDays"])
+        assertEquals("3.0", ev.restAdvantage.details["awayRestDays"])
+        assertEquals("+2.0", ev.restAdvantage.details["deltaRestDays"])
+    }
+
+    @Test
+    fun `HOME_ADVANTAGE benchmark mode works and produces Home Advantage evidence`() {
+        val benchmarkConfig = PredictionWeightConfig.DEFAULT.copy(
+            sixthSignalMode = SixthSignalMode.HOME_ADVANTAGE
+        )
+
+        val context = MatchPredictionContext(
+            matchId = 999L,
+            homeTeamId = 1,
+            awayTeamId = 2,
+            homeElo = 1600.0,
+            awayElo = 1600.0,
+            matchStartTimeDate = "2026-10-06 20:00"
+        )
+
+        val result = useCase(context, benchmarkConfig)
+
+        assertNotNull(result)
+        val ev = result.evidence!!
+        assertEquals(6, ev.signals.size)
+        assertEquals("Home Advantage", ev.restAdvantage.name)
+        assertEquals("BASELINE_HOME_ADVANTAGE", ev.restAdvantage.details["mode"])
+        assertEquals(1.0, result.homeWinProb + result.drawProb + result.awayWinProb, 1e-4)
     }
 
     @Test
@@ -141,8 +166,7 @@ class PredictMatchOutcomeUseCaseTest {
             awayTeamId = 2,
             homeElo = 1600.0,
             awayElo = 1600.0,
-            latestOdds = null, // Missing odds
-            isNeutralVenue = false
+            latestOdds = null
         )
 
         val result = useCase(context)
@@ -168,6 +192,8 @@ class PredictMatchOutcomeUseCaseTest {
         assertTrue(result.homeWinProb in 0.0..1.0)
         assertTrue(result.drawProb in 0.0..1.0)
         assertTrue(result.awayWinProb in 0.0..1.0)
+        assertNotNull(result.evidence)
+        assertEquals(6, result.evidence!!.signals.size)
     }
 
     @Test
@@ -203,58 +229,52 @@ class PredictMatchOutcomeUseCaseTest {
             oddsWeight = 0.0,
             goalsWeight = 0.0,
             h2hWeight = 0.0,
+            restAdvantageWeight = 0.0,
             homeAdvantageWeight = 0.0
         )
     }
 
     @Test
-    fun `neutral venue modifies home advantage signal symmetry`() {
-        val symmetricConfig = PredictionWeightConfig(
-            h2hPriorHome = 0.37,
-            h2hPriorDraw = 0.26,
-            h2hPriorAway = 0.37
-        )
-
-        val standardContext = MatchPredictionContext(
+    fun `rest advantage delta rest increases home probability and preserves symmetry`() {
+        val homeAdvContext = MatchPredictionContext(
             matchId = 111L,
             homeTeamId = 1,
             awayTeamId = 2,
             homeElo = 1500.0,
             awayElo = 1500.0,
-            homeMeanScored = 1.2,
-            homeMeanConceded = 1.2,
-            awayMeanScored = 1.2,
-            awayMeanConceded = 1.2,
-            homeWins = 10,
-            draws = 5,
-            awayWins = 10,
-            isNeutralVenue = false
+            homeRecentMatches = listOf(
+                createMatch(1, 1, 3, 1, 0, startTimeDate = "2026-10-01 15:00") // 5 days rest
+            ),
+            awayRecentMatches = listOf(
+                createMatch(2, 2, 4, 1, 0, startTimeDate = "2026-10-04 15:00") // 2 days rest
+            ),
+            matchStartTimeDate = "2026-10-06 15:00"
         )
 
-        val neutralContext = MatchPredictionContext(
+        val awayAdvContext = MatchPredictionContext(
             matchId = 111L,
             homeTeamId = 1,
             awayTeamId = 2,
             homeElo = 1500.0,
             awayElo = 1500.0,
-            homeMeanScored = 1.2,
-            homeMeanConceded = 1.2,
-            awayMeanScored = 1.2,
-            awayMeanConceded = 1.2,
-            homeWins = 10,
-            draws = 5,
-            awayWins = 10,
-            isNeutralVenue = true
+            homeRecentMatches = listOf(
+                createMatch(1, 1, 3, 1, 0, startTimeDate = "2026-10-04 15:00") // 2 days rest
+            ),
+            awayRecentMatches = listOf(
+                createMatch(2, 2, 4, 1, 0, startTimeDate = "2026-10-01 15:00") // 5 days rest
+            ),
+            matchStartTimeDate = "2026-10-06 15:00"
         )
 
-        val standardResult = useCase(standardContext, symmetricConfig)
-        val neutralResult = useCase(neutralContext, symmetricConfig)
+        val homeAdvResult = useCase(homeAdvContext)
+        val awayAdvResult = useCase(awayAdvContext)
 
-        // On home ground with equal features, home win probability is higher than away due to HomeAdvantage signal
-        assertTrue(standardResult.homeWinProb > standardResult.awayWinProb)
-        assertTrue(standardResult.homeWinProb > neutralResult.homeWinProb)
-
-        // On neutral venue with identical stats and symmetric prior, home and away win probabilities are symmetric
-        assertEquals(neutralResult.homeWinProb, neutralResult.awayWinProb, 1e-4)
+        // When Home has more rest, home win probability is higher
+        assertTrue(homeAdvResult.homeWinProb > homeAdvResult.awayWinProb)
+        // When Away has more rest, away win probability is higher
+        assertTrue(awayAdvResult.awayWinProb > awayAdvResult.homeWinProb)
+        // Check exact symmetry between the two results
+        assertEquals(homeAdvResult.homeWinProb, awayAdvResult.awayWinProb, 1e-4)
+        assertEquals(homeAdvResult.awayWinProb, awayAdvResult.homeWinProb, 1e-4)
     }
 }

@@ -190,6 +190,10 @@
     <string name="prediction_signal_goals_title">Goals (15%)</string>
     <string name="prediction_signal_h2h_title">H2H (10%)</string>
     <string name="prediction_signal_home_adv_title">Home Advantage (10%)</string>
+    <string name="prediction_signal_rest_adv_title">Rest Advantage (10%)</string>
+    <string name="prediction_signal_rest_adv_detail">Home: %1$sd • Away: %2$sd</string>
+    <string name="prediction_signal_rest_adv_no_history">No previous match history (Neutral)</string>
+    <string name="prediction_signal_neutral_fallback">Neutral</string>
     <string name="prediction_signal_unavailable">No data available</string>
     <string name="prediction_signal_weight_badge">Weight: %1$s</string>
     <string name="prediction_signal_weight_effective">(Effective: %1$s)</string>

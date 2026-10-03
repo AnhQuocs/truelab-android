@@ -623,7 +623,7 @@ class PredictionViewModelTest {
         assertTrue(state is PredictionUiState.Success)
         val success = state as PredictionUiState.Success
 
-        val oddsEvidence = success.predictionResult.evidence?.signals?.find { it.name == "EU Odds" }
+        val oddsEvidence = success.predictionResult.evidence?.signals?.find { it.name == "Odds" }
         assertNotNull(oddsEvidence)
         assertTrue(oddsEvidence!!.isAvailable)
         assertEquals(0.20, oddsEvidence.rawWeight, 0.001)
@@ -660,7 +660,7 @@ class PredictionViewModelTest {
         val success = state as PredictionUiState.Success
 
         // Scoring must strictly match the EU implied probability
-        val oddsEvidence = success.predictionResult.evidence?.signals?.find { it.name == "EU Odds" }
+        val oddsEvidence = success.predictionResult.evidence?.signals?.find { it.name == "Odds" }
         assertNotNull(oddsEvidence)
         assertTrue(oddsEvidence!!.isAvailable)
 

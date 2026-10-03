@@ -197,6 +197,7 @@ class PredictionViewModel @Inject constructor(
                     matchId = selectedMatch.id,
                     homeTeamId = homeTeamId,
                     awayTeamId = awayTeamId,
+                    matchStartTimeDate = selectedMatch.startTimeDate,
                     homeElo = homeElo,
                     awayElo = awayElo,
                     homeRecentMatches = homeHistory,

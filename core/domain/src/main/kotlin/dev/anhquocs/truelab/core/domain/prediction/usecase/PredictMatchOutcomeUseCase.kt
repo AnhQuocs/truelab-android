@@ -1,69 +1,55 @@
 package dev.anhquocs.truelab.core.domain.prediction.usecase
 
-import dev.anhquocs.truelab.core.algorithm.evaluation.FormEvaluator
-import dev.anhquocs.truelab.core.algorithm.evaluation.FormScore
-import dev.anhquocs.truelab.core.algorithm.evaluation.LinearDecayFormEvaluator
-import dev.anhquocs.truelab.core.algorithm.evaluation.MatchOutcome
 import dev.anhquocs.truelab.core.algorithm.prediction.DefaultWeightedScorer
 import dev.anhquocs.truelab.core.algorithm.prediction.Signal3Way
 import dev.anhquocs.truelab.core.algorithm.prediction.WeightedScorer
 import dev.anhquocs.truelab.core.domain.match.model.Match
+import dev.anhquocs.truelab.core.domain.odds.selector.PreMatchOddsSelector
 import dev.anhquocs.truelab.core.domain.prediction.model.MatchPredictionContext
+import dev.anhquocs.truelab.core.domain.prediction.model.PredictionEvidence
 import dev.anhquocs.truelab.core.domain.prediction.model.PredictionResult
 import dev.anhquocs.truelab.core.domain.prediction.model.PredictionWeightConfig
+import dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence
+import dev.anhquocs.truelab.core.domain.prediction.model.SixthSignalMode
 import dev.anhquocs.truelab.core.domain.prediction.transformer.EloSignalTransformer
 import dev.anhquocs.truelab.core.domain.prediction.transformer.FormSignalTransformer
 import dev.anhquocs.truelab.core.domain.prediction.transformer.GoalsSignalTransformer
 import dev.anhquocs.truelab.core.domain.prediction.transformer.H2hSignalTransformer
 import dev.anhquocs.truelab.core.domain.prediction.transformer.HomeAdvantageSignalTransformer
 import dev.anhquocs.truelab.core.domain.prediction.transformer.OddsSignalTransformer
+import dev.anhquocs.truelab.core.domain.prediction.transformer.RestAdvantageSignalTransformer
+import dev.anhquocs.truelab.core.domain.team.usecase.CalculateTeamFormUseCase
+import java.util.Locale
 
 /**
- * UseCase Orchestration điều phối toàn bộ quy trình thu thập đặc trưng và tính toán dự đoán kết quả trận đấu.
+ * UseCase điều phối toàn bộ luồng dự đoán kết quả trận đấu (Prediction Orchestration).
  *
- * Quy trình xử lý:
- * Match / Data Context
- *   -> Trích xuất & chuẩn bị đặc trưng nghiệp vụ (loại bỏ leakage)
- *   -> 6 Signal Transformers (Form, Elo, Goals, Odds, H2H, HomeAdvantage)
- *   -> List<Signal3Way>
- *   -> WeightedScorer.predictOutcome(signals)
- *   -> PredictionResult
- *
- * @param weightedScorer Thuật toán tính điểm và dự đoán theo mô hình trọng số (Phase 7).
- * @param formEvaluator Thuật toán đánh giá phong độ thi đấu (Phase 5).
- * @param defaultConfig Cấu hình trọng số và tham số mặc định theo FR-14.
+ * Tích hợp 6 tín hiệu chuẩn hóa:
+ * 1. Form (25%)
+ * 2. Elo Rating (20%)
+ * 3. Goals Expected (15%)
+ * 4. Odds 1X2 (20%)
+ * 5. Head-to-Head (10%)
+ * 6. Rest Advantage (10% - Mặc định trong Production) hoặc Home Advantage (Baseline Benchmark Mode)
  */
 class PredictMatchOutcomeUseCase(
-    private val weightedScorer: WeightedScorer = DefaultWeightedScorer(),
-    private val formEvaluator: FormEvaluator = LinearDecayFormEvaluator(),
-    private val defaultConfig: PredictionWeightConfig = PredictionWeightConfig.DEFAULT
+    private val calculateTeamFormUseCase: CalculateTeamFormUseCase = CalculateTeamFormUseCase(),
+    private val weightedScorer: WeightedScorer = DefaultWeightedScorer()
 ) {
 
-    /**
-     * Thực hiện điều phối và tính toán kết quả dự đoán từ [MatchPredictionContext].
-     *
-     * @param context Ngữ cảnh chứa toàn bộ dữ liệu trận đấu và thống kê liên quan.
-     * @param configOverride Cấu hình trọng số tùy chỉnh (tùy chọn, mặc định sử dụng [defaultConfig]).
-     * @return [PredictionResult] chứa phân phối xác suất 3 chiều, kết quả dự đoán và độ tin cậy.
-     * @throws IllegalStateException nếu tất cả các tín hiệu đều có trọng số 0.0 hoặc không thể tính toán.
-     */
     operator fun invoke(
         context: MatchPredictionContext,
-        configOverride: PredictionWeightConfig? = null
+        config: PredictionWeightConfig = PredictionWeightConfig.DEFAULT
     ): PredictionResult {
-        val config = configOverride ?: defaultConfig
-
-        // 1. Chuẩn bị tín hiệu Form (Phong độ 5 trận gần nhất)
-        val homeForm = resolveFormScore(
-            explicitForm = context.homeFormScore,
-            recentMatches = context.homeRecentMatches,
+        // 1. Chuẩn bị tín hiệu Phong độ (Form)
+        val homeForm = context.homeFormScore ?: calculateTeamFormUseCase(
             teamId = context.homeTeamId,
+            matches = context.homeRecentMatches,
             currentMatchId = context.matchId
         )
-        val awayForm = resolveFormScore(
-            explicitForm = context.awayFormScore,
-            recentMatches = context.awayRecentMatches,
+        val awayForm = context.awayFormScore ?: calculateTeamFormUseCase(
             teamId = context.awayTeamId,
+            matches = context.awayRecentMatches,
             currentMatchId = context.matchId
         )
         val formSignal = FormSignalTransformer.transform(homeForm, awayForm, config)
@@ -108,17 +94,35 @@ class PredictMatchOutcomeUseCase(
         val (hw, d, aw) = resolveH2hCounts(context)
         val h2hSignal = H2hSignalTransformer.transform(hw, d, aw, config)
 
-        // 6. Chuẩn bị tín hiệu Ưu thế sân nhà (Home Advantage)
-        val homeAdvSignal = HomeAdvantageSignalTransformer.transform(context.isNeutralVenue, config)
+        // 6. Chuẩn bị tín hiệu thứ 6: Rest Advantage (Production Default) hoặc Home Advantage (Baseline Benchmark Mode)
+        val homePrev = context.homeRecentMatches.firstOrNull { it.isEnded && it.id != context.matchId }
+        val awayPrev = context.awayRecentMatches.firstOrNull { it.isEnded && it.id != context.matchId }
 
-        // 7. Tập hợp danh sách 6 tín hiệu Signal3Way
+        val sixthSignal: Signal3Way = when (config.sixthSignalMode) {
+            SixthSignalMode.REST_ADVANTAGE -> {
+                RestAdvantageSignalTransformer.transform(
+                    homePreviousMatch = homePrev,
+                    awayPreviousMatch = awayPrev,
+                    targetKickoffTime = context.matchStartTimeDate,
+                    config = config
+                )
+            }
+            SixthSignalMode.HOME_ADVANTAGE -> {
+                HomeAdvantageSignalTransformer.transform(
+                    isNeutralVenue = false,
+                    config = config
+                )
+            }
+        }
+
+        // 7. Tập hợp danh sách đúng 6 tín hiệu Signal3Way
         val signals: List<Signal3Way> = listOf(
             formSignal,
             eloSignal,
             goalsSignal,
             oddsSignal,
             h2hSignal,
-            homeAdvSignal
+            sixthSignal
         )
 
         // 8. Kiểm tra tính hợp lệ của tổng trọng số
@@ -137,7 +141,7 @@ class PredictMatchOutcomeUseCase(
         val homeHistoryCount = context.homeRecentMatches.filter { it.isEnded && it.id != context.matchId }.size
         val awayHistoryCount = context.awayRecentMatches.filter { it.isEnded && it.id != context.matchId }.size
         val eloAvailable = (hElo != 1500.0 || aElo != 1500.0 || homeHistoryCount > 0 || awayHistoryCount > 0)
-        val eloEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
+        val eloEvidence = SignalEvidence(
             name = "Elo",
             homeProb = eloSignal.homeProb,
             drawProb = eloSignal.drawProb,
@@ -149,32 +153,14 @@ class PredictMatchOutcomeUseCase(
             contributionAway = eloEff * eloSignal.awayProb,
             isAvailable = eloAvailable,
             details = mapOf(
-                "homeElo" to String.format(java.util.Locale.US, "%.1f", hElo),
-                "awayElo" to String.format(java.util.Locale.US, "%.1f", aElo),
-                "diff" to String.format(java.util.Locale.US, "%+.1f", hElo - aElo),
-                "homeHistoryCount" to homeHistoryCount.toString(),
-                "awayHistoryCount" to awayHistoryCount.toString(),
-                "hasHistory" to eloAvailable.toString()
+                "homeElo" to String.format(Locale.US, "%.1f", hElo),
+                "awayElo" to String.format(Locale.US, "%.1f", aElo),
+                "diff" to String.format(Locale.US, "%+.1f", hElo - aElo)
             )
         )
 
         val formEff = formSignal.weight / totalWeight
-        val homeRecentEnded = context.homeRecentMatches.filter { it.isEnded && it.id != context.matchId }.take(5)
-        val awayRecentEnded = context.awayRecentMatches.filter { it.isEnded && it.id != context.matchId }.take(5)
-        val homeMatchesCount = homeRecentEnded.size
-        val awayMatchesCount = awayRecentEnded.size
-        val formAvailable = homeMatchesCount > 0 || awayMatchesCount > 0
-        val homeFormResults = homeRecentEnded.reversed().joinToString(" ") { m ->
-            when (m.toOutcomeForTeam(context.homeTeamId)) {
-                MatchOutcome.WIN -> "W"; MatchOutcome.DRAW -> "D"; MatchOutcome.LOSS -> "L"; else -> "?"
-            }
-        }
-        val awayFormResults = awayRecentEnded.reversed().joinToString(" ") { m ->
-            when (m.toOutcomeForTeam(context.awayTeamId)) {
-                MatchOutcome.WIN -> "W"; MatchOutcome.DRAW -> "D"; MatchOutcome.LOSS -> "L"; else -> "?"
-            }
-        }
-        val formEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
+        val formEvidence = SignalEvidence(
             name = "Form",
             homeProb = formSignal.homeProb,
             drawProb = formSignal.drawProb,
@@ -184,22 +170,34 @@ class PredictMatchOutcomeUseCase(
             contributionHome = formEff * formSignal.homeProb,
             contributionDraw = formEff * formSignal.drawProb,
             contributionAway = formEff * formSignal.awayProb,
-            isAvailable = formAvailable,
+            isAvailable = (homeHistoryCount > 0 || awayHistoryCount > 0),
             details = mapOf(
-                "homeForm" to (homeForm?.let { String.format(java.util.Locale.US, "%.1f", it.score) } ?: "N/A"),
-                "awayForm" to (awayForm?.let { String.format(java.util.Locale.US, "%.1f", it.score) } ?: "N/A"),
-                "homeMatches" to homeMatchesCount.toString(),
-                "awayMatches" to awayMatchesCount.toString(),
-                "homeFormResults" to homeFormResults,
-                "awayFormResults" to awayFormResults
+                "homeFormScore" to String.format(Locale.US, "%.2f", homeForm.score),
+                "awayFormScore" to String.format(Locale.US, "%.2f", awayForm.score),
+                "homeHistoryCount" to homeHistoryCount.toString(),
+                "awayHistoryCount" to awayHistoryCount.toString()
             )
         )
 
-
         val oddsEff = oddsSignal.weight / totalWeight
-        val oddsAvailable = context.latestOdds != null
-        val oddsEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
-            name = "EU Odds",
+        val oddsAvailable = (oddsSignal.weight > 0.0 && context.latestOdds != null)
+        val oddsDetails = if (context.latestOdds != null) {
+            val odds = context.latestOdds
+            buildMap {
+                put("bookmaker", odds.companyName)
+                put("marketPhase", odds.marketPhase ?: "standard")
+                odds.homeWin?.let { put("homeOdds", String.format(Locale.US, "%.2f", it)) }
+                odds.draw?.let { put("drawOdds", String.format(Locale.US, "%.2f", it)) }
+                odds.awayWin?.let { put("awayOdds", String.format(Locale.US, "%.2f", it)) }
+                if (odds.changeTime > 0L) {
+                    put("changeTime", odds.changeTime.toString())
+                }
+            }
+        } else {
+            emptyMap()
+        }
+        val oddsEvidence = SignalEvidence(
+            name = "Odds",
             homeProb = oddsSignal.homeProb,
             drawProb = oddsSignal.drawProb,
             awayProb = oddsSignal.awayProb,
@@ -209,17 +207,11 @@ class PredictMatchOutcomeUseCase(
             contributionDraw = oddsEff * oddsSignal.drawProb,
             contributionAway = oddsEff * oddsSignal.awayProb,
             isAvailable = oddsAvailable,
-            details = mapOf(
-                "homeOdds" to (context.latestOdds?.homeWin?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
-                "drawOdds" to (context.latestOdds?.draw?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
-                "awayOdds" to (context.latestOdds?.awayWin?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
-                "bookmaker" to (context.latestOdds?.companyName ?: "N/A")
-            )
+            details = oddsDetails
         )
 
         val goalsEff = goalsSignal.weight / totalWeight
-        val goalsAvailable = homeScored != null || awayScored != null
-        val goalsEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
+        val goalsEvidence = SignalEvidence(
             name = "Goals",
             homeProb = goalsSignal.homeProb,
             drawProb = goalsSignal.drawProb,
@@ -229,18 +221,18 @@ class PredictMatchOutcomeUseCase(
             contributionHome = goalsEff * goalsSignal.homeProb,
             contributionDraw = goalsEff * goalsSignal.drawProb,
             contributionAway = goalsEff * goalsSignal.awayProb,
-            isAvailable = goalsAvailable,
+            isAvailable = (homeHistoryCount > 0 || awayHistoryCount > 0),
             details = mapOf(
-                "homeScored" to (homeScored?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
-                "homeConceded" to (homeConceded?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
-                "awayScored" to (awayScored?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A"),
-                "awayConceded" to (awayConceded?.let { String.format(java.util.Locale.US, "%.2f", it) } ?: "N/A")
+                "homeMeanScored" to String.format(Locale.US, "%.2f", homeScored),
+                "homeMeanConceded" to String.format(Locale.US, "%.2f", homeConceded),
+                "awayMeanScored" to String.format(Locale.US, "%.2f", awayScored),
+                "awayMeanConceded" to String.format(Locale.US, "%.2f", awayConceded)
             )
         )
 
         val h2hEff = h2hSignal.weight / totalWeight
         val totalH2hCount = hw + d + aw
-        val h2hEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
+        val h2hEvidence = SignalEvidence(
             name = "H2H",
             homeProb = h2hSignal.homeProb,
             drawProb = h2hSignal.drawProb,
@@ -250,7 +242,7 @@ class PredictMatchOutcomeUseCase(
             contributionHome = h2hEff * h2hSignal.homeProb,
             contributionDraw = h2hEff * h2hSignal.drawProb,
             contributionAway = h2hEff * h2hSignal.awayProb,
-            isAvailable = totalH2hCount > 0,
+            isAvailable = (totalH2hCount > 0),
             details = mapOf(
                 "homeWins" to hw.toString(),
                 "draws" to d.toString(),
@@ -259,30 +251,69 @@ class PredictMatchOutcomeUseCase(
             )
         )
 
-        val homeAdvEff = homeAdvSignal.weight / totalWeight
-        val homeAdvEvidence = dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence(
-            name = "Home Advantage",
-            homeProb = homeAdvSignal.homeProb,
-            drawProb = homeAdvSignal.drawProb,
-            awayProb = homeAdvSignal.awayProb,
-            rawWeight = config.homeAdvantageWeight,
-            effectiveWeight = homeAdvEff,
-            contributionHome = homeAdvEff * homeAdvSignal.homeProb,
-            contributionDraw = homeAdvEff * homeAdvSignal.drawProb,
-            contributionAway = homeAdvEff * homeAdvSignal.awayProb,
-            isAvailable = !context.isNeutralVenue,
-            details = mapOf(
-                "isNeutralVenue" to context.isNeutralVenue.toString()
-            )
-        )
+        val sixthEff = sixthSignal.weight / totalWeight
+        val restAdvEvidence = if (config.sixthSignalMode == SixthSignalMode.REST_ADVANTAGE) {
+            val targetEpoch = PreMatchOddsSelector.parseKickoffEpochSeconds(context.matchStartTimeDate)
+            val homePrevEpoch = PreMatchOddsSelector.parseKickoffEpochSeconds(homePrev?.startTimeDate)
+            val awayPrevEpoch = PreMatchOddsSelector.parseKickoffEpochSeconds(awayPrev?.startTimeDate)
 
-        val predictionEvidence = dev.anhquocs.truelab.core.domain.prediction.model.PredictionEvidence(
+            val restIsAvailable = targetEpoch != null && homePrevEpoch != null && awayPrevEpoch != null &&
+                homePrevEpoch < targetEpoch && awayPrevEpoch < targetEpoch
+
+            val homeRestDays = if (targetEpoch != null && homePrevEpoch != null && homePrevEpoch < targetEpoch) {
+                (targetEpoch - homePrevEpoch) / 86400.0
+            } else null
+
+            val awayRestDays = if (targetEpoch != null && awayPrevEpoch != null && awayPrevEpoch < targetEpoch) {
+                (targetEpoch - awayPrevEpoch) / 86400.0
+            } else null
+
+            val deltaRestDays = if (homeRestDays != null && awayRestDays != null) {
+                homeRestDays - awayRestDays
+            } else null
+
+            val detailsMap = mutableMapOf<String, String>()
+            if (homeRestDays != null) detailsMap["homeRestDays"] = String.format(Locale.US, "%.1f", homeRestDays)
+            if (awayRestDays != null) detailsMap["awayRestDays"] = String.format(Locale.US, "%.1f", awayRestDays)
+            if (deltaRestDays != null) detailsMap["deltaRestDays"] = String.format(Locale.US, "%+.1f", deltaRestDays)
+            if (!restIsAvailable) detailsMap["fallbackReason"] = "MISSING_PREVIOUS_MATCH"
+
+            SignalEvidence(
+                name = "Rest Advantage",
+                homeProb = sixthSignal.homeProb,
+                drawProb = sixthSignal.drawProb,
+                awayProb = sixthSignal.awayProb,
+                rawWeight = config.restAdvantageWeight,
+                effectiveWeight = sixthEff,
+                contributionHome = sixthEff * sixthSignal.homeProb,
+                contributionDraw = sixthEff * sixthSignal.drawProb,
+                contributionAway = sixthEff * sixthSignal.awayProb,
+                isAvailable = restIsAvailable,
+                details = detailsMap
+            )
+        } else {
+            SignalEvidence(
+                name = "Home Advantage",
+                homeProb = sixthSignal.homeProb,
+                drawProb = sixthSignal.drawProb,
+                awayProb = sixthSignal.awayProb,
+                rawWeight = config.homeAdvantageWeight,
+                effectiveWeight = sixthEff,
+                contributionHome = sixthEff * sixthSignal.homeProb,
+                contributionDraw = sixthEff * sixthSignal.drawProb,
+                contributionAway = sixthEff * sixthSignal.awayProb,
+                isAvailable = true,
+                details = mapOf("mode" to "BASELINE_HOME_ADVANTAGE")
+            )
+        }
+
+        val predictionEvidence = PredictionEvidence(
             elo = eloEvidence,
             form = formEvidence,
             odds = oddsEvidence,
             goals = goalsEvidence,
             h2h = h2hEvidence,
-            homeAdvantage = homeAdvEvidence,
+            restAdvantage = restAdvEvidence,
             totalWeight = totalWeight
         )
 
@@ -299,83 +330,64 @@ class PredictMatchOutcomeUseCase(
         )
     }
 
-    private fun resolveFormScore(
-        explicitForm: FormScore?,
+    private fun calculateMeanScored(
         recentMatches: List<Match>,
         teamId: Int,
         currentMatchId: Long
-    ): FormScore? {
-        if (explicitForm != null) return explicitForm
-
-        // Lọc các trận đã kết thúc trong lịch sử, loại trừ chính trận đấu đang được dự đoán (chống Data Leakage)
-        val outcomes = recentMatches
-            .filter { it.isEnded && it.id != currentMatchId }
-            .mapNotNull { it.toOutcomeForTeam(teamId) }
-            .take(5)
-
-        return if (outcomes.isNotEmpty()) {
-            formEvaluator.evaluate(outcomes, windowSize = 5)
-        } else {
-            null
-        }
-    }
-
-    private fun calculateMeanScored(matches: List<Match>, teamId: Int, currentMatchId: Long): Double? {
-        val ended = matches.filter { it.isEnded && it.id != currentMatchId }
-        val goals = ended.mapNotNull { m ->
-            when (teamId) {
-                m.homeTeam.id -> m.homeScore
-                m.awayTeam.id -> m.awayScore
+    ): Double {
+        val validMatches = recentMatches.filter { it.isEnded && it.id != currentMatchId }
+        if (validMatches.isEmpty()) return 1.35
+        val goals = validMatches.mapNotNull { m ->
+            when {
+                m.homeTeam.id == teamId -> m.homeScore?.toDouble()
+                m.awayTeam.id == teamId -> m.awayScore?.toDouble()
                 else -> null
             }
         }
-        return if (goals.isNotEmpty()) goals.average() else null
+        return if (goals.isEmpty()) 1.35 else goals.average()
     }
 
-    private fun calculateMeanConceded(matches: List<Match>, teamId: Int, currentMatchId: Long): Double? {
-        val ended = matches.filter { it.isEnded && it.id != currentMatchId }
-        val goals = ended.mapNotNull { m ->
-            when (teamId) {
-                m.homeTeam.id -> m.awayScore
-                m.awayTeam.id -> m.homeScore
+    private fun calculateMeanConceded(
+        recentMatches: List<Match>,
+        teamId: Int,
+        currentMatchId: Long
+    ): Double {
+        val validMatches = recentMatches.filter { it.isEnded && it.id != currentMatchId }
+        if (validMatches.isEmpty()) return 1.35
+        val conceded = validMatches.mapNotNull { m ->
+            when {
+                m.homeTeam.id == teamId -> m.awayScore?.toDouble()
+                m.awayTeam.id == teamId -> m.homeScore?.toDouble()
                 else -> null
             }
         }
-        return if (goals.isNotEmpty()) goals.average() else null
+        return if (conceded.isEmpty()) 1.35 else conceded.average()
     }
 
     private fun resolveH2hCounts(context: MatchPredictionContext): Triple<Int, Int, Int> {
-        if (context.homeWins != null && context.draws != null && context.awayWins != null) {
-            return Triple(context.homeWins, context.draws, context.awayWins)
+        val hasManualCounts = (context.homeWins != null && context.draws != null && context.awayWins != null)
+        if (hasManualCounts) {
+            return Triple(context.homeWins!!, context.draws!!, context.awayWins!!)
         }
 
+        val validH2h = context.h2hMatches.filter { it.isEnded && it.id != context.matchId }
         var hw = 0
         var d = 0
         var aw = 0
 
-        val endedH2h = context.h2hMatches.filter { it.isEnded && it.id != context.matchId }
-        for (m in endedH2h) {
-            val hs = m.homeScore ?: continue
-            val as_ = m.awayScore ?: continue
-            when {
-                hs == as_ -> d++
-                m.homeTeam.id == context.homeTeamId -> if (hs > as_) hw++ else aw++
-                m.homeTeam.id == context.awayTeamId -> if (as_ > hs) hw++ else aw++
+        for (m in validH2h) {
+            val hScore = m.homeScore
+            val aScore = m.awayScore
+            if (hScore == null || aScore == null) continue
+
+            if (hScore == aScore) {
+                d++
+            } else if (hScore > aScore) {
+                if (m.homeTeam.id == context.homeTeamId) hw++ else aw++
+            } else {
+                if (m.homeTeam.id == context.homeTeamId) aw++ else hw++
             }
         }
-
         return Triple(hw, d, aw)
-    }
-
-    private fun Match.toOutcomeForTeam(teamId: Int): MatchOutcome? {
-        if (!isEnded) return null
-        val hs = homeScore ?: return null
-        val as_ = awayScore ?: return null
-        return when {
-            hs == as_ -> MatchOutcome.DRAW
-            homeTeam.id == teamId -> if (hs > as_) MatchOutcome.WIN else MatchOutcome.LOSS
-            awayTeam.id == teamId -> if (as_ > hs) MatchOutcome.WIN else MatchOutcome.LOSS
-            else -> null
-        }
     }
 }

@@ -7,7 +7,7 @@ import org.junit.Test
 class PredictionWeightConfigTest {
 
     @Test
-    fun `default config matches FR-14 weights exactly and sums to 1_0`() {
+    fun `default config matches FR-14 weights exactly and sums to 1_0 with REST_ADVANTAGE mode`() {
         val config = PredictionWeightConfig.DEFAULT
 
         assertEquals(0.25, config.formWeight, 1e-6)
@@ -15,7 +15,19 @@ class PredictionWeightConfigTest {
         assertEquals(0.20, config.oddsWeight, 1e-6)
         assertEquals(0.15, config.goalsWeight, 1e-6)
         assertEquals(0.10, config.h2hWeight, 1e-6)
+        assertEquals(0.10, config.restAdvantageWeight, 1e-6)
         assertEquals(0.10, config.homeAdvantageWeight, 1e-6)
+        assertEquals(SixthSignalMode.REST_ADVANTAGE, config.sixthSignalMode)
+
+        val totalWeight = config.formWeight + config.eloWeight + config.oddsWeight +
+            config.goalsWeight + config.h2hWeight + config.restAdvantageWeight
+        assertEquals(1.00, totalWeight, 1e-6)
+    }
+
+    @Test
+    fun `HOME_ADVANTAGE benchmark mode works and maintains total weight of 1_0`() {
+        val config = PredictionWeightConfig.DEFAULT.copy(sixthSignalMode = SixthSignalMode.HOME_ADVANTAGE)
+        assertEquals(SixthSignalMode.HOME_ADVANTAGE, config.sixthSignalMode)
 
         val totalWeight = config.formWeight + config.eloWeight + config.oddsWeight +
             config.goalsWeight + config.h2hWeight + config.homeAdvantageWeight
@@ -32,6 +44,8 @@ class PredictionWeightConfigTest {
         assertEquals(0.45, config.h2hPriorHome, 1e-6)
         assertEquals(0.27, config.h2hPriorDraw, 1e-6)
         assertEquals(0.28, config.h2hPriorAway, 1e-6)
+        assertEquals(3.0, config.restAdvantageSensitivity, 1e-6)
+        assertEquals(0.09, config.restAdvantageMaxShift, 1e-6)
         assertEquals(0.46, config.homeAdvantageProbHome, 1e-6)
         assertEquals(0.26, config.homeAdvantageProbDraw, 1e-6)
         assertEquals(0.28, config.homeAdvantageProbAway, 1e-6)
@@ -53,6 +67,7 @@ class PredictionWeightConfigTest {
             oddsWeight = 0.0,
             goalsWeight = 0.0,
             h2hWeight = 0.0,
+            restAdvantageWeight = 0.0,
             homeAdvantageWeight = 0.0
         )
     }
@@ -70,5 +85,15 @@ class PredictionWeightConfigTest {
     @Test(expected = IllegalArgumentException::class)
     fun `invalid HomeAdvantage prior sum throws IllegalArgumentException`() {
         PredictionWeightConfig(homeAdvantageProbHome = 0.9, homeAdvantageProbDraw = 0.9, homeAdvantageProbAway = 0.9)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `invalid restAdvantageSensitivity zero or negative throws IllegalArgumentException`() {
+        PredictionWeightConfig(restAdvantageSensitivity = 0.0)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `invalid restAdvantageMaxShift exceeding bounds throws IllegalArgumentException`() {
+        PredictionWeightConfig(restAdvantageMaxShift = 0.5)
     }
 }
