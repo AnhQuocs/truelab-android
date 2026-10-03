@@ -5,12 +5,15 @@ import dev.anhquocs.truelab.core.algorithm.prediction.Signal3Way
 import dev.anhquocs.truelab.core.algorithm.prediction.WeightedScorer
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.odds.selector.PreMatchOddsSelector
+import dev.anhquocs.truelab.core.domain.prediction.model.DrawModelingStrategy
+import dev.anhquocs.truelab.core.domain.prediction.model.DrawStrategyConfig
 import dev.anhquocs.truelab.core.domain.prediction.model.MatchPredictionContext
 import dev.anhquocs.truelab.core.domain.prediction.model.PredictionEvidence
 import dev.anhquocs.truelab.core.domain.prediction.model.PredictionResult
 import dev.anhquocs.truelab.core.domain.prediction.model.PredictionWeightConfig
 import dev.anhquocs.truelab.core.domain.prediction.model.SignalEvidence
 import dev.anhquocs.truelab.core.domain.prediction.model.SixthSignalMode
+import dev.anhquocs.truelab.core.domain.prediction.policy.DrawDecisionPolicy
 import dev.anhquocs.truelab.core.domain.prediction.transformer.EloSignalTransformer
 import dev.anhquocs.truelab.core.domain.prediction.transformer.FormSignalTransformer
 import dev.anhquocs.truelab.core.domain.prediction.transformer.GoalsSignalTransformer
@@ -39,8 +42,21 @@ class PredictMatchOutcomeUseCase(
 
     operator fun invoke(
         context: MatchPredictionContext,
-        config: PredictionWeightConfig = PredictionWeightConfig.DEFAULT
+        config: PredictionWeightConfig = PredictionWeightConfig.DEFAULT,
+        drawStrategyConfig: DrawStrategyConfig = DrawStrategyConfig.DEFAULT
     ): PredictionResult {
+        // Kiểm tra chiến lược Draw Modeling được kích hoạt
+        when (drawStrategyConfig.strategy) {
+            DrawModelingStrategy.BASELINE -> {
+                // Nhóm đối chứng (Control Group): Tiếp tục thực thi toàn bộ pipeline 6 tín hiệu chuẩn của Baseline
+            }
+            DrawModelingStrategy.DECISION_MARGIN -> {
+                // Candidate A: Tiếp tục tính toán raw probabilities theo pipeline chuẩn, sau đó áp dụng Decision Margin policy
+            }
+            DrawModelingStrategy.DYNAMIC_DRAW_PRIOR -> {
+                // Candidate B: Sử dụng Dynamic Draw Prior trong Elo & Form transformers, sau đó áp dụng natural argmax
+            }
+        }
         // 1. Chuẩn bị tín hiệu Phong độ (Form)
         val homeForm = context.homeFormScore ?: calculateTeamFormUseCase(
             teamId = context.homeTeamId,
@@ -52,10 +68,20 @@ class PredictMatchOutcomeUseCase(
             matches = context.awayRecentMatches,
             currentMatchId = context.matchId
         )
-        val formSignal = FormSignalTransformer.transform(homeForm, awayForm, config)
+        val formSignal = FormSignalTransformer.transform(
+            homeForm = homeForm,
+            awayForm = awayForm,
+            config = config,
+            drawStrategyConfig = drawStrategyConfig
+        )
 
         // 2. Chuẩn bị tín hiệu Elo Rating
-        val eloSignal = EloSignalTransformer.transform(context.homeElo, context.awayElo, config)
+        val eloSignal = EloSignalTransformer.transform(
+            homeElo = context.homeElo,
+            awayElo = context.awayElo,
+            config = config,
+            drawStrategyConfig = drawStrategyConfig
+        )
 
         // 3. Chuẩn bị tín hiệu Goals (Hiệu suất bàn thắng kỳ vọng)
         val homeScored = context.homeMeanScored ?: calculateMeanScored(context.homeRecentMatches, context.homeTeamId, context.matchId)
@@ -306,15 +332,23 @@ class PredictMatchOutcomeUseCase(
             totalWeight = totalWeight
         )
 
-        // 11. Map kết quả sang PredictionResult Domain Entity
+        // 11. Áp dụng chính sách quyết định và Map kết quả sang PredictionResult Domain Entity
+        val finalOutcome = DrawDecisionPolicy.resolvePredictedOutcome(probabilities, drawStrategyConfig)
+        val finalConfidence = when (finalOutcome) {
+            "HOME_WIN" -> probabilities.homeWinProb
+            "DRAW" -> probabilities.drawProb
+            "AWAY_WIN" -> probabilities.awayWinProb
+            else -> probabilities.confidenceScore
+        }
+
         return PredictionResult(
             matchId = context.matchId,
             algorithmName = "Weighted Scoring",
             homeWinProb = probabilities.homeWinProb,
             drawProb = probabilities.drawProb,
             awayWinProb = probabilities.awayWinProb,
-            predictedOutcome = probabilities.predictedOutcome.name,
-            confidenceScore = probabilities.confidenceScore,
+            predictedOutcome = finalOutcome,
+            confidenceScore = finalConfidence,
             evidence = predictionEvidence
         )
     }

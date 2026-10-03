@@ -180,4 +180,42 @@ class CalculateEvaluationMetricsUseCase {
             totalEvaluated = 0
         )
     }
+
+    /**
+     * Mẫu đánh giá xác suất phân phối 3 chiều cho một trận đấu kèm nhãn thực tế.
+     */
+    data class ProbabilisticEvaluationSample(
+        val homeProb: Double,
+        val drawProb: Double,
+        val awayProb: Double,
+        val actualOutcome: String
+    )
+
+    /**
+     * Tính điểm Brier Score đa lớp (Multi-class Brier Score) cho phân phối xác suất 3 chiều:
+     *
+     * Brier = (1/N) * Σ Σ_k (p_k - y_k)^2 với k ∈ {Home, Draw, Away}
+     *
+     * @param samples Danh sách các mẫu đánh giá xác suất kèm nhãn thực tế.
+     * @return Giá trị Brier Score trong đoạn [0.0, 2.0] (Càng thấp càng tốt).
+     */
+    fun calculateBrierScore(samples: List<ProbabilisticEvaluationSample>): Double {
+        if (samples.isEmpty()) return 0.0
+        var sumSquaredErrors = 0.0
+        for (sample in samples) {
+            require(sample.actualOutcome in VALID_LABELS) {
+                "Invalid actual outcome label: '${sample.actualOutcome}'. Valid labels are: $VALID_LABELS"
+            }
+            val yH = if (sample.actualOutcome == LABEL_HOME_WIN) 1.0 else 0.0
+            val yD = if (sample.actualOutcome == LABEL_DRAW) 1.0 else 0.0
+            val yA = if (sample.actualOutcome == LABEL_AWAY_WIN) 1.0 else 0.0
+
+            val errH = sample.homeProb - yH
+            val errD = sample.drawProb - yD
+            val errA = sample.awayProb - yA
+
+            sumSquaredErrors += (errH * errH + errD * errD + errA * errA)
+        }
+        return sumSquaredErrors / samples.size
+    }
 }
