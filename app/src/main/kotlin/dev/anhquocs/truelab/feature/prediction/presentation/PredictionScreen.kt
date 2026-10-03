@@ -88,6 +88,7 @@ fun PredictionScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val leagues by viewModel.leagues.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val isMatchListLoading by viewModel.isMatchListLoading.collectAsStateWithLifecycle()
     val selectedMatchId by viewModel.selectedMatchId.collectAsStateWithLifecycle()
 
     var showPredictionSheet by remember { mutableStateOf(false) }
@@ -106,17 +107,22 @@ fun PredictionScreen(
 
     val currentSelectedId = (uiState as? PredictionUiState.Success)?.selectedMatch?.id ?: selectedMatchId
     val leagueNameMap = remember(leagues) { leagues.associate { it.id to it.name } }
+    val unclassifiedText = stringResource(R.string.competition_unclassified)
 
-    val groupedMatches = remember(availableMatches, leagues, selectedDate) {
+    val groupedMatches = remember(availableMatches, leagues, selectedDate, unclassifiedText) {
         availableMatches
             .groupBy { match ->
-                match.leagueId?.toString() ?: match.leagueName ?: "default_group"
+                when {
+                    match.leagueId != null -> "league_${match.leagueId}"
+                    !match.leagueName.isNullOrBlank() -> "name_${match.leagueName}"
+                    else -> "orphan_${match.id}"
+                }
             }
             .map { (_, matchesInGroup) ->
                 val leagueId = matchesInGroup.firstNotNullOfOrNull { it.leagueId }
                 val leagueName = matchesInGroup.firstNotNullOfOrNull { it.leagueName }
                     ?: leagueId?.let { id -> leagueNameMap[id] }
-                    ?: "Giải đấu"
+                    ?: unclassifiedText
                 val leagueLogo = matchesInGroup.firstNotNullOfOrNull { it.leagueLogo }
                     ?: leagueId?.let { id -> leagues.find { it.id == id }?.logo }
 
@@ -183,8 +189,22 @@ fun PredictionScreen(
                     )
                 }
 
-                // Section 2: Match Candidates Grouped by Competition
-                if (groupedMatches.isNotEmpty()) {
+                // Section 2: Match Candidates Grouped by Competition or Stage 1 Loading / Empty
+                if (isMatchListLoading) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = Dimen.PaddingXXL),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(Dimen.SizeXL),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                } else if (groupedMatches.isNotEmpty()) {
                     item {
                         Text(
                             text = stringResource(R.string.prediction_select_match),
@@ -195,7 +215,7 @@ fun PredictionScreen(
                     }
 
                     groupedMatches.forEach { group ->
-                        item(key = "header_${group.leagueId ?: group.leagueName}") {
+                        item(key = "header_${group.leagueId ?: group.leagueName}_${group.matches.firstOrNull()?.id ?: 0}") {
                             dev.anhquocs.truelab.feature.prediction.presentation.components.CompetitionSectionHeader(group = group)
                         }
 
@@ -217,51 +237,28 @@ fun PredictionScreen(
                             )
                         }
                     }
+                } else {
+                    item {
+                        PredictionEmptyCard(
+                            message = stringResource(R.string.prediction_empty_filter_desc),
+                            onResetFilters = { viewModel.onResetFilters() }
+                        )
+                    }
                 }
 
-                // Section 3: Status / Feedback (Loading, Empty, Error)
-                when (val state = uiState) {
-                    is PredictionUiState.Loading -> {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = Dimen.PaddingXXL),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(Dimen.SizeXL),
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
-
-                    is PredictionUiState.Empty -> {
-                        item {
-                            PredictionEmptyCard(
-                                message = stringResource(R.string.prediction_empty_filter_desc),
-                                onResetFilters = { viewModel.onResetFilters() }
-                            )
-                        }
-                    }
-
-                    is PredictionUiState.Error -> {
-                        item {
-                            PredictionFeedbackCard(
-                                icon = Icons.Default.ErrorOutline,
-                                iconTint = MaterialTheme.colorScheme.error,
-                                title = stringResource(R.string.prediction_error_default),
-                                message = state.message.asString(),
-                                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f),
-                                titleColor = MaterialTheme.colorScheme.error,
-                                messageColor = MaterialTheme.colorScheme.onErrorContainer
-                            )
-                        }
-                    }
-
-                    is PredictionUiState.Success -> {
-                        // Prediction results are displayed inside PredictionBottomSheet
+                // Section 3: Status / Feedback (Error during prediction calculation)
+                if (!isMatchListLoading && uiState is PredictionUiState.Error) {
+                    val errorState = uiState as PredictionUiState.Error
+                    item {
+                        PredictionFeedbackCard(
+                            icon = Icons.Default.ErrorOutline,
+                            iconTint = MaterialTheme.colorScheme.error,
+                            title = stringResource(R.string.prediction_error_default),
+                            message = errorState.message.asString(),
+                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f),
+                            titleColor = MaterialTheme.colorScheme.error,
+                            messageColor = MaterialTheme.colorScheme.onErrorContainer
+                        )
                     }
                 }
             }

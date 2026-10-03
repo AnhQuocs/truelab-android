@@ -74,6 +74,9 @@ class PredictionViewModel @Inject constructor(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    private val _isSyncing = MutableStateFlow(true)
+    val isBackgroundSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
+
     private val _refreshErrorEvent = kotlinx.coroutines.flow.MutableSharedFlow<UiText>()
     val refreshErrorEvent: kotlinx.coroutines.flow.SharedFlow<UiText> = _refreshErrorEvent.asSharedFlow()
 
@@ -140,6 +143,22 @@ class PredictionViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+    val isMatchListLoading: StateFlow<Boolean> = combine(
+        _isSyncing,
+        availableMatches
+    ) { isSyncing, matches ->
+        if (!isSyncing) {
+            false
+        } else {
+            // While syncing in background: ready if we have matches and all matches have resolved competition metadata
+            matches.isEmpty() || matches.any { it.leagueId == null && it.leagueName.isNullOrBlank() }
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = true
+    )
 
     val uiState: StateFlow<PredictionUiState> = combine(
         matchesFlow,
@@ -335,12 +354,15 @@ class PredictionViewModel @Inject constructor(
     private fun syncDateIfNeeded(date: String) {
         syncJob?.cancel()
         syncJob = viewModelScope.launch {
+            _isSyncing.value = true
             try {
                 matchRepository.refreshMatchesForDate(date)
             } catch (_: kotlinx.coroutines.CancellationException) {
                 // Ignore cancellation
             } catch (_: Exception) {
                 // Ignore silent background sync errors
+            } finally {
+                _isSyncing.value = false
             }
         }
     }

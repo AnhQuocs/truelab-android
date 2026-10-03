@@ -1,16 +1,15 @@
 package dev.anhquocs.truelab.core.data.league.local.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 import dev.anhquocs.truelab.core.data.league.local.entity.LeagueEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LeagueDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     fun insertLeagues(leagues: List<LeagueEntity>): LongArray
 
     @Query("SELECT * FROM leagues ORDER BY name ASC")

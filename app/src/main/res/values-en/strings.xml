@@ -179,6 +179,7 @@
     <string name="prediction_search_hint">Search team or league...</string>
     <string name="prediction_status_started">Started</string>
     <string name="prediction_default_competition">International / Cup</string>
+    <string name="competition_unclassified">Unclassified</string>
     <string name="prediction_sheet_title">MATCH PREDICTION</string>
     <string name="prediction_sheet_subtitle">Analysis based on data available before kickoff</string>
     <string name="prediction_sheet_conclusion">Prediction Conclusion</string>
