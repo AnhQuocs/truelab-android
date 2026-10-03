@@ -8,6 +8,7 @@ import dev.anhquocs.truelab.core.domain.evaluation.model.OddsCoverageStats
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.odds.repository.OddsRepository
 import dev.anhquocs.truelab.core.domain.odds.selector.PreMatchOddsSelector
+import dev.anhquocs.truelab.core.domain.prediction.model.DrawStrategyConfig
 import dev.anhquocs.truelab.core.domain.prediction.model.MatchPredictionContext
 import dev.anhquocs.truelab.core.domain.prediction.usecase.PredictMatchOutcomeUseCase
 import dev.anhquocs.truelab.core.domain.team.usecase.CalculateDynamicEloUseCase
@@ -43,13 +44,15 @@ class RunDailyBacktestUseCase(
      * @param targetMatches Danh sách các trận FT cần đánh giá trong ngày.
      * @param allMatches Toàn bộ danh sách trận trong database dùng để xây dựng bối cảnh lịch sử và Elo.
      * @param initialEloMap Bản đồ Elo khởi tạo cho các đội (mặc định 1500.0).
+     * @param drawStrategyConfig Cấu hình chiến lược Draw Modeling (mặc định BASELINE).
      * @return [Flow] phát ra các [DailyBacktestProgressEvent].
      */
     operator fun invoke(
         evaluationDate: String,
         targetMatches: List<Match>,
         allMatches: List<Match>,
-        initialEloMap: Map<Int, Double> = emptyMap()
+        initialEloMap: Map<Int, Double> = emptyMap(),
+        drawStrategyConfig: DrawStrategyConfig = DrawStrategyConfig.DEFAULT
     ): Flow<DailyBacktestProgressEvent> = flow {
         // 1. Lọc và sắp xếp các trận FT hợp lệ
         val validTargets = targetMatches
@@ -177,7 +180,10 @@ class RunDailyBacktestUseCase(
                 )
             )
 
-            val predictionResult = predictMatchOutcomeUseCase(context)
+            val predictionResult = predictMatchOutcomeUseCase(
+                context = context,
+                drawStrategyConfig = drawStrategyConfig
+            )
 
             // Giai đoạn 4: Đối soát với kết quả FT thực tế (Strictly Post-Prediction Evaluation)
             emit(
