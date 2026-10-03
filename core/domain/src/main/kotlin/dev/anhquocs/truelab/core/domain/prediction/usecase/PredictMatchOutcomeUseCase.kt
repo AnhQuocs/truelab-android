@@ -58,34 +58,11 @@ class PredictMatchOutcomeUseCase(
         val eloSignal = EloSignalTransformer.transform(context.homeElo, context.awayElo, config)
 
         // 3. Chuẩn bị tín hiệu Goals (Hiệu suất bàn thắng kỳ vọng)
-        val homeScored = context.homeMeanScored ?: calculateMeanScored(
-            context.homeRecentMatches,
-            context.homeTeamId,
-            context.matchId
-        )
-        val homeConceded = context.homeMeanConceded ?: calculateMeanConceded(
-            context.homeRecentMatches,
-            context.homeTeamId,
-            context.matchId
-        )
-        val awayScored = context.awayMeanScored ?: calculateMeanScored(
-            context.awayRecentMatches,
-            context.awayTeamId,
-            context.matchId
-        )
-        val awayConceded = context.awayMeanConceded ?: calculateMeanConceded(
-            context.awayRecentMatches,
-            context.awayTeamId,
-            context.matchId
-        )
-
-        val goalsSignal = GoalsSignalTransformer.transform(
-            homeMeanScored = homeScored,
-            homeMeanConceded = homeConceded,
-            awayMeanScored = awayScored,
-            awayMeanConceded = awayConceded,
-            config = config
-        )
+        val homeScored = context.homeMeanScored ?: calculateMeanScored(context.homeRecentMatches, context.homeTeamId, context.matchId)
+        val homeConceded = context.homeMeanConceded ?: calculateMeanConceded(context.homeRecentMatches, context.homeTeamId, context.matchId)
+        val awayScored = context.awayMeanScored ?: calculateMeanScored(context.awayRecentMatches, context.awayTeamId, context.matchId)
+        val awayConceded = context.awayMeanConceded ?: calculateMeanConceded(context.awayRecentMatches, context.awayTeamId, context.matchId)
+        val goalsSignal = GoalsSignalTransformer.transform(homeScored, homeConceded, awayScored, awayConceded, config)
 
         // 4. Chuẩn bị tín hiệu Odds Nhà cung cấp
         val oddsSignal = OddsSignalTransformer.transform(context.latestOdds, config)
@@ -97,22 +74,17 @@ class PredictMatchOutcomeUseCase(
         // 6. Chuẩn bị tín hiệu thứ 6: Rest Advantage (Production Default) hoặc Home Advantage (Baseline Benchmark Mode)
         val homePrev = context.homeRecentMatches.firstOrNull { it.isEnded && it.id != context.matchId }
         val awayPrev = context.awayRecentMatches.firstOrNull { it.isEnded && it.id != context.matchId }
-
         val sixthSignal: Signal3Way = when (config.sixthSignalMode) {
-            SixthSignalMode.REST_ADVANTAGE -> {
-                RestAdvantageSignalTransformer.transform(
-                    homePreviousMatch = homePrev,
-                    awayPreviousMatch = awayPrev,
-                    targetKickoffTime = context.matchStartTimeDate,
-                    config = config
-                )
-            }
-            SixthSignalMode.HOME_ADVANTAGE -> {
-                HomeAdvantageSignalTransformer.transform(
-                    isNeutralVenue = false,
-                    config = config
-                )
-            }
+            SixthSignalMode.REST_ADVANTAGE -> RestAdvantageSignalTransformer.transform(
+                homePreviousMatch = homePrev,
+                awayPreviousMatch = awayPrev,
+                targetKickoffTime = context.matchStartTimeDate,
+                config = config
+            )
+            SixthSignalMode.HOME_ADVANTAGE -> HomeAdvantageSignalTransformer.transform(
+                isNeutralVenue = false,
+                config = config
+            )
         }
 
         // 7. Tập hợp danh sách đúng 6 tín hiệu Signal3Way
@@ -155,9 +127,14 @@ class PredictMatchOutcomeUseCase(
             details = mapOf(
                 "homeElo" to String.format(Locale.US, "%.1f", hElo),
                 "awayElo" to String.format(Locale.US, "%.1f", aElo),
-                "diff" to String.format(Locale.US, "%+.1f", hElo - aElo)
+                "diff" to String.format(Locale.US, "%+.1f", hElo - aElo),
+                "homeHistoryCount" to homeHistoryCount.toString(),
+                "awayHistoryCount" to awayHistoryCount.toString()
             )
         )
+
+        val homeFormResults = extractFormResults(context.homeRecentMatches, context.homeTeamId, context.matchId)
+        val awayFormResults = extractFormResults(context.awayRecentMatches, context.awayTeamId, context.matchId)
 
         val formEff = formSignal.weight / totalWeight
         val formEvidence = SignalEvidence(
@@ -171,12 +148,18 @@ class PredictMatchOutcomeUseCase(
             contributionDraw = formEff * formSignal.drawProb,
             contributionAway = formEff * formSignal.awayProb,
             isAvailable = (homeHistoryCount > 0 || awayHistoryCount > 0),
-            details = mapOf(
-                "homeFormScore" to String.format(Locale.US, "%.2f", homeForm.score),
-                "awayFormScore" to String.format(Locale.US, "%.2f", awayForm.score),
-                "homeHistoryCount" to homeHistoryCount.toString(),
-                "awayHistoryCount" to awayHistoryCount.toString()
-            )
+            details = buildMap {
+                put("homeFormScore", String.format(Locale.US, "%.2f", homeForm.score))
+                put("awayFormScore", String.format(Locale.US, "%.2f", awayForm.score))
+                put("homeForm", String.format(Locale.US, "%.1f", homeForm.score))
+                put("awayForm", String.format(Locale.US, "%.1f", awayForm.score))
+                put("homeMatches", homeHistoryCount.toString())
+                put("awayMatches", awayHistoryCount.toString())
+                put("homeHistoryCount", homeHistoryCount.toString())
+                put("awayHistoryCount", awayHistoryCount.toString())
+                if (homeFormResults.isNotBlank()) put("homeFormResults", homeFormResults)
+                if (awayFormResults.isNotBlank()) put("awayFormResults", awayFormResults)
+            }
         )
 
         val oddsEff = oddsSignal.weight / totalWeight
@@ -226,7 +209,13 @@ class PredictMatchOutcomeUseCase(
                 "homeMeanScored" to String.format(Locale.US, "%.2f", homeScored),
                 "homeMeanConceded" to String.format(Locale.US, "%.2f", homeConceded),
                 "awayMeanScored" to String.format(Locale.US, "%.2f", awayScored),
-                "awayMeanConceded" to String.format(Locale.US, "%.2f", awayConceded)
+                "awayMeanConceded" to String.format(Locale.US, "%.2f", awayConceded),
+                "homeScored" to String.format(Locale.US, "%.2f", homeScored),
+                "homeConceded" to String.format(Locale.US, "%.2f", homeConceded),
+                "awayScored" to String.format(Locale.US, "%.2f", awayScored),
+                "awayConceded" to String.format(Locale.US, "%.2f", awayConceded),
+                "homeHistoryCount" to homeHistoryCount.toString(),
+                "awayHistoryCount" to awayHistoryCount.toString()
             )
         )
 
@@ -330,14 +319,25 @@ class PredictMatchOutcomeUseCase(
         )
     }
 
-    private fun calculateMeanScored(
-        recentMatches: List<Match>,
-        teamId: Int,
-        currentMatchId: Long
-    ): Double {
-        val validMatches = recentMatches.filter { it.isEnded && it.id != currentMatchId }
-        if (validMatches.isEmpty()) return 1.35
-        val goals = validMatches.mapNotNull { m ->
+    private fun extractFormResults(matches: List<Match>, teamId: Int, currentMatchId: Long): String {
+        return matches
+            .filter { it.isEnded && it.homeScore != null && it.awayScore != null && it.id != currentMatchId && (it.homeTeam.id == teamId || it.awayTeam.id == teamId) }
+            .sortedBy { it.startTimeDate }
+            .takeLast(5)
+            .mapNotNull { m ->
+                val hs = m.homeScore ?: return@mapNotNull null
+                val as_ = m.awayScore ?: return@mapNotNull null
+                when {
+                    hs == as_ -> "D"
+                    m.homeTeam.id == teamId -> if (hs > as_) "W" else "L"
+                    else -> if (as_ > hs) "W" else "L"
+                }
+            }
+            .joinToString(" ")
+    }
+
+    private fun calculateMeanScored(recentMatches: List<Match>, teamId: Int, currentMatchId: Long): Double {
+        val goals = recentMatches.filter { it.isEnded && it.id != currentMatchId }.mapNotNull { m ->
             when {
                 m.homeTeam.id == teamId -> m.homeScore?.toDouble()
                 m.awayTeam.id == teamId -> m.awayScore?.toDouble()
@@ -347,14 +347,8 @@ class PredictMatchOutcomeUseCase(
         return if (goals.isEmpty()) 1.35 else goals.average()
     }
 
-    private fun calculateMeanConceded(
-        recentMatches: List<Match>,
-        teamId: Int,
-        currentMatchId: Long
-    ): Double {
-        val validMatches = recentMatches.filter { it.isEnded && it.id != currentMatchId }
-        if (validMatches.isEmpty()) return 1.35
-        val conceded = validMatches.mapNotNull { m ->
+    private fun calculateMeanConceded(recentMatches: List<Match>, teamId: Int, currentMatchId: Long): Double {
+        val conceded = recentMatches.filter { it.isEnded && it.id != currentMatchId }.mapNotNull { m ->
             when {
                 m.homeTeam.id == teamId -> m.awayScore?.toDouble()
                 m.awayTeam.id == teamId -> m.homeScore?.toDouble()
@@ -365,24 +359,16 @@ class PredictMatchOutcomeUseCase(
     }
 
     private fun resolveH2hCounts(context: MatchPredictionContext): Triple<Int, Int, Int> {
-        val hasManualCounts = (context.homeWins != null && context.draws != null && context.awayWins != null)
-        if (hasManualCounts) {
-            return Triple(context.homeWins!!, context.draws!!, context.awayWins!!)
+        if (context.homeWins != null && context.draws != null && context.awayWins != null) {
+            return Triple(context.homeWins, context.draws, context.awayWins)
         }
-
-        val validH2h = context.h2hMatches.filter { it.isEnded && it.id != context.matchId }
-        var hw = 0
-        var d = 0
-        var aw = 0
-
-        for (m in validH2h) {
-            val hScore = m.homeScore
-            val aScore = m.awayScore
-            if (hScore == null || aScore == null) continue
-
-            if (hScore == aScore) {
+        var hw = 0; var d = 0; var aw = 0
+        for (m in context.h2hMatches.filter { it.isEnded && it.id != context.matchId }) {
+            val hs = m.homeScore ?: continue
+            val as_ = m.awayScore ?: continue
+            if (hs == as_) {
                 d++
-            } else if (hScore > aScore) {
+            } else if (hs > as_) {
                 if (m.homeTeam.id == context.homeTeamId) hw++ else aw++
             } else {
                 if (m.homeTeam.id == context.homeTeamId) aw++ else hw++
