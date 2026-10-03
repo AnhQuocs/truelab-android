@@ -133,10 +133,10 @@ fun PredictionEvidenceSection(
         }
 
         // 2. Form
-        val hm = evidence.form.details["homeMatches"] ?: "0"
-        val am = evidence.form.details["awayMatches"] ?: "0"
-        val hf = evidence.form.details["homeForm"]
-        val af = evidence.form.details["awayForm"]
+        val hm = evidence.form.details["homeMatches"] ?: evidence.form.details["homeHistoryCount"] ?: "0"
+        val am = evidence.form.details["awayMatches"] ?: evidence.form.details["awayHistoryCount"] ?: "0"
+        val hf = evidence.form.details["homeForm"] ?: evidence.form.details["homeFormScore"]
+        val af = evidence.form.details["awayForm"] ?: evidence.form.details["awayFormScore"]
         val formSummary = if (hm != "0" || am != "0") "${hf ?: "—"} / ${af ?: "—"}" else null
 
         FlatSignalRow(
@@ -207,11 +207,11 @@ fun PredictionEvidenceSection(
         }
 
         // 4. Goals
-        val hs = evidence.goals.details["homeScored"]
-        val hc = evidence.goals.details["homeConceded"]
-        val as_ = evidence.goals.details["awayScored"]
-        val ac = evidence.goals.details["awayConceded"]
-        val goalsSummary = if (hs != "N/A" || as_ != "N/A") "${hs ?: "—"}/${hc ?: "—"} · ${as_ ?: "—"}/${ac ?: "—"}" else null
+        val hs = evidence.goals.details["homeScored"] ?: evidence.goals.details["homeMeanScored"]
+        val hc = evidence.goals.details["homeConceded"] ?: evidence.goals.details["homeMeanConceded"]
+        val as_ = evidence.goals.details["awayScored"] ?: evidence.goals.details["awayMeanScored"]
+        val ac = evidence.goals.details["awayConceded"] ?: evidence.goals.details["awayMeanConceded"]
+        val goalsSummary = if (evidence.goals.isAvailable && hs != null && as_ != null) "${hs ?: "—"}/${hc ?: "—"} · ${as_ ?: "—"}/${ac ?: "—"}" else null
 
         FlatSignalRow(
             title = stringResource(R.string.prediction_signal_goals_title),
