@@ -280,6 +280,29 @@ class PredictionViewModelTest {
     }
 
     @Test
+    fun `isMatchListLoading transitions to false after initial sync completes`() = runTest {
+        val collectJob = launch { viewModel.isMatchListLoading.collect {} }
+        advanceUntilIdle()
+
+        assertEquals(false, viewModel.isMatchListLoading.value)
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `date selection triggers sync and resets isMatchListLoading`() = runTest {
+        val collectJob = launch { viewModel.isMatchListLoading.collect {} }
+        advanceUntilIdle()
+        assertEquals(false, viewModel.isMatchListLoading.value)
+
+        viewModel.onDateSelected("2026-10-04")
+        advanceUntilIdle()
+
+        assertEquals(false, viewModel.isMatchListLoading.value)
+        assertEquals("2026-10-04", viewModel.selectedDate.value)
+        collectJob.cancel()
+    }
+
+    @Test
     fun `when Room emits updated match snapshot after refresh, selectedMatch is updated`() = runTest {
         val collectJob = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
@@ -667,15 +690,180 @@ class PredictionViewModelTest {
         job.cancel()
     }
 
+    @Test
+    fun cache_hit_with_resolved_metadata_sets_isMatchListLoading_false_immediately_while_sync_is_running() = runTest(testDispatcher) {
+        val todayStr = LocalDate.now(dev.anhquocs.truelab.core.ui.utils.DateTimeFormatterUtils.VIETNAM_ZONE_ID).toString()
+        val validMatches = listOf(
+            match1.copy(startTimeDate = "${todayStr}T15:00:00", status = MatchStatus.IN_PROGRESS),
+            match2.copy(startTimeDate = "${todayStr}T17:30:00", status = MatchStatus.SCHEDULED),
+            match3.copy(startTimeDate = "${todayStr}T12:00:00", status = MatchStatus.SCHEDULED)
+        )
+
+        // Prepare cached resolved matches in Room BEFORE creating ViewModel
+        fakeMatchRepository.setMatches(validMatches)
+        fakeMatchRepository.syncDelayMs = 100_000L // Simulate long 15-30s background sync
+
+        val testViewModel = PredictionViewModel(
+            savedStateHandle = SavedStateHandle(),
+            matchRepository = fakeMatchRepository,
+            teamRepository = fakeTeamRepository,
+            oddsRepository = fakeOddsRepository,
+            leagueRepository = fakeLeagueRepository,
+            predictMatchOutcomeUseCase = predictMatchOutcomeUseCase
+        )
+
+        val job = launch { testViewModel.isMatchListLoading.collect {} }
+        val matchesJob = launch { testViewModel.availableMatches.collect {} }
+
+        testScheduler.advanceTimeBy(50)
+
+        // Assert: Background sync is running, but because cache has resolved matches, isMatchListLoading is FALSE!
+        assertEquals(false, testViewModel.isMatchListLoading.value)
+        assertEquals(3, testViewModel.availableMatches.value.size)
+        assertEquals(true, testViewModel.isBackgroundSyncing.value)
+
+        job.cancel()
+        matchesJob.cancel()
+    }
+
+    @Test
+    fun empty_cache_keeps_isMatchListLoading_true_until_first_page_or_sync_completes() = runTest(testDispatcher) {
+        fakeMatchRepository.setMatches(emptyList())
+        fakeMatchRepository.syncDelayMs = 100_000L
+
+        val testViewModel = PredictionViewModel(
+            savedStateHandle = SavedStateHandle(),
+            matchRepository = fakeMatchRepository,
+            teamRepository = fakeTeamRepository,
+            oddsRepository = fakeOddsRepository,
+            leagueRepository = fakeLeagueRepository,
+            predictMatchOutcomeUseCase = predictMatchOutcomeUseCase
+        )
+
+        val targetDate = testViewModel.selectedDate.value
+        val job = launch { testViewModel.isMatchListLoading.collect {} }
+        val matchesJob = launch { testViewModel.availableMatches.collect {} }
+
+        testScheduler.advanceTimeBy(50)
+
+        // Cache is empty while sync is running -> isMatchListLoading MUST be true
+        assertEquals(true, testViewModel.isMatchListLoading.value)
+        assertEquals(true, testViewModel.isBackgroundSyncing.value)
+
+        // Simulate Page 1 arrives into Room
+        fakeMatchRepository.setMatches(listOf(match1.copy(startTimeDate = "${targetDate}T15:00:00")))
+        testScheduler.advanceTimeBy(50)
+
+        // As soon as Page 1 matches are in Room with resolved competition -> isMatchListLoading becomes FALSE
+        assertEquals(false, testViewModel.isMatchListLoading.value)
+        assertEquals(1, testViewModel.availableMatches.value.size)
+
+        job.cancel()
+        matchesJob.cancel()
+    }
+
+    @Test
+    fun unresolved_competition_metadata_in_cache_keeps_isMatchListLoading_true_until_hydrated() = runTest(testDispatcher) {
+        val testViewModel = PredictionViewModel(
+            savedStateHandle = SavedStateHandle(),
+            matchRepository = fakeMatchRepository,
+            teamRepository = fakeTeamRepository,
+            oddsRepository = fakeOddsRepository,
+            leagueRepository = fakeLeagueRepository,
+            predictMatchOutcomeUseCase = predictMatchOutcomeUseCase
+        )
+
+        val targetDate = testViewModel.selectedDate.value
+        val orphanMatch = match1.copy(id = 999L, leagueId = null, leagueName = null, startTimeDate = "${targetDate}T15:00:00")
+        fakeMatchRepository.setMatches(listOf(orphanMatch))
+        fakeMatchRepository.syncDelayMs = 100_000L
+
+        val job = launch { testViewModel.isMatchListLoading.collect {} }
+        val matchesJob = launch { testViewModel.availableMatches.collect {} }
+
+        testScheduler.advanceTimeBy(50)
+
+        // Orphan / unresolved match while sync is running -> isMatchListLoading MUST be true
+        assertEquals(true, testViewModel.isMatchListLoading.value)
+
+        // Simulate LeagueEntity hydration in Room
+        val hydratedMatch = orphanMatch.copy(leagueId = 10, leagueName = "Premier League")
+        fakeMatchRepository.setMatches(listOf(hydratedMatch))
+        testScheduler.advanceTimeBy(50)
+
+        // Once hydrated -> isMatchListLoading flips to false
+        assertEquals(false, testViewModel.isMatchListLoading.value)
+
+        job.cancel()
+        matchesJob.cancel()
+    }
+
+    @Test
+    fun date_change_evaluates_readiness_per_date_without_reusing_old_date_state() = runTest(testDispatcher) {
+        val yesterday = LocalDate.now().minusDays(1).toString()
+        val tomorrow = LocalDate.now().plusDays(1).toString()
+
+        val todayMatch = match1.copy(startTimeDate = "${today}T15:00:00")
+        val yesterdayMatch = match3.copy(startTimeDate = "${yesterday}T15:00:00")
+        // Tomorrow has no matches (empty cache)
+
+        fakeMatchRepository.setMatches(listOf(todayMatch, yesterdayMatch))
+        fakeMatchRepository.syncDelayMs = 100_000L
+
+        val testViewModel = PredictionViewModel(
+            savedStateHandle = SavedStateHandle(),
+            matchRepository = fakeMatchRepository,
+            teamRepository = fakeTeamRepository,
+            oddsRepository = fakeOddsRepository,
+            leagueRepository = fakeLeagueRepository,
+            predictMatchOutcomeUseCase = predictMatchOutcomeUseCase
+        )
+
+        val job = launch { testViewModel.isMatchListLoading.collect {} }
+        val matchesJob = launch { testViewModel.availableMatches.collect {} }
+
+        testScheduler.advanceTimeBy(50)
+
+        // Today has matches -> false
+        assertEquals(false, testViewModel.isMatchListLoading.value)
+
+        // Switch to Tomorrow (empty cache)
+        testViewModel.onDateSelected(tomorrow)
+        testScheduler.advanceTimeBy(50)
+
+        // Tomorrow is empty while syncing -> true
+        assertEquals(true, testViewModel.isMatchListLoading.value)
+
+        // Switch to Yesterday (has matches)
+        testViewModel.onDateSelected(yesterday)
+        testScheduler.advanceTimeBy(50)
+
+        // Yesterday has matches -> false
+        assertEquals(false, testViewModel.isMatchListLoading.value)
+
+        job.cancel()
+        matchesJob.cancel()
+    }
+
     // --- Fakes ---
 
     private class FakeMatchRepository : MatchRepository {
         private val matchesFlow = MutableStateFlow<List<Match>>(emptyList())
         var shouldThrowError = false
         var onRefreshCallback: ((String) -> Unit)? = null
+        var syncDelayMs: Long = 0L
+        var refreshResult: Result<Unit> = Result.success(Unit)
 
         fun setMatches(matches: List<Match>) {
             matchesFlow.value = matches
+        }
+
+        override suspend fun refreshMatchesForDate(date: String): Result<Unit> {
+            onRefreshCallback?.invoke(date)
+            if (syncDelayMs > 0) {
+                kotlinx.coroutines.delay(syncDelayMs)
+            }
+            return refreshResult
         }
 
         override fun getPredictableMatchesFiltered(
@@ -713,13 +901,6 @@ class PredictionViewModelTest {
                 }.take(limit)
                 emit(filtered)
             }
-        }
-
-        var refreshResult: Result<Unit> = Result.success(Unit)
-
-        override suspend fun refreshMatchesForDate(date: String): Result<Unit> {
-            onRefreshCallback?.invoke(date)
-            return refreshResult
         }
 
         override fun getMatches(date: String): Flow<List<Match>> = flow { emit(matchesFlow.value) }

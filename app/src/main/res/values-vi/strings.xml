@@ -179,6 +179,7 @@
     <string name="prediction_search_hint">Tìm đội bóng hoặc giải đấu...</string>
     <string name="prediction_status_started">Đã bắt đầu</string>
     <string name="prediction_default_competition">Giải đấu / Cúp</string>
+    <string name="competition_unclassified">Chưa phân loại</string>
     <string name="prediction_sheet_title">DỰ ĐOÁN TRẬN ĐẤU</string>
     <string name="prediction_sheet_subtitle">Phân tích dựa trên dữ liệu có trước giờ thi đấu</string>
     <string name="prediction_sheet_conclusion">Kết luận Dự đoán</string>
