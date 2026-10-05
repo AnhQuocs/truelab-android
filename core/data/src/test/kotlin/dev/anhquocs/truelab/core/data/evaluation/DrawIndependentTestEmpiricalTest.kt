@@ -158,7 +158,7 @@ class DrawIndependentTestEmpiricalTest {
         )
 
         for ((ctx, actual) in calibrationContexts) {
-            val predBase = predictUseCase(ctx, drawStrategyConfig = dev.anhquocs.truelab.core.domain.prediction.model.DrawStrategyConfig.DEFAULT)
+            val predBase = predictUseCase(ctx, drawStrategyConfig = dev.anhquocs.truelab.core.domain.prediction.model.DrawStrategyConfig(strategy = dev.anhquocs.truelab.core.domain.prediction.model.DrawModelingStrategy.BASELINE))
             calBaseProbs.add(CalculateEvaluationMetricsUseCase.ProbabilisticEvaluationSample(predBase.homeWinProb, predBase.drawProb, predBase.awayWinProb, actual))
 
             val predA = predictUseCase(ctx, drawStrategyConfig = calAStrategy)

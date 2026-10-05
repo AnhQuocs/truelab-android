@@ -34,3 +34,4 @@ bin/
 *.py
 run_*.py
 scratch/
+app/release/

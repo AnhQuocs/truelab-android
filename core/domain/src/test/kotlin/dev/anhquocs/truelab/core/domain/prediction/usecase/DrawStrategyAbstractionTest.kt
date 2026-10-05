@@ -17,7 +17,7 @@ import dev.anhquocs.truelab.core.domain.team.usecase.CalculateDynamicEloUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -88,46 +88,55 @@ class DrawStrategyAbstractionTest {
     }
 
     @Test
-    fun `Test 1 - default strategy invokes BASELINE without explicit argument`() {
+    fun `Test 1 - default strategy invokes DECISION_MARGIN with frozen parameters without explicit argument`() {
         val context = createDeterministicContext()
 
+        // 1. Assert DrawStrategyConfig.DEFAULT configuration invariants
+        assertEquals(DrawModelingStrategy.DECISION_MARGIN, DrawStrategyConfig.DEFAULT.strategy)
+        assertEquals(0.04, DrawStrategyConfig.DEFAULT.marginConfig.deltaMargin, 1e-6)
+        assertEquals(0.255, DrawStrategyConfig.DEFAULT.marginConfig.thetaMinProb, 1e-6)
+
+        // 2. Assert prediction pipeline invocation matches DrawStrategyConfig.DEFAULT
         val defaultResult = useCase(context)
-        val baselineResult = useCase(
+        val explicitDefaultResult = useCase(
             context = context,
             config = PredictionWeightConfig.DEFAULT,
             drawStrategyConfig = DrawStrategyConfig.DEFAULT
         )
 
-        assertEquals(baselineResult.homeWinProb, defaultResult.homeWinProb, 1e-6)
-        assertEquals(baselineResult.drawProb, defaultResult.drawProb, 1e-6)
-        assertEquals(baselineResult.awayWinProb, defaultResult.awayWinProb, 1e-6)
-        assertEquals(baselineResult.predictedOutcome, defaultResult.predictedOutcome)
-        assertEquals(baselineResult.confidenceScore, defaultResult.confidenceScore, 1e-6)
+        assertEquals(explicitDefaultResult.homeWinProb, defaultResult.homeWinProb, 1e-6)
+        assertEquals(explicitDefaultResult.drawProb, defaultResult.drawProb, 1e-6)
+        assertEquals(explicitDefaultResult.awayWinProb, defaultResult.awayWinProb, 1e-6)
+        assertEquals(explicitDefaultResult.predictedOutcome, defaultResult.predictedOutcome)
+        assertEquals(explicitDefaultResult.confidenceScore, defaultResult.confidenceScore, 1e-6)
     }
 
     @Test
-    fun `Test 2 - explicit BASELINE strategy produces identical output to default`() {
+    fun `Test 2 - explicit DECISION_MARGIN strategy produces identical output to default`() {
         val context = createDeterministicContext()
 
         val defaultResult = useCase(context)
-        val explicitBaselineResult = useCase(
+        val explicitMarginResult = useCase(
             context = context,
             config = PredictionWeightConfig.DEFAULT,
-            drawStrategyConfig = DrawStrategyConfig(strategy = DrawModelingStrategy.BASELINE)
+            drawStrategyConfig = DrawStrategyConfig(strategy = DrawModelingStrategy.DECISION_MARGIN)
         )
 
-        assertEquals(defaultResult.homeWinProb, explicitBaselineResult.homeWinProb, 1e-6)
-        assertEquals(defaultResult.drawProb, explicitBaselineResult.drawProb, 1e-6)
-        assertEquals(defaultResult.awayWinProb, explicitBaselineResult.awayWinProb, 1e-6)
-        assertEquals(defaultResult.predictedOutcome, explicitBaselineResult.predictedOutcome)
-        assertEquals(defaultResult.confidenceScore, explicitBaselineResult.confidenceScore, 1e-6)
+        assertEquals(defaultResult.homeWinProb, explicitMarginResult.homeWinProb, 1e-6)
+        assertEquals(defaultResult.drawProb, explicitMarginResult.drawProb, 1e-6)
+        assertEquals(defaultResult.awayWinProb, explicitMarginResult.awayWinProb, 1e-6)
+        assertEquals(defaultResult.predictedOutcome, explicitMarginResult.predictedOutcome)
+        assertEquals(defaultResult.confidenceScore, explicitMarginResult.confidenceScore, 1e-6)
     }
 
     @Test
-    fun `Test 3 - baseline probability regression confirms exact probability distribution`() {
+    fun `Test 3 - baseline probability regression confirms exact probability distribution when explicitly requested`() {
         val context = createDeterministicContext()
 
-        val result = useCase(context)
+        val result = useCase(
+            context = context,
+            drawStrategyConfig = DrawStrategyConfig(strategy = DrawModelingStrategy.BASELINE)
+        )
 
         // Probability conservation
         val sum = result.homeWinProb + result.drawProb + result.awayWinProb
@@ -140,10 +149,13 @@ class DrawStrategyAbstractionTest {
     }
 
     @Test
-    fun `Test 4 - baseline outcome regression confirms deterministic HOME_WIN predicted outcome`() {
+    fun `Test 4 - baseline outcome regression confirms deterministic HOME_WIN predicted outcome when explicitly requested`() {
         val context = createDeterministicContext()
 
-        val result = useCase(context)
+        val result = useCase(
+            context = context,
+            drawStrategyConfig = DrawStrategyConfig(strategy = DrawModelingStrategy.BASELINE)
+        )
 
         assertEquals("HOME_WIN", result.predictedOutcome)
         assertEquals(result.homeWinProb, result.confidenceScore, 1e-6)
@@ -153,7 +165,10 @@ class DrawStrategyAbstractionTest {
     fun `Test 5 - baseline evidence regression confirms all 6 signals and metadata intact`() {
         val context = createDeterministicContext()
 
-        val result = useCase(context)
+        val result = useCase(
+            context = context,
+            drawStrategyConfig = DrawStrategyConfig(strategy = DrawModelingStrategy.BASELINE)
+        )
 
         assertNotNull(result.evidence)
         val ev = result.evidence!!
@@ -171,7 +186,7 @@ class DrawStrategyAbstractionTest {
     }
 
     @Test
-    fun `Test 6 - backtest usecase defaults to BASELINE strategy and evaluates FT matches correctly`() = runTest {
+    fun `Test 6 - backtest usecase defaults to DECISION_MARGIN strategy and evaluates FT matches correctly`() = runBlocking {
         val targetMatch = Match(
             id = 501L,
             homeTeam = arsenal,
@@ -276,7 +291,7 @@ class DrawStrategyAbstractionTest {
     }
 
     @Test
-    fun `Test 12 - backtest with DYNAMIC_DRAW_PRIOR strategy passes strategy to prediction pipeline correctly`() = runTest {
+    fun `Test 12 - backtest with DYNAMIC_DRAW_PRIOR strategy passes strategy to prediction pipeline correctly`() = runBlocking {
         val balancedMatch = Match(
             id = 503L,
             homeTeam = arsenal,
@@ -351,7 +366,7 @@ class DrawStrategyAbstractionTest {
     }
 
     @Test
-    fun `Test 10 - backtest with DECISION_MARGIN strategy passes strategy to predictions correctly`() = runTest {
+    fun `Test 10 - backtest with DECISION_MARGIN strategy passes strategy to predictions correctly`() = runBlocking {
         val balancedMatch = Match(
             id = 502L,
             homeTeam = arsenal,

@@ -12,7 +12,7 @@ import dev.anhquocs.truelab.core.domain.team.usecase.CalculateDynamicEloUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -43,7 +43,7 @@ class RunDailyBacktestUseCaseTest {
     }
 
     @Test
-    fun invoke_withZeroTargetMatches_emitsCompletedWithZeroMetrics() = runTest {
+    fun invoke_withZeroTargetMatches_emitsCompletedWithZeroMetrics() = runBlocking {
         val events = runDailyBacktestUseCase(
             evaluationDate = "2026-10-02",
             targetMatches = emptyList(),
@@ -59,7 +59,7 @@ class RunDailyBacktestUseCaseTest {
     }
 
     @Test
-    fun invoke_withTargetMatches_hydratesOddsAndEvaluatesCorrectly() = runTest {
+    fun invoke_withTargetMatches_hydratesOddsAndEvaluatesCorrectly() = runBlocking {
         val targetMatch = Match(
             id = 101L,
             homeTeam = arsenal,
@@ -70,7 +70,7 @@ class RunDailyBacktestUseCaseTest {
             status = MatchStatus.ENDED
         )
 
-        // Provide pre-match odds before kickoff
+        // Provide pre-match odds before kickoff (1790964000 = 2026-10-02T18:00:00Z)
         fakeOddsRepository.setOdds(
             101L,
             listOf(
@@ -78,10 +78,10 @@ class RunDailyBacktestUseCaseTest {
                     companyId = 1,
                     companyName = "Bet365",
                     oddsType = "european",
-                    homeOdds = 1.5,
-                    drawOdds = 4.0,
-                    awayOdds = 6.0,
-                    changeTime = "2026-10-02T18:00:00",
+                    homeWin = 1.5,
+                    draw = 4.0,
+                    awayWin = 6.0,
+                    changeTime = 1790964000L,
                     marketPhase = "instant"
                 )
             )
@@ -113,7 +113,7 @@ class RunDailyBacktestUseCaseTest {
     }
 
     @Test
-    fun invoke_withMissingOdds_handlesMissingSignalGracefullyAndRecordsCoverage() = runTest {
+    fun invoke_withMissingOdds_handlesMissingSignalGracefullyAndRecordsCoverage() = runBlocking {
         val targetMatch1 = Match(
             id = 201L,
             homeTeam = arsenal,
@@ -141,10 +141,10 @@ class RunDailyBacktestUseCaseTest {
                     companyId = 1,
                     companyName = "Crown",
                     oddsType = "european",
-                    homeOdds = 1.8,
-                    drawOdds = 3.5,
-                    awayOdds = 4.5,
-                    changeTime = "2026-10-02T14:00:00",
+                    homeWin = 1.8,
+                    draw = 3.5,
+                    awayWin = 4.5,
+                    changeTime = 1790949600L,
                     marketPhase = "initial"
                 )
             )
@@ -170,7 +170,7 @@ class RunDailyBacktestUseCaseTest {
     }
 
     @Test
-    fun invoke_strictlyEnforcesTemporalIntegrity_noDataLeakage() = runTest {
+    fun invoke_strictlyEnforcesTemporalIntegrity_noDataLeakage() = runBlocking {
         val historicalPrior = Match(
             id = 1L,
             homeTeam = arsenal,
@@ -199,7 +199,7 @@ class RunDailyBacktestUseCaseTest {
             status = MatchStatus.ENDED
         )
 
-        // Post-kickoff odds (Live/rolling ball) - must NOT be used
+        // Post-kickoff odds (Live/rolling ball) - must NOT be used (1790958600 = 2026-10-02T16:30:00Z after 15:00:00Z)
         fakeOddsRepository.setOdds(
             2L,
             listOf(
@@ -207,10 +207,10 @@ class RunDailyBacktestUseCaseTest {
                     companyId = 1,
                     companyName = "Bet365",
                     oddsType = "european",
-                    homeOdds = 1.05,
-                    drawOdds = 12.0,
-                    awayOdds = 25.0,
-                    changeTime = "2026-10-02T16:30:00", // After kickoff 15:00:00
+                    homeWin = 1.05,
+                    draw = 12.0,
+                    awayWin = 25.0,
+                    changeTime = 1790958600L,
                     marketPhase = "rolling_ball"
                 )
             )

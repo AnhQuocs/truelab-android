@@ -189,7 +189,7 @@ class RestAdvantageSignalTransformerTest {
     }
 
     @Test
-    fun `14 - probability bounds are strictly respected in [0_28, 0_46]`() {
+    fun `14 - probability bounds are strictly respected in range 0_28 to 0_46`() {
         val deltas = listOf(-1000.0, -50.0, -3.0, 0.0, 3.0, 50.0, 1000.0)
         for (d in deltas) {
             val signal = RestAdvantageSignalTransformer.transform(deltaRest = d, config = defaultConfig)
