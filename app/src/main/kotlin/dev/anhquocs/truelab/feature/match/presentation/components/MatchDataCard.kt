@@ -128,7 +128,13 @@ fun MatchDataCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "${record.homeScore} - ${record.awayScore}",
+                        text = dev.anhquocs.truelab.core.ui.utils.ScoreFormatterUtils.formatScore(
+                            record.homeScore,
+                            record.awayScore,
+                            record.isPenalty,
+                            record.homePenaltyScore,
+                            record.awayPenaltyScore
+                        ),
                         style = MaterialTheme.typography.s18.bold(),
                         color = MaterialTheme.colorScheme.primary
                     )

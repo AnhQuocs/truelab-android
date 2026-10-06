@@ -137,7 +137,14 @@ fun MatchupOverviewCard(
                 ) {
                     if (isLive || match.status == MatchStatus.ENDED) {
                         Text(
-                            text = "${match.homeScore ?: 0} : ${match.awayScore ?: 0}",
+                            text = dev.anhquocs.truelab.core.ui.utils.ScoreFormatterUtils.formatScore(
+                                match.homeScore,
+                                match.awayScore,
+                                match.isPenalty,
+                                match.homePenaltyScore,
+                                match.awayPenaltyScore,
+                                delimiter = " : "
+                            ),
                             style = MaterialTheme.typography.s18.bold(),
                             color = if (isLive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                         )

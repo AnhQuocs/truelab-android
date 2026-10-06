@@ -110,7 +110,7 @@ class DataSyncWorkerTest {
             errorToThrow?.let { throw it }
             return BaseResponse(
                 200, "OK", MatchInfoDetailResponseBase(
-                    listOf(MatchRecord(3001L, TeamInfo(1, "LIV", ""), TeamInfo(2, "MCI", ""), 2, 2, "$date 17:30:00", "8", competitionId = 927)),
+                    listOf(MatchRecord(id = 3001L, homeTeam = TeamInfo(1, "LIV", ""), awayTeam = TeamInfo(2, "MCI", ""), homeScore = 2, awayScore = 2, startTimeDate = "$date 17:30:00", status = "8", competitionId = 927)),
                     MetaResponse(1, 1)
                 )
             )

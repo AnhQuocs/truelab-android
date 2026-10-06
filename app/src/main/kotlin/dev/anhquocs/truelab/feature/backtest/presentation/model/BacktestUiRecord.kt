@@ -89,5 +89,8 @@ data class BacktestMatchUiRecord(
     val confidencePct: Int,
     val isCorrect: Boolean,
     val scoreDisplay: String = "",
+    val isPenalty: Boolean = false,
+    val homePenaltyScore: Int? = null,
+    val awayPenaltyScore: Int? = null,
     val hasUsableOdds: Boolean = false
 )

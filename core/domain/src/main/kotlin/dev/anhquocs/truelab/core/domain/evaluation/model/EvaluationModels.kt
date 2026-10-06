@@ -118,6 +118,9 @@ data class BacktestMatchRecord(
     val isCorrect: Boolean,
     val homeScore: Int? = null,
     val awayScore: Int? = null,
+    val isPenalty: Boolean = false,
+    val homePenaltyScore: Int? = null,
+    val awayPenaltyScore: Int? = null,
     val hasUsableOdds: Boolean = false
 )
 

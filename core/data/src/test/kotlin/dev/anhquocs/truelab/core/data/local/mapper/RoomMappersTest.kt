@@ -279,4 +279,57 @@ class RoomMappersTest {
         assertEquals("World Cup", leagueEntity?.shortName)
         assertEquals("https://example.com/wc.png", leagueEntity?.logo)
     }
+
+    @Test
+    fun matchRecord_toMatchEntity_mapsPenaltyFieldsCorrectly() {
+        val matchRecord = dev.anhquocs.truelab.core.data.match.remote.dto.MatchRecord(
+            id = 571389L,
+            competitionId = 1515,
+            homeTeam = dev.anhquocs.truelab.core.data.match.remote.dto.TeamInfo(1, "Indonesia", null),
+            awayTeam = dev.anhquocs.truelab.core.data.match.remote.dto.TeamInfo(2, "Thailand", null),
+            homeScore = 2,
+            awayScore = 2,
+            isPenalty = true,
+            penaltyResult = dev.anhquocs.truelab.core.data.match.remote.dto.PenaltyResultDto(homeScore = 4, awayScore = 2),
+            startTimeDate = "2023-12-10T13:00:00Z",
+            status = "ended"
+        )
+
+        val entity = dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.run { matchRecord.toMatchEntity() }
+
+        assertEquals(571389L, entity.id)
+        assertEquals(2, entity.homeScore)
+        assertEquals(2, entity.awayScore)
+        assertEquals(true, entity.isPenalty)
+        assertEquals(4, entity.homePenaltyScore)
+        assertEquals(2, entity.awayPenaltyScore)
+    }
+
+    @Test
+    fun matchWithTeams_toDomain_mapsPenaltyFieldsCorrectly() {
+        val matchEntity = MatchEntity(
+            id = 1006L,
+            homeTeamId = 1,
+            awayTeamId = 2,
+            homeScore = 2,
+            awayScore = 2,
+            isPenalty = true,
+            homePenaltyScore = 4,
+            awayPenaltyScore = 2,
+            startTimeDate = "2023-12-10 20:00:00",
+            status = "8"
+        )
+        val homeTeam = TeamEntity(id = 1, name = "Indonesia", logo = "indonesia.png", leagueName = null)
+        val awayTeam = TeamEntity(id = 2, name = "Thailand", logo = "thailand.png", leagueName = null)
+        val matchWithTeams = MatchWithTeams(match = matchEntity, homeTeam = homeTeam, awayTeam = awayTeam)
+
+        val domain = matchWithTeams.toDomain()
+
+        assertEquals(1006L, domain.id)
+        assertEquals(2, domain.homeScore)
+        assertEquals(2, domain.awayScore)
+        assertEquals(true, domain.isPenalty)
+        assertEquals(4, domain.homePenaltyScore)
+        assertEquals(2, domain.awayPenaltyScore)
+    }
 }

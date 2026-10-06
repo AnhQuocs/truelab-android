@@ -218,6 +218,9 @@ class RunDailyBacktestUseCase(
                 isCorrect = isCorrect,
                 homeScore = homeScore,
                 awayScore = awayScore,
+                isPenalty = target.isPenalty,
+                homePenaltyScore = target.homePenaltyScore,
+                awayPenaltyScore = target.awayPenaltyScore,
                 hasUsableOdds = preMatchOdds != null
             )
             evaluatedRecords.add(record)

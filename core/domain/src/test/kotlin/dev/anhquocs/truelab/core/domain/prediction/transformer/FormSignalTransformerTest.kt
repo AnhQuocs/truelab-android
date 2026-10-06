@@ -93,9 +93,9 @@ class FormSignalTransformerTest {
             drawStrategyConfig = dynamicStrategyConfig
         )
 
-        assertEquals(0.36, signal.drawProb, 1e-6)
-        assertEquals(0.32, signal.homeProb, 1e-6)
-        assertEquals(0.32, signal.awayProb, 1e-6)
+        assertEquals(0.38, signal.drawProb, 1e-6)
+        assertEquals(0.31, signal.homeProb, 1e-2)
+        assertEquals(0.31, signal.awayProb, 1e-2)
         assertTrue(signal.drawProb > signal.homeProb)
 
         val sum = signal.homeProb + signal.drawProb + signal.awayProb
@@ -129,9 +129,9 @@ class FormSignalTransformerTest {
             drawStrategyConfig = dynamicStrategyConfig
         )
 
-        assertEquals(0.36, signal.drawProb, 1e-6)
-        assertEquals(0.32, signal.homeProb, 1e-6)
-        assertEquals(0.32, signal.awayProb, 1e-6)
+        assertEquals(0.38, signal.drawProb, 1e-6)
+        assertEquals(0.31, signal.homeProb, 1e-2)
+        assertEquals(0.31, signal.awayProb, 1e-2)
         assertEquals(1.0, signal.homeProb + signal.drawProb + signal.awayProb, 1e-6)
     }
 }

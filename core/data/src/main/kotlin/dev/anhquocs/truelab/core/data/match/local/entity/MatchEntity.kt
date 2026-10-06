@@ -1,5 +1,6 @@
 package dev.anhquocs.truelab.core.data.match.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -51,6 +52,12 @@ data class MatchEntity(
     val awayScore: Int?,
     val startTimeDate: String,
     val status: String,
+    @ColumnInfo(name = "is_penalty")
+    val isPenalty: Boolean = false,
+    @ColumnInfo(name = "home_penalty_score")
+    val homePenaltyScore: Int? = null,
+    @ColumnInfo(name = "away_penalty_score")
+    val awayPenaltyScore: Int? = null,
     val leagueId: Int? = null,
     val season: String? = null,
     val minutes: String? = null

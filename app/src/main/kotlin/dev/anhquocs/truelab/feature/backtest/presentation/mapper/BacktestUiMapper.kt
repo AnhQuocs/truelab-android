@@ -154,7 +154,13 @@ object BacktestUiMapper {
     fun toMatchUiRecords(records: List<BacktestMatchRecord>): List<BacktestMatchUiRecord> {
         return records.map { record ->
             val scoreText = if (record.homeScore != null && record.awayScore != null) {
-                "${record.homeScore} - ${record.awayScore}"
+                dev.anhquocs.truelab.core.ui.utils.ScoreFormatterUtils.formatScore(
+                    homeScore = record.homeScore,
+                    awayScore = record.awayScore,
+                    isPenalty = record.isPenalty,
+                    homePenaltyScore = record.homePenaltyScore,
+                    awayPenaltyScore = record.awayPenaltyScore
+                )
             } else {
                 ""
             }
@@ -171,6 +177,9 @@ object BacktestUiMapper {
                 confidencePct = (record.confidenceScore * 100).roundToInt(),
                 isCorrect = record.isCorrect,
                 scoreDisplay = scoreText,
+                isPenalty = record.isPenalty,
+                homePenaltyScore = record.homePenaltyScore,
+                awayPenaltyScore = record.awayPenaltyScore,
                 hasUsableOdds = record.hasUsableOdds
             )
         }

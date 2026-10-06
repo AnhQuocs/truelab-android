@@ -77,7 +77,7 @@ class RunDailyBacktestUseCaseTest {
                 OddsRecordItem(
                     companyId = 1,
                     companyName = "Bet365",
-                    oddsType = "european",
+                    oddsType = "eu",
                     homeWin = 1.5,
                     draw = 4.0,
                     awayWin = 6.0,
@@ -140,7 +140,7 @@ class RunDailyBacktestUseCaseTest {
                 OddsRecordItem(
                     companyId = 1,
                     companyName = "Crown",
-                    oddsType = "european",
+                    oddsType = "eu",
                     homeWin = 1.8,
                     draw = 3.5,
                     awayWin = 4.5,
@@ -228,6 +228,36 @@ class RunDailyBacktestUseCaseTest {
         // Post-kickoff odds rejected -> hasUsableOdds = false
         assertFalse(record.hasUsableOdds)
         assertEquals(0.0, completed.result.oddsCoverage.coveragePercentage, 0.001)
+    }
+
+    @Test
+    fun invoke_withPenaltyMatch_preservesPenaltyScoresAndKeepsDrawOutcome() = runBlocking {
+        val targetMatch = Match(
+            id = 301L,
+            homeTeam = arsenal,
+            awayTeam = chelsea,
+            homeScore = 2,
+            awayScore = 2,
+            isPenalty = true,
+            homePenaltyScore = 4,
+            awayPenaltyScore = 2,
+            startTimeDate = "2026-10-02T19:00:00",
+            status = MatchStatus.ENDED
+        )
+
+        val events = runDailyBacktestUseCase(
+            evaluationDate = "2026-10-02",
+            targetMatches = listOf(targetMatch),
+            allMatches = listOf(targetMatch)
+        ).toList()
+
+        val completed = events.last() as DailyBacktestProgressEvent.Completed
+        val record = completed.result.records.first()
+
+        assertEquals("DRAW", record.actualOutcome)
+        assertTrue(record.isPenalty)
+        assertEquals(4, record.homePenaltyScore)
+        assertEquals(2, record.awayPenaltyScore)
     }
 
     private class FakeTestOddsRepository : OddsRepository {

@@ -374,5 +374,25 @@ class MigrationTest {
         assertEquals(2.10, row?.get("homeWin"))
         assertNull(row?.get("handicap"))
     }
+
+    @Test
+    fun migration_4_5_alters_matches_table_with_penalty_fields() {
+        MIGRATION_1_2.migrate(db)
+        MIGRATION_4_5.migrate(db)
+
+        val matchesTable = db.tables["matches"]
+        assertNotNull(matchesTable)
+        assertEquals("INTEGER", matchesTable?.columns?.get("isPenalty"))
+        assertEquals("INTEGER", matchesTable?.columns?.get("homePenaltyScore"))
+        assertEquals("INTEGER", matchesTable?.columns?.get("awayPenaltyScore"))
+
+        val matches = db.rows["matches"]
+        assertNotNull(matches)
+        assertEquals(1, matches?.size)
+        val match = matches?.first()
+        assertNull(match?.get("isPenalty"))
+        assertNull(match?.get("homePenaltyScore"))
+        assertNull(match?.get("awayPenaltyScore"))
+    }
 }
 

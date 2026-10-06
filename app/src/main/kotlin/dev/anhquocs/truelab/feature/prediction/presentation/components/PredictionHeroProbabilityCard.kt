@@ -54,12 +54,9 @@ fun PredictionHeroProbabilityCard(
     val awayPct = (predictionResult.awayWinProb * 100).roundToInt()
     val confPct = (predictionResult.confidenceScore * 100).roundToInt()
 
-    val isHomeMax = predictionResult.homeWinProb >= predictionResult.drawProb &&
-            predictionResult.homeWinProb >= predictionResult.awayWinProb
-    val isDrawMax = predictionResult.drawProb > predictionResult.homeWinProb &&
-            predictionResult.drawProb >= predictionResult.awayWinProb
-    val isAwayMax = predictionResult.awayWinProb > predictionResult.homeWinProb &&
-            predictionResult.awayWinProb > predictionResult.drawProb
+    val isHomeMax = predictionResult.predictedOutcome == "HOME_WIN"
+    val isAwayMax = predictionResult.predictedOutcome == "AWAY_WIN"
+    val isDrawMax = !isHomeMax && !isAwayMax
 
     val (outcomeLabel, outcomeColor) = when (predictionResult.predictedOutcome) {
         "HOME_WIN" -> stringResource(R.string.prediction_outcome_home) to MaterialTheme.colorScheme.primary

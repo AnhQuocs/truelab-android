@@ -11,6 +11,9 @@ data class MatchDataRecord(
     val awayTeam: String,
     val homeScore: Int,
     val awayScore: Int,
+    val isPenalty: Boolean = false,
+    val homePenaltyScore: Int? = null,
+    val awayPenaltyScore: Int? = null,
     val actualResult: String, // "LIVE", "HOME_WIN", "DRAW", "AWAY_WIN", "SCHEDULED", "CANCELLED"
     val avgHomeOdds: Double? = null,
     val avgDrawOdds: Double? = null,

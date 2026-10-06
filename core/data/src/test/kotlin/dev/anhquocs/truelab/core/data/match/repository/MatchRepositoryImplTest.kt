@@ -272,17 +272,17 @@ class MatchRepositoryImplTest {
         dao.matches.addAll(
             listOf(
                 MatchWithTeams(
-                    match = MatchEntity(1L, 1, 2, 2, 1, "2024-01-01", "8"),
+                    match = MatchEntity(id = 1L, homeTeamId = 1, awayTeamId = 2, homeScore = 2, awayScore = 1, startTimeDate = "2024-01-01", status = "8"),
                     homeTeam = team1,
                     awayTeam = team2
                 ),
                 MatchWithTeams(
-                    match = MatchEntity(2L, 2, 1, 0, 0, "2024-02-01", "8"),
+                    match = MatchEntity(id = 2L, homeTeamId = 2, awayTeamId = 1, homeScore = 0, awayScore = 0, startTimeDate = "2024-02-01", status = "8"),
                     homeTeam = team2,
                     awayTeam = team1
                 ),
                 MatchWithTeams(
-                    match = MatchEntity(3L, 1, 3, 3, 0, "2024-03-01", "8"),
+                    match = MatchEntity(id = 3L, homeTeamId = 1, awayTeamId = 3, homeScore = 3, awayScore = 0, startTimeDate = "2024-03-01", status = "8"),
                     homeTeam = team1,
                     awayTeam = team3
                 )
@@ -305,12 +305,12 @@ class MatchRepositoryImplTest {
         dao.matches.addAll(
             listOf(
                 MatchWithTeams(
-                    match = MatchEntity(2L, 2, 1, 0, 0, "2024-02-01", "8"),
+                    match = MatchEntity(id = 2L, homeTeamId = 2, awayTeamId = 1, homeScore = 0, awayScore = 0, startTimeDate = "2024-02-01", status = "8"),
                     homeTeam = team2,
                     awayTeam = team1
                 ),
                 MatchWithTeams(
-                    match = MatchEntity(1L, 1, 2, 2, 1, "2024-01-01", "8"),
+                    match = MatchEntity(id = 1L, homeTeamId = 1, awayTeamId = 2, homeScore = 2, awayScore = 1, startTimeDate = "2024-01-01", status = "8"),
                     homeTeam = team1,
                     awayTeam = team2
                 )
@@ -334,17 +334,17 @@ class MatchRepositoryImplTest {
         dao.matches.addAll(
             listOf(
                 MatchWithTeams(
-                    match = MatchEntity(1L, 1, 2, 1, 0, "2026-04-01 15:00:00", "live", leagueId = 10, minutes = "45+2"),
+                    match = MatchEntity(id = 1L, homeTeamId = 1, awayTeamId = 2, homeScore = 1, awayScore = 0, startTimeDate = "2026-04-01 15:00:00", status = "live", leagueId = 10, minutes = "45+2"),
                     homeTeam = team1,
                     awayTeam = team2
                 ),
                 MatchWithTeams(
-                    match = MatchEntity(2L, 2, 1, null, null, "2026-04-01 18:00:00", "pending", leagueId = 10),
+                    match = MatchEntity(id = 2L, homeTeamId = 2, awayTeamId = 1, homeScore = null, awayScore = null, startTimeDate = "2026-04-01 18:00:00", status = "pending", leagueId = 10),
                     homeTeam = team2,
                     awayTeam = team1
                 ),
                 MatchWithTeams(
-                    match = MatchEntity(3L, 1, 2, 2, 0, "2026-04-01 20:00:00", "ended", leagueId = 10),
+                    match = MatchEntity(id = 3L, homeTeamId = 1, awayTeamId = 2, homeScore = 2, awayScore = 0, startTimeDate = "2026-04-01 20:00:00", status = "ended", leagueId = 10),
                     homeTeam = team1,
                     awayTeam = team2
                 )

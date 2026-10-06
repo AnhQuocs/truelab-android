@@ -17,11 +17,19 @@ data class MatchRecord(
     @SerialName("away_team") val awayTeam: TeamInfo,
     @SerialName("home_score") val homeScore: Int,
     @SerialName("away_score") val awayScore: Int,
+    @SerialName("is_penalty") val isPenalty: Boolean? = false,
+    @SerialName("penalty_result") val penaltyResult: PenaltyResultDto? = null,
     @SerialName("start_time_date") val startTimeDate: String,
     @SerialName("status") val status: String,
     @SerialName("minutes") val minutes: String? = null,
     @SerialName("competition_id") val competitionId: Int? = null,
     @SerialName("competition") val competition: CompetitionSummaryInfo? = null
+)
+
+@Serializable
+data class PenaltyResultDto(
+    @SerialName("home_score") val homeScore: Int? = null,
+    @SerialName("away_score") val awayScore: Int? = null
 )
 
 @Serializable

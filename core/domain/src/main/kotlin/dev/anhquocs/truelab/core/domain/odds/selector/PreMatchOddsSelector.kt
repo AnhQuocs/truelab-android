@@ -159,7 +159,10 @@ object PreMatchOddsSelector {
      */
     fun parseKickoffEpochSeconds(rawDateTime: String?): Long? {
         if (rawDateTime.isNullOrBlank()) return null
-        val trimmed = rawDateTime.trim()
+        var trimmed = rawDateTime.trim()
+        if (trimmed.length == 16 && (trimmed[10] == ' ' || trimmed[10] == 'T')) {
+            trimmed += ":00"
+        }
 
         return try {
             Instant.parse(trimmed).epochSecond
