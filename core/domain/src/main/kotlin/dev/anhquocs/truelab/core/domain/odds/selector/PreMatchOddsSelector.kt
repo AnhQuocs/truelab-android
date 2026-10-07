@@ -75,6 +75,39 @@ object PreMatchOddsSelector {
     }
 
     /**
+     * Chọn lọc Main Line Kèo Châu Á (Asian Handicap / asia) hợp lệ trước trận cho Candidate C.
+     * Tiêu chí: Main Line có |homeWin - awayWin| nhỏ nhất, tie-break snapshot mới nhất.
+     */
+    fun selectPreMatchAsianHandicapMainLine(
+        oddsList: List<OddsRecordItem>,
+        kickoffTime: String?
+    ): OddsRecordItem? {
+        val kickoffEpochSeconds = parseKickoffEpochSeconds(kickoffTime)
+        val validCandidates = oddsList.filter { odds ->
+            val type = odds.oddsType.lowercase().trim()
+            (type == "asia" || type == "as") &&
+                isPreMatchPhaseAndTimingValid(odds, kickoffEpochSeconds) &&
+                odds.handicap != null &&
+                odds.homeWin != null && odds.awayWin != null &&
+                odds.homeWin > 0.0 && odds.awayWin > 0.0
+        }
+        if (validCandidates.isEmpty()) return null
+
+        // Group theo từng handicap line và lấy snapshot mới nhất của từng line
+        val lineBests = validCandidates.groupBy { it.handicap!! }
+            .values
+            .mapNotNull { rankAndSelectBestSnapshot(it) }
+
+        return lineBests.minWithOrNull(
+            compareBy<OddsRecordItem> { odds ->
+                kotlin.math.abs((odds.homeWin ?: 0.0) - (odds.awayWin ?: 0.0))
+            }.thenByDescending { odds ->
+                odds.changeTime
+            }
+        )
+    }
+
+    /**
      * Chọn lọc bản ghi Kèo Tổng số bàn thắng (Over/Under / bs) hợp lệ trước trận (Data Foundation).
      */
     fun selectPreMatchOverUnderOdds(
@@ -89,6 +122,38 @@ object PreMatchOddsSelector {
                 (odds.over != null && odds.under != null)
         }
         return rankAndSelectBestSnapshot(validCandidates)
+    }
+
+    /**
+     * Chọn lọc Main Line Kèo Tài Xỉu (Over/Under / bs) hợp lệ trước trận cho Candidate C.
+     * Tiêu chí: Main Line có |over - under| nhỏ nhất, line > 0, tie-break snapshot mới nhất.
+     */
+    fun selectPreMatchOverUnderMainLine(
+        oddsList: List<OddsRecordItem>,
+        kickoffTime: String?
+    ): OddsRecordItem? {
+        val kickoffEpochSeconds = parseKickoffEpochSeconds(kickoffTime)
+        val validCandidates = oddsList.filter { odds ->
+            val type = odds.oddsType.lowercase().trim()
+            type == "bs" &&
+                isPreMatchPhaseAndTimingValid(odds, kickoffEpochSeconds) &&
+                odds.handicap != null && (odds.handicap ?: 0.0) > 0.0 &&
+                odds.over != null && odds.under != null &&
+                odds.over > 0.0 && odds.under > 0.0
+        }
+        if (validCandidates.isEmpty()) return null
+
+        val lineBests = validCandidates.groupBy { it.handicap!! }
+            .values
+            .mapNotNull { rankAndSelectBestSnapshot(it) }
+
+        return lineBests.minWithOrNull(
+            compareBy<OddsRecordItem> { odds ->
+                kotlin.math.abs((odds.over ?: 0.0) - (odds.under ?: 0.0))
+            }.thenByDescending { odds ->
+                odds.changeTime
+            }
+        )
     }
 
     /**

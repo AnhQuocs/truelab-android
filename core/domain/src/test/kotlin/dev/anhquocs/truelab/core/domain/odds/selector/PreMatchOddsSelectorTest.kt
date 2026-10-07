@@ -220,4 +220,76 @@ class PreMatchOddsSelectorTest {
         assertNotNull(selected)
         assertEquals(1.88, selected!!.over)
     }
+
+    @Test
+    fun `selectPreMatchAsianHandicapMainLine - selects line with minimum price difference and positive prices`() {
+        val ahList = listOf(
+            OddsRecordItem(
+                companyId = 1,
+                companyName = "Pinnacle",
+                oddsType = "asia",
+                handicap = 0.25,
+                homeWin = 0.70,
+                awayWin = 1.20, // diff = 0.50
+                changeTime = kickoffEpoch - 3600,
+                marketPhase = "immediate"
+            ),
+            OddsRecordItem(
+                companyId = 1,
+                companyName = "Pinnacle",
+                oddsType = "asia",
+                handicap = 0.50,
+                homeWin = 0.92,
+                awayWin = 0.96, // diff = 0.04 (Main line)
+                changeTime = kickoffEpoch - 1800,
+                marketPhase = "immediate"
+            ),
+            OddsRecordItem(
+                companyId = 1,
+                companyName = "Pinnacle",
+                oddsType = "asia",
+                handicap = 0.75,
+                homeWin = 1.15,
+                awayWin = 0.75, // diff = 0.40
+                changeTime = kickoffEpoch - 3600,
+                marketPhase = "immediate"
+            )
+        )
+
+        val mainLine = PreMatchOddsSelector.selectPreMatchAsianHandicapMainLine(ahList, kickoffIso)
+        assertNotNull(mainLine)
+        assertEquals(0.50, mainLine!!.handicap)
+        assertEquals(0.92, mainLine.homeWin)
+    }
+
+    @Test
+    fun `selectPreMatchOverUnderMainLine - selects line with minimum price difference and valid line`() {
+        val ouList = listOf(
+            OddsRecordItem(
+                companyId = 1,
+                companyName = "Pinnacle",
+                oddsType = "bs",
+                handicap = 2.25,
+                over = 0.75,
+                under = 1.15, // diff = 0.40
+                changeTime = kickoffEpoch - 3600,
+                marketPhase = "immediate"
+            ),
+            OddsRecordItem(
+                companyId = 1,
+                companyName = "Pinnacle",
+                oddsType = "bs",
+                handicap = 2.50,
+                over = 0.95,
+                under = 0.93, // diff = 0.02 (Main line)
+                changeTime = kickoffEpoch - 1800,
+                marketPhase = "immediate"
+            )
+        )
+
+        val mainLine = PreMatchOddsSelector.selectPreMatchOverUnderMainLine(ouList, kickoffIso)
+        assertNotNull(mainLine)
+        assertEquals(2.50, mainLine!!.handicap)
+        assertEquals(0.95, mainLine.over)
+    }
 }

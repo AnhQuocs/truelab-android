@@ -46,5 +46,7 @@ data class MatchPredictionContext(
     val awayMeanConceded: Double? = null,
     val homeWins: Int? = null,
     val draws: Int? = null,
-    val awayWins: Int? = null
+    val awayWins: Int? = null,
+    val asianHandicapOdds: OddsRecordItem? = null,
+    val overUnderOdds: OddsRecordItem? = null
 )
