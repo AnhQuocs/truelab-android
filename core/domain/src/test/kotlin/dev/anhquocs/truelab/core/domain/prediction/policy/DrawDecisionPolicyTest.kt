@@ -2,28 +2,27 @@ package dev.anhquocs.truelab.core.domain.prediction.policy
 
 import dev.anhquocs.truelab.core.algorithm.prediction.OutcomeProbabilities
 import dev.anhquocs.truelab.core.algorithm.prediction.PredictedOutcome
+import dev.anhquocs.truelab.core.domain.prediction.model.DrawDecisionRule
 import dev.anhquocs.truelab.core.domain.prediction.model.DrawMarginConfig
 import dev.anhquocs.truelab.core.domain.prediction.model.DrawModelingStrategy
 import dev.anhquocs.truelab.core.domain.prediction.model.DrawStrategyConfig
+import dev.anhquocs.truelab.core.domain.prediction.model.RelativeDrawGapConfig
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
 import org.junit.Test
 
 /**
- * Unit test cho [DrawDecisionPolicy] (Phase B2 - Candidate A: Decision Margin / Relative Threshold).
+ * Unit test cho [DrawDecisionPolicy] và [DrawDecisionRule] (Candidate A: Decision Margin & Candidate B: Relative Draw Gap).
  *
  * Kiểm tra toàn diện mọi nhánh điều kiện và ranh giới (Boundary conditions):
- * 1. Strong Home -> HOME_WIN
- * 2. Strong Away -> AWAY_WIN
- * 3. Balanced + Draw threshold satisfied -> DRAW
- * 4. Balanced but Draw prob too low -> HOME_WIN (argmax)
- * 5. Margin exactly delta -> argmax (không thỏa < delta)
- * 6. Draw prob exactly theta -> DRAW (thỏa >= theta)
- * 7. Both conditions fail -> argmax
- * 8. Probability preservation -> Không thay đổi xác suất thô
- * 9. Strategy selection -> BASELINE giữ nguyên argmax, DECISION_MARGIN áp dụng policy
- * 10. DYNAMIC_DRAW_PRIOR placeholder -> fail-fast UnsupportedOperationException
+ * 1. Candidate A tests (Strong Home/Away, Balanced + Threshold, Boundary delta/theta, Prob preservation)
+ * 2. Strategy & DecisionRule backward compatibility (resolvedDecisionRule mappings)
+ * 3. Candidate B Relative Draw Gap tests:
+ *    - Raw argmax is DRAW -> maintains DRAW regardless of deficit/tau
+ *    - drawDeficit < tau -> triggers DRAW
+ *    - drawDeficit == tau -> triggers DRAW (boundary <= tau)
+ *    - drawDeficit > tau -> retains raw argmax (boundary > tau)
+ *    - Balanced/Unbalanced Home/Away cases
+ *    - Raw probabilities unaltered
  */
 class DrawDecisionPolicyTest {
 
@@ -179,4 +178,130 @@ class DrawDecisionPolicyTest {
         assertEquals("DRAW", drawOutcome)
         assertEquals("HOME_WIN", homeOutcome)
     }
+
+    @Test
+    fun `Test 11 - resolvedDecisionRule correctly maps legacy strategy and explicit decisionRule`() {
+        // 1. Implicit resolution when decisionRule is null
+        assertEquals(
+            DrawDecisionRule.DECISION_MARGIN,
+            DrawStrategyConfig(strategy = DrawModelingStrategy.DECISION_MARGIN).resolvedDecisionRule
+        )
+        assertEquals(
+            DrawDecisionRule.RAW_ARGMAX,
+            DrawStrategyConfig(strategy = DrawModelingStrategy.BASELINE).resolvedDecisionRule
+        )
+        assertEquals(
+            DrawDecisionRule.RAW_ARGMAX,
+            DrawStrategyConfig(strategy = DrawModelingStrategy.DYNAMIC_DRAW_PRIOR).resolvedDecisionRule
+        )
+
+        // 2. Explicit decisionRule overrides implicit resolution
+        assertEquals(
+            DrawDecisionRule.RAW_ARGMAX,
+            DrawStrategyConfig(
+                strategy = DrawModelingStrategy.BASELINE,
+                decisionRule = DrawDecisionRule.RAW_ARGMAX
+            ).resolvedDecisionRule
+        )
+        assertEquals(
+            DrawDecisionRule.DECISION_MARGIN,
+            DrawStrategyConfig(
+                strategy = DrawModelingStrategy.BASELINE,
+                decisionRule = DrawDecisionRule.DECISION_MARGIN
+            ).resolvedDecisionRule
+        )
+        assertEquals(
+            DrawDecisionRule.RELATIVE_DRAW_GAP,
+            DrawStrategyConfig(
+                strategy = DrawModelingStrategy.BASELINE,
+                decisionRule = DrawDecisionRule.RELATIVE_DRAW_GAP
+            ).resolvedDecisionRule
+        )
+    }
+
+    @Test
+    fun `Test 12 - Candidate B Relative Draw Gap when raw argmax is already DRAW retains DRAW`() {
+        // PH = 0.30, PD = 0.40, PA = 0.30 -> raw argmax is DRAW
+        val probs = createProbabilities(0.30, 0.40, 0.30)
+        val config = RelativeDrawGapConfig(tauThreshold = 0.03)
+
+        val outcome = DrawDecisionPolicy.applyRelativeDrawGap(probs, config)
+        assertEquals("DRAW", outcome)
+
+        val resolved = DrawDecisionPolicy.resolvePredictedOutcome(
+            probabilities = probs,
+            strategyConfig = DrawStrategyConfig(
+                strategy = DrawModelingStrategy.BASELINE,
+                decisionRule = DrawDecisionRule.RELATIVE_DRAW_GAP,
+                relativeGapConfig = config
+            )
+        )
+        assertEquals("DRAW", resolved)
+    }
+
+    @Test
+    fun `Test 13 - Candidate B Relative Draw Gap triggers DRAW when drawDeficit is strictly less than tau`() {
+        // PH = 0.42, PD = 0.38, PA = 0.20 -> max(PH, PA) = 0.42. drawDeficit = 0.42 - 0.38 = 0.04
+        val probs = createProbabilities(0.42, 0.38, 0.20)
+        val config = RelativeDrawGapConfig(tauThreshold = 0.05) // 0.04 < 0.05
+
+        assertEquals(PredictedOutcome.HOME_WIN, probs.predictedOutcome)
+        val outcome = DrawDecisionPolicy.applyRelativeDrawGap(probs, config)
+        assertEquals("DRAW", outcome)
+    }
+
+    @Test
+    fun `Test 14 - Candidate B Relative Draw Gap boundary exactly equal to tau triggers DRAW`() {
+        // PH = 0.42, PD = 0.38, PA = 0.20 -> max(PH, PA) = 0.42. drawDeficit = 0.42 - 0.38 = 0.04
+        val probs = createProbabilities(0.42, 0.38, 0.20)
+        val config = RelativeDrawGapConfig(tauThreshold = 0.04) // drawDeficit == tau (boundary <= tau)
+
+        val outcome = DrawDecisionPolicy.applyRelativeDrawGap(probs, config)
+        assertEquals("DRAW", outcome)
+    }
+
+    @Test
+    fun `Test 15 - Candidate B Relative Draw Gap boundary strictly greater than tau retains raw argmax`() {
+        // PH = 0.42, PD = 0.38, PA = 0.20 -> max(PH, PA) = 0.42. drawDeficit = 0.42 - 0.38 = 0.04
+        val probs = createProbabilities(0.42, 0.38, 0.20)
+        val config = RelativeDrawGapConfig(tauThreshold = 0.039) // 0.04 > 0.039
+
+        val outcome = DrawDecisionPolicy.applyRelativeDrawGap(probs, config)
+        assertEquals("HOME_WIN", outcome)
+    }
+
+    @Test
+    fun `Test 16 - Candidate B Relative Draw Gap with Away dominant match`() {
+        // PA = 0.45, PD = 0.40, PH = 0.15 -> max(PH, PA) = 0.45. drawDeficit = 0.45 - 0.40 = 0.05
+        val probs = createProbabilities(0.15, 0.40, 0.45)
+
+        // With tau = 0.06 -> DRAW
+        val outcomeDraw = DrawDecisionPolicy.applyRelativeDrawGap(probs, RelativeDrawGapConfig(tauThreshold = 0.06))
+        assertEquals("DRAW", outcomeDraw)
+
+        // With tau = 0.04 -> AWAY_WIN
+        val outcomeAway = DrawDecisionPolicy.applyRelativeDrawGap(probs, RelativeDrawGapConfig(tauThreshold = 0.04))
+        assertEquals("AWAY_WIN", outcomeAway)
+    }
+
+    @Test
+    fun `Test 17 - Candidate B Relative Draw Gap preserves raw probability values`() {
+        val probs = createProbabilities(0.42, 0.38, 0.20)
+        val config = RelativeDrawGapConfig(tauThreshold = 0.05)
+
+        val outcome = DrawDecisionPolicy.resolvePredictedOutcome(
+            probabilities = probs,
+            strategyConfig = DrawStrategyConfig(
+                strategy = DrawModelingStrategy.BASELINE,
+                decisionRule = DrawDecisionRule.RELATIVE_DRAW_GAP,
+                relativeGapConfig = config
+            )
+        )
+
+        assertEquals("DRAW", outcome)
+        assertEquals(0.42, probs.homeWinProb, 1e-6)
+        assertEquals(0.38, probs.drawProb, 1e-6)
+        assertEquals(0.20, probs.awayWinProb, 1e-6)
+    }
 }
+

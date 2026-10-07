@@ -405,4 +405,108 @@ class DrawStrategyAbstractionTest {
         assertEquals("DRAW", record.actualOutcome)
         assertTrue(record.isCorrect)
     }
+
+    @Test
+    fun `Test 13 - Candidate B RELATIVE_DRAW_GAP produces identical raw probabilities to BASELINE and Candidate A`() {
+        val context = createDeterministicContext()
+
+        val rawConfig = DrawStrategyConfig(
+            strategy = DrawModelingStrategy.BASELINE,
+            decisionRule = dev.anhquocs.truelab.core.domain.prediction.model.DrawDecisionRule.RAW_ARGMAX
+        )
+        val candidateAConfig = DrawStrategyConfig(
+            strategy = DrawModelingStrategy.BASELINE,
+            decisionRule = dev.anhquocs.truelab.core.domain.prediction.model.DrawDecisionRule.DECISION_MARGIN
+        )
+        val candidateBConfig = DrawStrategyConfig(
+            strategy = DrawModelingStrategy.BASELINE,
+            decisionRule = dev.anhquocs.truelab.core.domain.prediction.model.DrawDecisionRule.RELATIVE_DRAW_GAP,
+            relativeGapConfig = dev.anhquocs.truelab.core.domain.prediction.model.RelativeDrawGapConfig(tauThreshold = 0.05)
+        )
+
+        val rawResult = useCase(context = context, drawStrategyConfig = rawConfig)
+        val candidateAResult = useCase(context = context, drawStrategyConfig = candidateAConfig)
+        val candidateBResult = useCase(context = context, drawStrategyConfig = candidateBConfig)
+
+        // Raw probabilities MUST BE IDENTICAL across all three policies
+        assertEquals(rawResult.homeWinProb, candidateAResult.homeWinProb, 1e-6)
+        assertEquals(rawResult.drawProb, candidateAResult.drawProb, 1e-6)
+        assertEquals(rawResult.awayWinProb, candidateAResult.awayWinProb, 1e-6)
+
+        assertEquals(rawResult.homeWinProb, candidateBResult.homeWinProb, 1e-6)
+        assertEquals(rawResult.drawProb, candidateBResult.drawProb, 1e-6)
+        assertEquals(rawResult.awayWinProb, candidateBResult.awayWinProb, 1e-6)
+
+        // Signals evidence must be identical
+        assertEquals(rawResult.evidence?.totalWeight, candidateBResult.evidence?.totalWeight)
+    }
+
+    @Test
+    fun `Test 14 - backtest with RELATIVE_DRAW_GAP passes decision rule to prediction pipeline correctly`() = runBlocking {
+        val balancedMatch = Match(
+            id = 504L,
+            homeTeam = arsenal,
+            awayTeam = chelsea,
+            homeScore = 0,
+            awayScore = 0,
+            startTimeDate = "2026-10-02T19:00:00",
+            status = MatchStatus.ENDED
+        )
+
+        val previousHomeMatch = Match(
+            id = 401L,
+            homeTeam = arsenal,
+            awayTeam = TeamSummary(10, "Team 10"),
+            homeScore = 1,
+            awayScore = 1,
+            startTimeDate = "2026-09-28T19:00:00",
+            status = MatchStatus.ENDED
+        )
+
+        val previousAwayMatch = Match(
+            id = 402L,
+            homeTeam = chelsea,
+            awayTeam = TeamSummary(20, "Team 20"),
+            homeScore = 1,
+            awayScore = 1,
+            startTimeDate = "2026-09-28T19:00:00",
+            status = MatchStatus.ENDED
+        )
+
+        val allHistorical = listOf(balancedMatch, previousHomeMatch, previousAwayMatch)
+
+        val fakeOddsRepo = object : OddsRepository {
+            override fun getMatchOdds(matchId: Long): Flow<MatchOdds> = flowOf(MatchOdds(matchId, emptyList()))
+            override fun getOddsHistory(matchId: Long, companyId: Int?, oddsType: String?): Flow<List<OddsRecordItem>> = flowOf(emptyList())
+            override suspend fun getLatestEuropeanOddsMap(): Map<Long, OddsRecordItem> = emptyMap()
+            override suspend fun fetchAndCacheOddsForMatch(matchId: Long): Result<Unit> = Result.success(Unit)
+        }
+
+        val backtestUseCase = RunDailyBacktestUseCase(
+            oddsRepository = fakeOddsRepo,
+            predictMatchOutcomeUseCase = useCase,
+            calculateDynamicEloUseCase = CalculateDynamicEloUseCase(),
+            calculateEvaluationMetricsUseCase = CalculateEvaluationMetricsUseCase()
+        )
+
+        val events = backtestUseCase(
+            evaluationDate = "2026-10-02",
+            targetMatches = listOf(balancedMatch),
+            allMatches = allHistorical,
+            initialEloMap = mapOf(1 to 1500.0, 2 to 1500.0),
+            drawStrategyConfig = DrawStrategyConfig(
+                strategy = DrawModelingStrategy.BASELINE,
+                decisionRule = dev.anhquocs.truelab.core.domain.prediction.model.DrawDecisionRule.RELATIVE_DRAW_GAP,
+                relativeGapConfig = dev.anhquocs.truelab.core.domain.prediction.model.RelativeDrawGapConfig(tauThreshold = 0.15)
+            )
+        ).toList()
+
+        val completed = events.last() as DailyBacktestProgressEvent.Completed
+        val record = completed.result.records.first()
+        assertEquals("DRAW", record.predictedOutcome)
+        assertEquals("DRAW", record.actualOutcome)
+        assertTrue(record.isCorrect)
+    }
 }
+
+

@@ -1,16 +1,18 @@
 package dev.anhquocs.truelab.core.domain.prediction.policy
 
 import dev.anhquocs.truelab.core.algorithm.prediction.OutcomeProbabilities
+import dev.anhquocs.truelab.core.algorithm.prediction.PredictedOutcome
+import dev.anhquocs.truelab.core.domain.prediction.model.DrawDecisionRule
 import dev.anhquocs.truelab.core.domain.prediction.model.DrawMarginConfig
-import dev.anhquocs.truelab.core.domain.prediction.model.DrawModelingStrategy
 import dev.anhquocs.truelab.core.domain.prediction.model.DrawStrategyConfig
+import dev.anhquocs.truelab.core.domain.prediction.model.RelativeDrawGapConfig
 import kotlin.math.abs
 
 /**
  * Chính sách ra quyết định kết quả dự đoán (Draw Decision Policy).
  *
  * Nhiệm vụ duy nhất: Xác định nhãn dự đoán cuối cùng ("HOME_WIN", "DRAW", "AWAY_WIN") từ vector xác suất
- * (homeWinProb, drawProb, awayWinProb) theo chiến lược [DrawModelingStrategy].
+ * (homeWinProb, drawProb, awayWinProb) theo quy tắc quyết định [DrawDecisionRule].
  */
 object DrawDecisionPolicy {
 
@@ -25,19 +27,21 @@ object DrawDecisionPolicy {
         probabilities: OutcomeProbabilities,
         strategyConfig: DrawStrategyConfig = DrawStrategyConfig.DEFAULT
     ): String {
-        return when (strategyConfig.strategy) {
-            DrawModelingStrategy.BASELINE -> {
+        return when (strategyConfig.resolvedDecisionRule) {
+            DrawDecisionRule.RAW_ARGMAX -> {
                 probabilities.predictedOutcome.name
             }
-            DrawModelingStrategy.DECISION_MARGIN -> {
+            DrawDecisionRule.DECISION_MARGIN -> {
                 applyDecisionMargin(
                     probabilities = probabilities,
                     config = strategyConfig.marginConfig
                 )
             }
-            DrawModelingStrategy.DYNAMIC_DRAW_PRIOR -> {
-                // Candidate B uses natural argmax over the dynamically calibrated probabilities
-                probabilities.predictedOutcome.name
+            DrawDecisionRule.RELATIVE_DRAW_GAP -> {
+                applyRelativeDrawGap(
+                    probabilities = probabilities,
+                    config = strategyConfig.relativeGapConfig
+                )
             }
         }
     }
@@ -67,4 +71,35 @@ object DrawDecisionPolicy {
             probabilities.predictedOutcome.name
         }
     }
+
+    /**
+     * Áp dụng quy tắc khoảng cách hòa tương đối (Candidate B: Relative Draw Gap):
+     *
+     * drawDeficit = max(P_Home, P_Away) - P_Draw
+     *
+     * IF raw argmax is DRAW -> "DRAW"
+     * ELSE IF drawDeficit <= tauThreshold -> "DRAW"
+     * ELSE -> baseline predictedOutcome.name
+     *
+     * @param probabilities Phân phối xác suất 3 chiều từ WeightedScorer.
+     * @param config Cấu hình tham số ngưỡng dung sai tauThreshold.
+     * @return Chuỗi nhãn kết quả dự đoán.
+     */
+    fun applyRelativeDrawGap(
+        probabilities: OutcomeProbabilities,
+        config: RelativeDrawGapConfig
+    ): String {
+        if (probabilities.predictedOutcome == PredictedOutcome.DRAW) {
+            return "DRAW"
+        }
+        val maxHomeAway = maxOf(probabilities.homeWinProb, probabilities.awayWinProb)
+        val drawDeficit = maxHomeAway - probabilities.drawProb
+
+        return if (drawDeficit <= config.tauThreshold) {
+            "DRAW"
+        } else {
+            probabilities.predictedOutcome.name
+        }
+    }
 }
+

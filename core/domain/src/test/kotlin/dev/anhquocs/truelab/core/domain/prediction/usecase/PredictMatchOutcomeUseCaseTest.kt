@@ -244,12 +244,19 @@ class PredictMatchOutcomeUseCaseTest {
 
     @Test
     fun `rest advantage delta rest increases home probability and preserves symmetry`() {
+        val isolatedRestConfig = PredictionWeightConfig(
+            formWeight = 0.0,
+            eloWeight = 0.0,
+            oddsWeight = 0.0,
+            goalsWeight = 0.0,
+            h2hWeight = 0.0,
+            restAdvantageWeight = 1.0
+        )
+
         val homeAdvContext = MatchPredictionContext(
             matchId = 111L,
             homeTeamId = 1,
             awayTeamId = 2,
-            homeElo = 1500.0,
-            awayElo = 1500.0,
             homeRecentMatches = listOf(
                 createMatch(1, 1, 3, 1, 0, startTimeDate = "2026-10-01 15:00") // 5 days rest
             ),
@@ -263,8 +270,6 @@ class PredictMatchOutcomeUseCaseTest {
             matchId = 111L,
             homeTeamId = 1,
             awayTeamId = 2,
-            homeElo = 1500.0,
-            awayElo = 1500.0,
             homeRecentMatches = listOf(
                 createMatch(1, 1, 3, 1, 0, startTimeDate = "2026-10-04 15:00") // 2 days rest
             ),
@@ -274,8 +279,8 @@ class PredictMatchOutcomeUseCaseTest {
             matchStartTimeDate = "2026-10-06 15:00"
         )
 
-        val homeAdvResult = useCase(homeAdvContext)
-        val awayAdvResult = useCase(awayAdvContext)
+        val homeAdvResult = useCase(homeAdvContext, isolatedRestConfig)
+        val awayAdvResult = useCase(awayAdvContext, isolatedRestConfig)
 
         // When Home has more rest, home win probability is higher
         assertTrue(homeAdvResult.homeWinProb > homeAdvResult.awayWinProb)
@@ -286,3 +291,6 @@ class PredictMatchOutcomeUseCaseTest {
         assertEquals(homeAdvResult.awayWinProb, awayAdvResult.homeWinProb, 1e-4)
     }
 }
+
+
+

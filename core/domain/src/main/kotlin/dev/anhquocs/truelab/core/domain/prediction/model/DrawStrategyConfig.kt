@@ -40,18 +40,58 @@ data class DynamicDrawPriorConfig(
 }
 
 /**
+ * Cấu hình tham số cho chiến lược khoảng cách hòa tương đối (Candidate B: Relative Draw Gap).
+ *
+ * drawDeficit = max(P_Home, P_Away) - P_Draw <= tauThreshold
+ *
+ * @property tauThreshold Ngưỡng dung sai xác suất hòa tối đa (mặc định 0.0 - technical default, không phải threshold nghiên cứu chính thức).
+ */
+data class RelativeDrawGapConfig(
+    val tauThreshold: Double = 0.0
+) {
+    init {
+        require(tauThreshold >= 0.0 && tauThreshold.isFinite()) {
+            "tauThreshold must be non-negative and finite, but was $tauThreshold"
+        }
+    }
+}
+
+/**
  * Cấu hình tổng hợp chiến lược mô hình hóa kết quả Hòa cho Prediction Pipeline.
  *
- * @property strategy Chiến lược được kích hoạt (mặc định [DrawModelingStrategy.DECISION_MARGIN]).
+ * @property strategy Chiến lược mô hình hóa xác suất ở cấp Signal Transformer (mặc định [DrawModelingStrategy.DECISION_MARGIN]).
  * @property marginConfig Cấu hình tham số cho Candidate A.
- * @property dynamicPriorConfig Cấu hình tham số cho Candidate B.
+ * @property dynamicPriorConfig Cấu hình tham số cho Dynamic Draw Prior.
+ * @property decisionRule Quy tắc ra quyết định phân loại cuối cùng (nếu null, tự động map theo [strategy]).
+ * @property relativeGapConfig Cấu hình tham số cho Candidate B (Relative Draw Gap).
  */
 data class DrawStrategyConfig(
     val strategy: DrawModelingStrategy = DrawModelingStrategy.DECISION_MARGIN,
     val marginConfig: DrawMarginConfig = DrawMarginConfig(),
-    val dynamicPriorConfig: DynamicDrawPriorConfig = DynamicDrawPriorConfig()
+    val dynamicPriorConfig: DynamicDrawPriorConfig = DynamicDrawPriorConfig(),
+    val decisionRule: DrawDecisionRule? = null,
+    val relativeGapConfig: RelativeDrawGapConfig = RelativeDrawGapConfig()
 ) {
+    /**
+     * Xác định Decision Rule thực tế:
+     * - Nếu [decisionRule] được chỉ định tường minh -> dùng [decisionRule].
+     * - Nếu [decisionRule] là null -> map tự động từ [strategy] cũ để đảm bảo 100% backward compatibility:
+     *   + [DrawModelingStrategy.DECISION_MARGIN] -> [DrawDecisionRule.DECISION_MARGIN]
+     *   + [DrawModelingStrategy.BASELINE] -> [DrawDecisionRule.RAW_ARGMAX]
+     *   + [DrawModelingStrategy.DYNAMIC_DRAW_PRIOR] -> [DrawDecisionRule.RAW_ARGMAX]
+     */
+    val resolvedDecisionRule: DrawDecisionRule
+        get() = decisionRule ?: when (strategy) {
+            DrawModelingStrategy.DECISION_MARGIN -> DrawDecisionRule.DECISION_MARGIN
+            DrawModelingStrategy.BASELINE,
+            DrawModelingStrategy.DYNAMIC_DRAW_PRIOR -> DrawDecisionRule.RAW_ARGMAX
+        }
+
     companion object {
-        val DEFAULT = DrawStrategyConfig(strategy = DrawModelingStrategy.DECISION_MARGIN)
+        val DEFAULT = DrawStrategyConfig(
+            strategy = DrawModelingStrategy.DECISION_MARGIN,
+            decisionRule = DrawDecisionRule.DECISION_MARGIN
+        )
     }
 }
+
