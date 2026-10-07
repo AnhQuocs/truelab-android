@@ -37,3 +37,6 @@ scratch/
 app/release/
 /docs/
 /.agents/
+/core/data/docs/
+/core/data/schemas/dev.anhquocs.truelab.core.data.local.database.TrueLabDatabase/5.json
+/experiment.kts
