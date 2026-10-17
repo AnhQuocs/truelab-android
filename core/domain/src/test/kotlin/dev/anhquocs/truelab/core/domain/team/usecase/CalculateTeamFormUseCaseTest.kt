@@ -269,4 +269,44 @@ class CalculateTeamFormUseCaseTest {
             useCase(teamId = 1, matches = emptyList(), windowSize = -1)
         }
     }
+
+    @Test
+    fun `Form-10 takes up to 10 matches whereas Form-5 takes up to 5 matches from 12 historical matches`() {
+        // 12 historical matches: 12 Ws
+        val matches = (1..12).map { i ->
+            createMatch(
+                id = i.toLong(),
+                homeTeamId = 1,
+                awayTeamId = 2,
+                homeScore = 2,
+                awayScore = 0,
+                startTimeDate = "2026-09-${if (i < 10) "0$i" else "$i"} 18:00"
+            )
+        }
+
+        val resF5 = useCase(teamId = 1, matches = matches, windowSize = 5)
+        val resF10 = useCase(teamId = 1, matches = matches, windowSize = 10)
+
+        assertEquals(5, resF5.matchesCount)
+        assertEquals(10, resF10.matchesCount)
+    }
+
+    @Test
+    fun `strictly enforces point-in-time rule - rejects matches with equal or future kickoff timestamp`() {
+        val targetKickoff = "2026-09-15 20:00"
+
+        val matches = listOf(
+            // Past match: before target -> INCLUDED
+            createMatch(1, homeTeamId = 1, awayTeamId = 2, homeScore = 2, awayScore = 0, startTimeDate = "2026-09-10 18:00"),
+            // Same timestamp match: equal target -> REJECTED
+            createMatch(2, homeTeamId = 1, awayTeamId = 3, homeScore = 1, awayScore = 0, startTimeDate = "2026-09-15 20:00"),
+            // Future match: after target -> REJECTED
+            createMatch(3, homeTeamId = 1, awayTeamId = 4, homeScore = 3, awayScore = 0, startTimeDate = "2026-09-20 18:00")
+        )
+
+        val res = useCase(teamId = 1, matches = matches, windowSize = 5, targetKickoffTime = targetKickoff)
+
+        assertEquals(1, res.matchesCount)
+        assertEquals(1L, matches[0].id)
+    }
 }

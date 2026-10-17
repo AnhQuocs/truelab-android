@@ -31,31 +31,40 @@ class CalculateTeamFormUseCase(
         teamId: Int,
         matches: List<Match>,
         windowSize: Int = 5,
-        currentMatchId: Long? = null
+        currentMatchId: Long? = null,
+        targetKickoffTime: String? = null
     ): FormScore {
         require(windowSize > 0) {
             "windowSize must be greater than 0, but was $windowSize"
         }
+
+        val targetEpoch = dev.anhquocs.truelab.core.domain.odds.selector.PreMatchOddsSelector
+            .parseKickoffEpochSeconds(targetKickoffTime)
 
         // 1. Lọc các trận đấu hợp lệ:
         // - Trận đấu đã kết thúc (isEnded == true)
         // - Có tỷ số hợp lệ (homeScore != null && awayScore != null)
         // - Không phải là trận đấu hiện tại (id != currentMatchId)
         // - Đội bóng cần tính phải tham gia trận đấu (là home hoặc away)
+        // - Thời điểm diễn ra phải NGHIÊM NGẶT trước thời điểm target kickoff (point-in-time rule: historicalKickoff < targetKickoff)
         val validMatches = matches.filter { match ->
             match.isEnded &&
                 match.homeScore != null &&
                 match.awayScore != null &&
                 (currentMatchId == null || match.id != currentMatchId) &&
-                (match.homeTeam.id == teamId || match.awayTeam.id == teamId)
+                (match.homeTeam.id == teamId || match.awayTeam.id == teamId) &&
+                (targetEpoch == null || isStrictlyBefore(match.startTimeDate, targetEpoch))
         }
 
         if (validMatches.isEmpty()) {
             return formEvaluator.evaluate(emptyList(), windowSize)
         }
 
-        // 2. Sắp xếp thứ tự thời gian tăng dần (oldest -> newest) để trận mới nhất ở cuối danh sách
-        val sortedMatches = validMatches.sortedBy { it.startTimeDate }
+        // 2. Sắp xếp thứ tự thời gian tăng dần (oldest -> newest) để trận mới nhất ở cuối danh sách, tie-break bằng id
+        val sortedMatches = validMatches.sortedWith(
+            compareBy<Match> { dev.anhquocs.truelab.core.domain.odds.selector.PreMatchOddsSelector.parseKickoffEpochSeconds(it.startTimeDate) ?: 0L }
+                .thenBy { it.id }
+        )
 
         // 3. Ánh xạ Match -> MatchOutcome theo góc nhìn của teamId
         val outcomes = sortedMatches.mapNotNull { it.toOutcomeForTeam(teamId) }
@@ -66,6 +75,12 @@ class CalculateTeamFormUseCase(
 
         // 4. Gọi FormEvaluator của Phase 5
         return formEvaluator.evaluate(outcomes, windowSize)
+    }
+
+    private fun isStrictlyBefore(matchKickoffIso: String?, targetEpoch: Long): Boolean {
+        val matchEpoch = dev.anhquocs.truelab.core.domain.odds.selector.PreMatchOddsSelector
+            .parseKickoffEpochSeconds(matchKickoffIso) ?: return false
+        return matchEpoch < targetEpoch
     }
 
     internal fun Match.toOutcomeForTeam(teamId: Int): MatchOutcome? {

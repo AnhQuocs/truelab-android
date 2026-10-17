@@ -48,5 +48,6 @@ data class MatchPredictionContext(
     val draws: Int? = null,
     val awayWins: Int? = null,
     val asianHandicapOdds: OddsRecordItem? = null,
-    val overUnderOdds: OddsRecordItem? = null
+    val overUnderOdds: OddsRecordItem? = null,
+    val formWindowSize: Int = 5
 )

@@ -61,12 +61,16 @@ class PredictMatchOutcomeUseCase(
         val homeForm = context.homeFormScore ?: calculateTeamFormUseCase(
             teamId = context.homeTeamId,
             matches = context.homeRecentMatches,
-            currentMatchId = context.matchId
+            windowSize = context.formWindowSize,
+            currentMatchId = context.matchId,
+            targetKickoffTime = context.matchStartTimeDate
         )
         val awayForm = context.awayFormScore ?: calculateTeamFormUseCase(
             teamId = context.awayTeamId,
             matches = context.awayRecentMatches,
-            currentMatchId = context.matchId
+            windowSize = context.formWindowSize,
+            currentMatchId = context.matchId,
+            targetKickoffTime = context.matchStartTimeDate
         )
         val formSignal = FormSignalTransformer.transform(
             homeForm = homeForm,

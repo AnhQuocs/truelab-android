@@ -290,6 +290,24 @@ class PredictMatchOutcomeUseCaseTest {
         assertEquals(homeAdvResult.homeWinProb, awayAdvResult.awayWinProb, 1e-4)
         assertEquals(homeAdvResult.awayWinProb, awayAdvResult.homeWinProb, 1e-4)
     }
+
+    @Test
+    fun `MatchPredictionContext defaults formWindowSize to 5 for production safety and accepts 10 for research`() {
+        val defaultContext = MatchPredictionContext(
+            matchId = 1L,
+            homeTeamId = 1,
+            awayTeamId = 2
+        )
+        assertEquals(5, defaultContext.formWindowSize)
+
+        val researchContext = MatchPredictionContext(
+            matchId = 1L,
+            homeTeamId = 1,
+            awayTeamId = 2,
+            formWindowSize = 10
+        )
+        assertEquals(10, researchContext.formWindowSize)
+    }
 }
 
 
