@@ -52,7 +52,8 @@ class RunDailyBacktestUseCase(
         targetMatches: List<Match>,
         allMatches: List<Match>,
         initialEloMap: Map<Int, Double> = emptyMap(),
-        drawStrategyConfig: DrawStrategyConfig = DrawStrategyConfig.DEFAULT
+        drawStrategyConfig: DrawStrategyConfig = DrawStrategyConfig.DEFAULT,
+        formWindowSize: Int = 5
     ): Flow<DailyBacktestProgressEvent> = flow {
         // 1. Lọc và sắp xếp các trận FT hợp lệ
         val validTargets = targetMatches
@@ -167,7 +168,8 @@ class RunDailyBacktestUseCase(
                 homeRecentMatches = homeHistory,
                 awayRecentMatches = awayHistory,
                 h2hMatches = h2hHistory,
-                latestOdds = preMatchOdds
+                latestOdds = preMatchOdds,
+                formWindowSize = formWindowSize
             )
 
             // Giai đoạn 3: Thực thi Prediction Pipeline 6 Signals

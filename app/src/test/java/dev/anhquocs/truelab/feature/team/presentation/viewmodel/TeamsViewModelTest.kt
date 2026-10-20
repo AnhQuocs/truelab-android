@@ -391,6 +391,40 @@ class TeamsViewModelTest {
         collectJob.cancel()
     }
 
+    @Test
+    fun loadNextPage_withSuccessState_triggersNextPage() = runTest(testDispatcher) {
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        val initialState = viewModel.uiState.value
+        assertTrue("Expected Success state but was $initialState", initialState is TeamsUiState.Success)
+
+        viewModel.loadNextPage()
+        advanceUntilIdle()
+
+        val pagedState = viewModel.uiState.value
+        assertTrue(pagedState is TeamsUiState.Success)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun onSearchQueryChanged_debouncesAndFiltersResults() = runTest(testDispatcher) {
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChanged("Arsenal")
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue("Expected Success state but was $state", state is TeamsUiState.Success)
+        val success = state as TeamsUiState.Success
+        assertEquals(1, success.teams.size)
+        assertEquals("Arsenal", success.teams[0].name)
+
+        collectJob.cancel()
+    }
+
     // --- Fake Repositories ---
 
     private class FakeTeamRepository : TeamRepository {
@@ -432,6 +466,24 @@ class TeamsViewModelTest {
         override fun getSeasonRankings(): Flow<List<SeasonRanking>> = flow {
             if (shouldThrowError) throw RuntimeException("Database connection failed")
             rankingsFlow.collect { emit(it) }
+        }
+
+        override fun getTeamsPaged(
+            query: String?,
+            sortBy: String,
+            limit: Int,
+            offset: Int
+        ): Flow<List<TeamDetail>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database connection failed")
+            teamsFlow.collect { list ->
+                val filtered = if (query.isNullOrBlank()) list else list.filter { it.name.contains(query, ignoreCase = true) }
+                val sorted = when (sortBy) {
+                    "NAME" -> filtered.sortedBy { it.name }
+                    "FORM" -> filtered.sortedByDescending { it.formScore }
+                    else -> filtered.sortedByDescending { it.eloRating }
+                }
+                emit(sorted.drop(offset).take(limit))
+            }
         }
     }
 

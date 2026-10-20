@@ -63,6 +63,16 @@ class DataSyncEngineCacheTest {
         override fun searchTeams(query: String): Flow<List<TeamEntity>> = throw NotImplementedError()
         override fun searchTeams(query: String, limit: Int): Flow<List<TeamEntity>> = throw NotImplementedError()
         override fun getTeams(limit: Int): Flow<List<TeamEntity>> = throw NotImplementedError()
+        override fun getTeamsPaged(
+            query: String?,
+            sortBy: String,
+            limit: Int,
+            offset: Int
+        ): Flow<List<dev.anhquocs.truelab.core.data.team.local.entity.TeamWithLeagueItem>> = throw NotImplementedError()
+        override fun getTeamByIdDirect(teamId: Int): TeamEntity? = teams[teamId]
+        override fun updateTeamElo(teamId: Int, eloRating: Double) {
+            teams[teamId]?.let { teams[teamId] = it.copy(eloRating = eloRating) }
+        }
     }
 
     private class CacheTestMatchDao : MatchDao {
@@ -76,6 +86,7 @@ class DataSyncEngineCacheTest {
             return LongArray(matches.size) { (it + 1).toLong() }
         }
         override fun getMatchById(matchId: Long): Flow<MatchWithTeams?> = throw NotImplementedError()
+        override fun getMatchByIdDirect(matchId: Long): MatchEntity? = matches[matchId]
         override fun getMatchesPaged(limit: Int, offset: Int): Flow<List<MatchWithTeams>> = throw NotImplementedError()
         override fun getMatchesByDate(date: String): Flow<List<MatchWithTeams>> = throw NotImplementedError()
         override fun getMatchesByStatus(status: String): Flow<List<MatchWithTeams>> = throw NotImplementedError()

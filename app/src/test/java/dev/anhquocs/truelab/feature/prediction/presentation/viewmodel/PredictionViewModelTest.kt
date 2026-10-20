@@ -898,7 +898,7 @@ class PredictionViewModelTest {
                         match.awayTeam.name.contains(searchQuery, ignoreCase = true) ||
                         (match.leagueName != null && match.leagueName!!.contains(searchQuery, ignoreCase = true))
                     dateMatch && leagueMatch && statusMatch && searchMatch
-                }.take(limit)
+                }.let { if (limit > 0) it.take(limit) else it }
                 emit(filtered)
             }
         }

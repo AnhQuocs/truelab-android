@@ -62,6 +62,16 @@ class DataSyncWorkerTest {
         override fun searchTeams(query: String) = throw NotImplementedError()
         override fun searchTeams(query: String, limit: Int) = throw NotImplementedError()
         override fun getTeams(limit: Int) = throw NotImplementedError()
+        override fun getTeamsPaged(
+            query: String?,
+            sortBy: String,
+            limit: Int,
+            offset: Int
+        ): kotlinx.coroutines.flow.Flow<List<dev.anhquocs.truelab.core.data.team.local.entity.TeamWithLeagueItem>> = throw NotImplementedError()
+        override fun getTeamByIdDirect(teamId: Int): TeamEntity? = teams[teamId]
+        override fun updateTeamElo(teamId: Int, eloRating: Double) {
+            teams[teamId]?.let { teams[teamId] = it.copy(eloRating = eloRating) }
+        }
     }
 
     private class WorkerTestMatchDao : MatchDao {
@@ -75,6 +85,7 @@ class DataSyncWorkerTest {
             return LongArray(matches.size) { (it + 1).toLong() }
         }
         override fun getMatchById(matchId: Long) = throw NotImplementedError()
+        override fun getMatchByIdDirect(matchId: Long): MatchEntity? = matches[matchId]
         override fun getMatchesPaged(limit: Int, offset: Int) = throw NotImplementedError()
         override fun getMatchesByDate(date: String) = throw NotImplementedError()
         override fun getMatchesByStatus(status: String) = throw NotImplementedError()

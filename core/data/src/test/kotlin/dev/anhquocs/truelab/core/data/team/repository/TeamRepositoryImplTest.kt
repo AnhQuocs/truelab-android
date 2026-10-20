@@ -86,6 +86,19 @@ class TeamRepositoryImplTest {
             lastGetTeamsLimit = limit
             return flowOf(storedTeams.take(limit))
         }
+
+        override fun getTeamsPaged(
+            query: String?,
+            sortBy: String,
+            limit: Int,
+            offset: Int
+        ): Flow<List<dev.anhquocs.truelab.core.data.team.local.entity.TeamWithLeagueItem>> = flowOf(emptyList())
+
+        override fun getTeamByIdDirect(teamId: Int): TeamEntity? = storedTeams.find { it.id == teamId }
+
+        override fun updateTeamElo(teamId: Int, eloRating: Double) {
+            storedTeams = storedTeams.map { if (it.id == teamId) it.copy(eloRating = eloRating) else it }
+        }
     }
 
     private class FakeRankingDao : RankingDao {

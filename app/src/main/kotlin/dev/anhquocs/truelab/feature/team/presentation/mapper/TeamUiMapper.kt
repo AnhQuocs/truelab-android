@@ -31,7 +31,7 @@ object TeamUiMapper {
                 item.trim().firstOrNull()?.uppercaseChar()
             }
         } else {
-            recentMatches.sortedBy { it.startTimeDate }.mapNotNull { match ->
+            recentMatches.sortedByDescending { it.startTimeDate }.mapNotNull { match ->
                 val hs = match.homeScore ?: return@mapNotNull null
                 val as_ = match.awayScore ?: return@mapNotNull null
                 when {
@@ -69,12 +69,16 @@ object TeamUiMapper {
         val wins = ranking?.won ?: splits?.totalSplit?.won ?: 0
         val draws = ranking?.draw ?: splits?.totalSplit?.draw ?: 0
         val losses = ranking?.loss ?: splits?.totalSplit?.loss ?: 0
+        val overallWinRate = if (played > 0) (wins.toDouble() / played * 100).roundToInt().toDouble() else null
+
+        val resolvedLeague = team.leagueName?.takeIf { it.isNotBlank() } ?: "Câu lạc bộ chuyên nghiệp"
 
         return TeamAnalyticsRecord(
             id = team.id.toString(),
             name = team.name,
             logo = team.logo,
-            league = team.leagueName ?: "Premier League • England",
+            league = resolvedLeague,
+            leagueLogo = team.leagueLogo,
             eloRating = team.eloRating.roundToInt(),
             rank = ranking?.position ?: 0,
             played = played,
@@ -89,6 +93,7 @@ object TeamUiMapper {
             homeRecord = homeRecord,
             awayWinRate = awayWinRate,
             awayRecord = awayRecord,
+            overallWinRate = overallWinRate,
             h2hHighlight = "—"
         )
     }

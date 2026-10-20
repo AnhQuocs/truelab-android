@@ -22,6 +22,7 @@ import dev.anhquocs.truelab.core.data.local.mapper.RoomMappers.toSeasonEntity
 import dev.anhquocs.truelab.core.data.match.remote.api.MatchApi
 import dev.anhquocs.truelab.core.data.odds.remote.api.OddsApi
 import dev.anhquocs.truelab.core.data.ranking.remote.api.RankingApi
+import dev.anhquocs.truelab.core.data.crawler.util.IncrementalEloUpdater
 import dev.anhquocs.truelab.core.data.crawler.util.LocalDateRangeMapper
 import dev.anhquocs.truelab.core.data.match.remote.dto.MatchRecord
 import java.time.ZoneId
@@ -122,6 +123,7 @@ class DataSyncEngine(
                                 database.leagueDao().insertLeagues(matchLeagues)
                             }
                             database.teamDao().insertTeams(teams)
+                            IncrementalEloUpdater.updateEloForMatches(database, acceptedInPage)
                             database.matchDao().upsertMatches(matches)
                         }
 
@@ -232,6 +234,7 @@ class DataSyncEngine(
                             database.leagueDao().insertLeagues(matchLeagues)
                         }
                         database.teamDao().insertTeams(teams)
+                        IncrementalEloUpdater.updateEloForMatches(database, acceptedRecords)
                         database.matchDao().upsertMatches(matches)
                     }
 

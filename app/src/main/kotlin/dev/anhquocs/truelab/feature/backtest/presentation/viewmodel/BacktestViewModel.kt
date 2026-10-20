@@ -99,7 +99,7 @@ class BacktestViewModel(
                 leagueId = null,
                 statusFilter = dev.anhquocs.truelab.core.domain.match.model.PredictionStatusFilter.FINISHED,
                 searchQuery = null,
-                limit = 200
+                limit = -1
             ).first()
 
             val ftList = matches.filter {

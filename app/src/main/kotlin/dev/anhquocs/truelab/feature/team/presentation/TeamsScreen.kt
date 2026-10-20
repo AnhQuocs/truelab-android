@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,6 +35,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +56,7 @@ import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
 import dev.anhquocs.truelab.core.ui.utils.bold
+import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s13
 import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.s16
@@ -77,12 +82,30 @@ fun TeamsScreen(
         else -> StandingsSortCriteria.POSITION_ASC
     }
 
+    val listState = rememberLazyListState()
+
+    // Bắt sự kiện cuộn tới cuối danh sách để nạp trang tiếp theo (Infinite Scroll)
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val total = listState.layoutInfo.totalItemsCount
+            total > 0 && lastVisible >= total - 3
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) {
+            viewModel.loadNextPage()
+        }
+    }
+
     TrueLabMainLayout(
         modifier = modifier,
         headerHeight = TOP_BAR_HEIGHT,
         header = { TeamsHeader() }
     ) { contentModifier ->
         LazyColumn(
+            state = listState,
             modifier = contentModifier
                 .fillMaxSize()
                 .padding(horizontal = Dimen.PaddingM),
@@ -161,6 +184,30 @@ fun TeamsScreen(
                             team = team,
                             onClick = { onTeamClick(team.id) }
                         )
+                    }
+
+                    // Footer Loading Indicator khi đang nạp thêm trang tiếp theo
+                    if (state.isLoadingMore) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = Dimen.PaddingM),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(Dimen.SizeM)
+                                )
+                                Spacer(modifier = Modifier.width(Dimen.PaddingS))
+                                Text(
+                                    text = stringResource(R.string.teams_loading_more),
+                                    style = MaterialTheme.typography.s12,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -244,11 +291,9 @@ private fun StandingsSortSection(
     onSelectSort: (StandingsSortCriteria) -> Unit
 ) {
     val sortOptions = listOf(
-        StandingsSortCriteria.POSITION_ASC to stringResource(R.string.teams_sort_position),
-        StandingsSortCriteria.POINTS_DESC to stringResource(R.string.teams_sort_points),
-        StandingsSortCriteria.GOAL_DIFF_DESC to stringResource(R.string.teams_sort_goal_diff),
-        StandingsSortCriteria.WINS_DESC to stringResource(R.string.teams_sort_wins),
-        StandingsSortCriteria.LOSSES_ASC to stringResource(R.string.teams_sort_losses)
+        StandingsSortCriteria.POSITION_ASC to stringResource(R.string.teams_sort_popular),
+        StandingsSortCriteria.WINS_DESC to stringResource(R.string.teams_sort_form),
+        StandingsSortCriteria.LOSSES_ASC to stringResource(R.string.teams_sort_name)
     )
 
     Column(modifier = Modifier.fillMaxWidth()) {

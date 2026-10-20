@@ -85,7 +85,7 @@
 
     <!-- Teams Screen -->
     <string name="teams_title">Teams, Elo &amp; Form Analysis</string>
-    <string name="teams_subtitle">Form Score • Home/Away Splits • H2H Matrix • Elo Rating</string>
+    <string name="teams_subtitle">Form Score • Home/Away Splits • Overall Stats • Elo Rating</string>
     <string name="teams_search_hint">Search team name or league...</string>
     <string name="teams_sort_label">Sort By:</string>
     <string name="teams_sort_position">Rank (MergeSort)</string>
@@ -103,6 +103,12 @@
     <string name="teams_home_stats">Home</string>
     <string name="teams_away_stats">Away</string>
     <string name="teams_h2h_highlight">H2H Highlight</string>
+    <string name="teams_overall_stats">Overall</string>
+    <string name="teams_sort_popular">Most Matches</string>
+    <string name="teams_sort_name">Name A-Z</string>
+    <string name="teams_sort_elo">Highest Elo</string>
+    <string name="teams_sort_form">Best Form</string>
+    <string name="teams_loading_more">Loading more teams…</string>
 
     <!-- Analytics Screen -->
     <string name="analytics_title">Analytics Dashboard</string>
@@ -350,4 +356,6 @@
     <string name="backtest_odds_missing_count">%1$d matches without odds (missing-signal fallback)</string>
     <string name="backtest_btn_re_evaluate">Re-evaluate Date</string>
     <string name="backtest_analyzing_progress">Analyzing %1$d / %2$d (%3$d%%)</string>
+    <string name="backtest_processing_title">Model Evaluation</string>
+    <string name="backtest_progress_matches_count">%1$d / %2$d matches</string>
 </resources>

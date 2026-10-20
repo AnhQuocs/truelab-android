@@ -22,6 +22,9 @@ class MatchRepositoryImplTest {
         override fun getMatchById(matchId: Long): Flow<MatchWithTeams?> =
             flowOf(matches.find { it.match.id == matchId })
 
+        override fun getMatchByIdDirect(matchId: Long): MatchEntity? =
+            matches.find { it.match.id == matchId }?.match
+
         override fun getMatchesPaged(limit: Int, offset: Int): Flow<List<MatchWithTeams>> =
             flowOf(matches.drop(offset).take(limit))
 
@@ -88,7 +91,7 @@ class MatchRepositoryImplTest {
                     item.homeTeam.name.contains(searchQuery, ignoreCase = true) ||
                     item.awayTeam.name.contains(searchQuery, ignoreCase = true)
                 dateMatch && leagueMatch && statusMatch && searchMatch
-            }.take(limit)
+            }.let { if (limit > 0) it.take(limit) else it }
         )
     }
 

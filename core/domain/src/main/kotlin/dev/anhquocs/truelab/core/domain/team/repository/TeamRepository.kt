@@ -10,4 +10,10 @@ interface TeamRepository {
     fun searchTeams(query: String, limit: Int = 50): Flow<List<TeamDetail>>
     fun getSeasonRanking(matchId: Long): Flow<List<SeasonRanking>>
     fun getSeasonRankings(): Flow<List<SeasonRanking>>
+    fun getTeamsPaged(
+        query: String? = null,
+        sortBy: String = "POPULAR",
+        limit: Int = 20,
+        offset: Int = 0
+    ): Flow<List<TeamDetail>> = searchTeams(query ?: "", limit)
 }

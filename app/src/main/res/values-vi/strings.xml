@@ -85,7 +85,7 @@
 
     <!-- Teams Screen -->
     <string name="teams_title">Đội bóng, Elo &amp; Phong độ</string>
-    <string name="teams_subtitle">Điểm Phong độ • Sân Nhà/Khách • Đối đầu H2H • Elo Rating</string>
+    <string name="teams_subtitle">Điểm Phong độ • Sân Nhà/Khách • Thống kê • Elo Rating</string>
     <string name="teams_search_hint">Tìm tên đội bóng hoặc giải đấu…</string>
     <string name="teams_sort_label">Sắp xếp theo:</string>
     <string name="teams_sort_position">Thứ hạng (MergeSort)</string>
@@ -103,6 +103,12 @@
     <string name="teams_home_stats">Sân nhà</string>
     <string name="teams_away_stats">Sân khách</string>
     <string name="teams_h2h_highlight">Lịch sử đối đầu</string>
+    <string name="teams_overall_stats">Tổng thể</string>
+    <string name="teams_sort_popular">Phổ biến nhất</string>
+    <string name="teams_sort_name">Tên A-Z</string>
+    <string name="teams_sort_elo">Elo cao nhất</string>
+    <string name="teams_sort_form">Phong độ cao nhất</string>
+    <string name="teams_loading_more">Đang tải thêm đội bóng…</string>
 
     <!-- Analytics Screen -->
     <string name="analytics_title">Bảng phân tích</string>
@@ -350,4 +356,6 @@
     <string name="backtest_odds_missing_count">%1$d trận thiếu Odds (xử lý missing-signal)</string>
     <string name="backtest_btn_re_evaluate">Đánh Giá Lại Ngày Này</string>
     <string name="backtest_analyzing_progress">Đang phân tích %1$d / %2$d (%3$d%%)</string>
+    <string name="backtest_processing_title">Đang Đánh Giá Mô Hình</string>
+    <string name="backtest_progress_matches_count">%1$d / %2$d trận</string>
 </resources>

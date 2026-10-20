@@ -38,12 +38,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.evaluation.model.EvaluationPhase
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusMedium
+import dev.anhquocs.truelab.core.ui.theme.RadiusPill
 import dev.anhquocs.truelab.core.ui.theme.RadiusSmall
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.medium
@@ -86,13 +89,14 @@ fun BacktestProcessingCard(
                 .padding(Dimen.PaddingL),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header: Processing Indicator & Title
+            // Header: Processing Indicator & Title with Progress Pill
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
+                    modifier = Modifier.weight(1f, fill = false),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingS)
                 ) {
@@ -112,25 +116,32 @@ fun BacktestProcessingCard(
                     }
 
                     Text(
-                        text = stringResource(R.string.backtest_screen_title),
+                        text = stringResource(R.string.backtest_processing_title),
                         style = MaterialTheme.typography.s16.bold(),
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
-                Text(
-                    text = stringResource(
-                        R.string.backtest_analyzing_progress,
-                        completedMatches,
-                        totalMatches,
-                        progressPctInt
-                    ),
-                    style = MaterialTheme.typography.s12.semiBold(),
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Spacer(modifier = Modifier.width(Dimen.PaddingS))
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(RadiusPill))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                        .padding(horizontal = Dimen.PaddingS, vertical = Dimen.PaddingXXS),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "$progressPctInt%",
+                        style = MaterialTheme.typography.s12.bold(),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(Dimen.PaddingL))
+            Spacer(modifier = Modifier.height(Dimen.PaddingM))
 
             // Animated Linear Progress Bar
             LinearProgressIndicator(
@@ -143,13 +154,46 @@ fun BacktestProcessingCard(
                 trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
 
+            Spacer(modifier = Modifier.height(Dimen.PaddingXS))
+
+            // Sub-progress info row: Completed matches count on left, Current phase label on right
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(
+                        R.string.backtest_progress_matches_count,
+                        completedMatches,
+                        totalMatches
+                    ),
+                    style = MaterialTheme.typography.s12.medium(),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Text(
+                    text = when (currentPhase) {
+                        EvaluationPhase.FETCHING_ODDS -> stringResource(R.string.backtest_phase_odds)
+                        EvaluationPhase.PREPARING_CONTEXT -> stringResource(R.string.backtest_phase_context)
+                        EvaluationPhase.PREDICTING -> stringResource(R.string.backtest_phase_predict)
+                        EvaluationPhase.EVALUATING -> stringResource(R.string.backtest_phase_eval)
+                    },
+                    style = MaterialTheme.typography.s12.semiBold(),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
             Spacer(modifier = Modifier.height(Dimen.PaddingM))
 
             // Current Match Title
             Text(
                 text = currentMatchName.ifBlank { "..." },
-                style = MaterialTheme.typography.s18.bold(),
-                color = MaterialTheme.colorScheme.onSurface
+                style = MaterialTheme.typography.s16.bold(),
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(Dimen.PaddingM))

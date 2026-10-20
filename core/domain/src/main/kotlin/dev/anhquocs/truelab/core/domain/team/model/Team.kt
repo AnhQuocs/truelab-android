@@ -5,6 +5,7 @@ data class TeamDetail(
     val name: String,
     val logo: String? = null,
     val leagueName: String? = null,
+    val leagueLogo: String? = null,
     val eloRating: Double = 1500.0,
     val formScore: Double = 0.0
 )

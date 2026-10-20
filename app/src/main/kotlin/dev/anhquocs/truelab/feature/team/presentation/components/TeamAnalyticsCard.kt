@@ -30,7 +30,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import dev.anhquocs.truelab.R
+import dev.anhquocs.truelab.core.ui.components.CompetitionLogo
+import dev.anhquocs.truelab.core.ui.components.TeamLogo
 import dev.anhquocs.truelab.core.ui.theme.Dimen
+import dev.anhquocs.truelab.core.ui.theme.FormDrawAmber
+import dev.anhquocs.truelab.core.ui.theme.FormLossRed
+import dev.anhquocs.truelab.core.ui.theme.FormOnDrawAmber
+import dev.anhquocs.truelab.core.ui.theme.FormOnLossRed
+import dev.anhquocs.truelab.core.ui.theme.FormOnWinGreen
+import dev.anhquocs.truelab.core.ui.theme.FormWinGreen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusPill
 import dev.anhquocs.truelab.core.ui.theme.RadiusSmall
@@ -66,20 +74,30 @@ fun TeamAnalyticsCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Rank Badge
-                Box(
-                    modifier = Modifier
-                        .size(Dimen.SizeM)
-                        .clip(RoundedCornerShape(RadiusSmall))
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "#${team.rank}",
-                        style = MaterialTheme.typography.s12.bold(),
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                // Rank Badge (chỉ hiện khi có rank mùa giải thực tế)
+                if (team.rank > 0) {
+                    Box(
+                        modifier = Modifier
+                            .size(Dimen.SizeM)
+                            .clip(RoundedCornerShape(RadiusSmall))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "#${team.rank}",
+                            style = MaterialTheme.typography.s12.bold(),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(Dimen.PaddingS))
                 }
+
+                // Team Logo thật (Coil CDN + Fallback SportsSoccer)
+                TeamLogo(
+                    logoUrl = team.logo,
+                    teamName = team.name,
+                    size = Dimen.SizeMD
+                )
 
                 Spacer(modifier = Modifier.width(Dimen.PaddingS))
 
@@ -90,11 +108,24 @@ fun TeamAnalyticsCard(
                         style = MaterialTheme.typography.s16.bold(),
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
-                        text = team.league,
-                        style = MaterialTheme.typography.s12,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXXS)
+                    ) {
+                        if (!team.leagueLogo.isNullOrBlank()) {
+                            CompetitionLogo(
+                                logoUrl = team.leagueLogo,
+                                leagueName = team.league,
+                                size = Dimen.SizeXS
+                            )
+                        }
+                        Text(
+                            text = team.league,
+                            style = MaterialTheme.typography.s12,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
                 // Elo Rating Badge
@@ -224,22 +255,27 @@ fun TeamAnalyticsCard(
                     )
                 }
 
-                // H2H
+                // Overall Stats (Thay thế H2H Highlight)
                 Column(
-                    modifier = Modifier.weight(1.5f),
+                    modifier = Modifier.weight(1.3f),
                     horizontalAlignment = Alignment.End
                 ) {
                     Text(
-                        text = stringResource(R.string.teams_h2h_highlight),
+                        text = stringResource(R.string.teams_overall_stats),
                         style = MaterialTheme.typography.s10,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
                     Text(
-                        text = team.h2hHighlight,
+                        text = team.overallWinRate?.let { "${it.toInt()}% thắng" } ?: "—",
                         style = MaterialTheme.typography.s12.bold(),
                         color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.End
+                    )
+                    Text(
+                        text = "${team.played} trận",
+                        style = MaterialTheme.typography.s10,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -250,9 +286,9 @@ fun TeamAnalyticsCard(
 @Composable
 private fun FormPillBadge(res: Char) {
     val (bgColor, textColor) = when (res) {
-        'W' -> MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
-        'D' -> MaterialTheme.colorScheme.tertiary to MaterialTheme.colorScheme.onTertiary
-        else -> MaterialTheme.colorScheme.error to MaterialTheme.colorScheme.onError
+        'W' -> FormWinGreen to FormOnWinGreen
+        'D' -> FormDrawAmber to FormOnDrawAmber
+        else -> FormLossRed to FormOnLossRed
     }
 
     Box(

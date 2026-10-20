@@ -79,6 +79,16 @@ class DataSyncEngineBootstrapTest {
         override fun searchTeams(query: String): Flow<List<TeamEntity>> = flowOf(emptyList())
         override fun searchTeams(query: String, limit: Int): Flow<List<TeamEntity>> = flowOf(emptyList())
         override fun getTeams(limit: Int): Flow<List<TeamEntity>> = flowOf(emptyList())
+        override fun getTeamsPaged(
+            query: String?,
+            sortBy: String,
+            limit: Int,
+            offset: Int
+        ): Flow<List<dev.anhquocs.truelab.core.data.team.local.entity.TeamWithLeagueItem>> = flowOf(emptyList())
+        override fun getTeamByIdDirect(teamId: Int): TeamEntity? = teams[teamId]
+        override fun updateTeamElo(teamId: Int, eloRating: Double) {
+            teams[teamId]?.let { teams[teamId] = it.copy(eloRating = eloRating) }
+        }
     }
 
     private class FakeMatchDao : MatchDao {
@@ -92,6 +102,7 @@ class DataSyncEngineBootstrapTest {
             return LongArray(matches.size) { (it + 1).toLong() }
         }
         override fun getMatchById(matchId: Long): Flow<MatchWithTeams?> = flowOf(null)
+        override fun getMatchByIdDirect(matchId: Long): MatchEntity? = matches[matchId]
         override fun getMatchesPaged(limit: Int, offset: Int): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getMatchesByDate(date: String): Flow<List<MatchWithTeams>> = flowOf(emptyList())
         override fun getMatchesByStatus(status: String): Flow<List<MatchWithTeams>> = flowOf(emptyList())

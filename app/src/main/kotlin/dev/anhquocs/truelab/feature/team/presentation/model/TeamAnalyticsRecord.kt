@@ -7,7 +7,8 @@ data class TeamAnalyticsRecord(
     val id: String,
     val name: String,
     val logo: String? = null,
-    val league: String = "Football League",
+    val league: String = "Câu lạc bộ chuyên nghiệp",
+    val leagueLogo: String? = null,
     val eloRating: Int = 1500,
     val rank: Int = 0,
     val played: Int = 0,
@@ -22,5 +23,6 @@ data class TeamAnalyticsRecord(
     val homeRecord: String = "—",
     val awayWinRate: Double? = null,
     val awayRecord: String = "—",
+    val overallWinRate: Double? = null,
     val h2hHighlight: String = "—"
 )

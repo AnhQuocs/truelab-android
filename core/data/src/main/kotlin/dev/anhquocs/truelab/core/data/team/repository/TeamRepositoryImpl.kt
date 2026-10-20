@@ -45,4 +45,21 @@ class TeamRepositoryImpl @Inject constructor(
             list.map { it.toDomain(json) }
         }
     }
+
+    override fun getTeamsPaged(
+        query: String?,
+        sortBy: String,
+        limit: Int,
+        offset: Int
+    ): Flow<List<TeamDetail>> {
+        val sanitizedQuery = query?.trim()?.takeIf { it.isNotBlank() }
+        return teamDao.getTeamsPaged(
+            query = sanitizedQuery,
+            sortBy = sortBy,
+            limit = limit,
+            offset = offset
+        ).map { list ->
+            list.map { it.toDomain() }
+        }
+    }
 }

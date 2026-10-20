@@ -79,7 +79,8 @@ class FakeMatchRepository : MatchRepository {
         limit: Int
     ): Flow<List<Match>> = flow {
         errorToThrow?.let { throw it }
-        emit(matchesFlow.value.take(limit))
+        val list = matchesFlow.value
+        emit(if (limit > 0) list.take(limit) else list)
     }
 
 

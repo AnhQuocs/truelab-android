@@ -62,3 +62,11 @@ val StatusError = Color(0xFFEF4444)
 val StatusOnError = Color(0xFFFFFFFF)
 val StatusErrorContainer = Color(0xFF450A0A)
 val StatusOnErrorContainer = Color(0xFFFCA5A5)
+
+// Football Form & Outcome Badges
+val FormWinGreen = Color(0xFF10B981)
+val FormOnWinGreen = Color(0xFFFFFFFF)
+val FormDrawAmber = Color(0xFFF59E0B)
+val FormOnDrawAmber = Color(0xFFFFFFFF)
+val FormLossRed = Color(0xFFEF4444)
+val FormOnLossRed = Color(0xFFFFFFFF)

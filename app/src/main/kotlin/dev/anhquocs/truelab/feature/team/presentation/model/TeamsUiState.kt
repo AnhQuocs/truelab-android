@@ -10,7 +10,10 @@ sealed interface TeamsUiState {
         val teams: List<TeamAnalyticsRecord>,
         val rawTeamsCount: Int,
         val searchQuery: String,
-        val standingsSort: StandingsSortCriteria
+        val standingsSort: StandingsSortCriteria = StandingsSortCriteria.POSITION_ASC,
+        val sortBy: String = "POPULAR",
+        val isLoadingMore: Boolean = false,
+        val canLoadMore: Boolean = true
     ) : TeamsUiState
 
     data class Empty(val message: UiText) : TeamsUiState

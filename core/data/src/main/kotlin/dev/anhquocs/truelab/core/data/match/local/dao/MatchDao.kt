@@ -23,6 +23,9 @@ interface MatchDao {
     @Query("SELECT * FROM matches WHERE id = :matchId")
     fun getMatchById(matchId: Long): Flow<MatchWithTeams?>
 
+    @Query("SELECT * FROM matches WHERE id = :matchId")
+    fun getMatchByIdDirect(matchId: Long): MatchEntity?
+
     @Transaction
     @Query("SELECT * FROM matches ORDER BY startTimeDate DESC LIMIT :limit OFFSET :offset")
     fun getMatchesPaged(limit: Int, offset: Int): Flow<List<MatchWithTeams>>

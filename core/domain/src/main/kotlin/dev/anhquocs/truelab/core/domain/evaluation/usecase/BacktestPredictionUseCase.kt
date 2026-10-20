@@ -37,7 +37,8 @@ class BacktestPredictionUseCase(
     operator fun invoke(
         matches: List<Match>,
         matchOddsMap: Map<Long, OddsRecordItem> = emptyMap(),
-        teamEloMap: Map<Int, Double> = emptyMap()
+        teamEloMap: Map<Int, Double> = emptyMap(),
+        formWindowSize: Int = 5
     ): PredictionBacktestResult {
         // 1. Sắp xếp toàn bộ trận đấu theo thứ tự thời gian tăng dần và ID để đảm bảo tính xác định (Deterministic)
         val sortedMatches = matches
@@ -80,8 +81,8 @@ class BacktestPredictionUseCase(
                 val homeTeamId = target.homeTeam.id
                 val awayTeamId = target.awayTeam.id
 
-                val homeRecent = getRecentMatches(teamHistory[homeTeamId], 5)
-                val awayRecent = getRecentMatches(teamHistory[awayTeamId], 5)
+                val homeRecent = getRecentMatches(teamHistory[homeTeamId], formWindowSize)
+                val awayRecent = getRecentMatches(teamHistory[awayTeamId], formWindowSize)
                 val h2h = getH2HMatches(h2hHistory[packTeamPair(homeTeamId, awayTeamId)])
                 val homeElo = currentEloMap[homeTeamId] ?: 1500.0
                 val awayElo = currentEloMap[awayTeamId] ?: 1500.0
@@ -96,7 +97,8 @@ class BacktestPredictionUseCase(
                     homeRecentMatches = homeRecent,
                     awayRecentMatches = awayRecent,
                     h2hMatches = h2h,
-                    latestOdds = matchOddsMap[target.id]
+                    latestOdds = matchOddsMap[target.id],
+                    formWindowSize = formWindowSize
                 )
 
                 val prediction = predictMatchOutcomeUseCase(context)
