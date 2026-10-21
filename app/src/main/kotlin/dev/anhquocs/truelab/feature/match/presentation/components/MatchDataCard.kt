@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
@@ -43,7 +44,9 @@ import dev.anhquocs.truelab.core.ui.utils.medium
 import dev.anhquocs.truelab.core.ui.utils.s10
 import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s13
+import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.s15
+import dev.anhquocs.truelab.core.ui.utils.s16
 import dev.anhquocs.truelab.core.ui.utils.s18
 import dev.anhquocs.truelab.core.ui.utils.semiBold
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchDataRecord
@@ -68,31 +71,43 @@ fun MatchDataCard(
                 .fillMaxWidth()
                 .padding(Dimen.PaddingM)
         ) {
-            // 1. Top Meta Header
+            // 1. Top Meta Header: League Branding & Status Badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(Dimen.SizeDot)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
-                    Spacer(modifier = Modifier.width(Dimen.PaddingXSPlus))
+                // League Branding (Left flex)
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (!record.leagueLogo.isNullOrBlank()) {
+                        dev.anhquocs.truelab.core.ui.components.CompetitionLogo(
+                            logoUrl = record.leagueLogo,
+                            leagueName = record.league,
+                            size = Dimen.SizeXS
+                        )
+                        Spacer(modifier = Modifier.width(Dimen.PaddingXS))
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(Dimen.SizeDot)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                        )
+                        Spacer(modifier = Modifier.width(Dimen.PaddingXSPlus))
+                    }
                     Text(
                         text = record.league,
                         style = MaterialTheme.typography.s12.semiBold(),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = " • ${record.date}",
-                        style = MaterialTheme.typography.s12,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
+
+                Spacer(modifier = Modifier.width(Dimen.PaddingS))
 
                 ResultBadge(result = record.actualResult)
             }
@@ -109,34 +124,69 @@ fun MatchDataCard(
                     modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TeamAvatar(name = record.homeTeam)
+                    dev.anhquocs.truelab.core.ui.components.TeamLogo(
+                        logoUrl = record.homeLogo,
+                        teamName = record.homeTeam,
+                        size = Dimen.SizeMD
+                    )
                     Spacer(modifier = Modifier.width(Dimen.PaddingS))
                     Text(
                         text = record.homeTeam,
-                        style = MaterialTheme.typography.s15.bold(),
+                        style = MaterialTheme.typography.s14.bold(),
                         color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                 }
 
-                // Center Score Box
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(RadiusMedium))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f))
-                        .padding(horizontal = Dimen.PaddingM, vertical = Dimen.PaddingXSPlus),
-                    contentAlignment = Alignment.Center
+                // Center Score & Match Time Box
+                Column(
+                    modifier = Modifier.padding(horizontal = Dimen.PaddingS),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = dev.anhquocs.truelab.core.ui.utils.ScoreFormatterUtils.formatScore(
+                    val scoreText = if (record.isScheduled || (record.homeScore == null && record.awayScore == null)) {
+                        stringResource(R.string.matches_versus)
+                    } else {
+                        dev.anhquocs.truelab.core.ui.utils.ScoreFormatterUtils.formatScore(
                             record.homeScore,
                             record.awayScore,
                             record.isPenalty,
                             record.homePenaltyScore,
                             record.awayPenaltyScore
-                        ),
-                        style = MaterialTheme.typography.s18.bold(),
-                        color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(RadiusMedium))
+                            .background(
+                                if (record.isScheduled) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
+                            )
+                            .padding(horizontal = Dimen.PaddingM, vertical = Dimen.PaddingXS),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = scoreText,
+                            style = MaterialTheme.typography.s16.bold(),
+                            color = if (record.isScheduled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(Dimen.PaddingXXS))
+
+                    val timeLabel = if (record.matchTime.isNotBlank()) {
+                        "${record.matchTime} • ${record.date}"
+                    } else {
+                        record.date
+                    }
+                    Text(
+                        text = timeLabel,
+                        style = MaterialTheme.typography.s10.medium(),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        textAlign = TextAlign.Center
                     )
                 }
 
@@ -148,13 +198,19 @@ fun MatchDataCard(
                 ) {
                     Text(
                         text = record.awayTeam,
-                        style = MaterialTheme.typography.s15.bold(),
+                        style = MaterialTheme.typography.s14.bold(),
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
-                        textAlign = TextAlign.End
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     Spacer(modifier = Modifier.width(Dimen.PaddingS))
-                    TeamAvatar(name = record.awayTeam)
+                    dev.anhquocs.truelab.core.ui.components.TeamLogo(
+                        logoUrl = record.awayLogo,
+                        teamName = record.awayTeam,
+                        size = Dimen.SizeMD
+                    )
                 }
             }
 
@@ -191,11 +247,13 @@ fun MatchDataCard(
                     label = eloLabel,
                     tint = if (hasEloDiff) Color(0xFFF59E0B) else MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                FeaturePill(
-                    icon = Icons.Default.SportsSoccer,
-                    label = "${record.totalGoals} Bàn",
-                    tint = Color(0xFF3B82F6)
-                )
+                if (!record.isScheduled && (record.homeScore != null || record.actualResult != "SCHEDULED")) {
+                    FeaturePill(
+                        icon = Icons.Default.SportsSoccer,
+                        label = stringResource(R.string.matches_goals_count, record.totalGoals),
+                        tint = Color(0xFF3B82F6)
+                    )
+                }
                 Spacer(modifier = Modifier.weight(1f))
                 FeaturePill(
                     icon = Icons.Default.AutoGraph,
@@ -204,24 +262,6 @@ fun MatchDataCard(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun TeamAvatar(name: String) {
-    val initials = name.take(2).uppercase()
-    Box(
-        modifier = Modifier
-            .size(Dimen.SizeL)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = initials,
-            style = MaterialTheme.typography.s12.bold(),
-            color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
     }
 }
 
@@ -340,7 +380,9 @@ private fun ResultBadge(result: String) {
         Text(
             text = label,
             style = MaterialTheme.typography.s10.bold(),
-            color = textColor
+            color = textColor,
+            maxLines = 1,
+            softWrap = false
         )
     }
 }

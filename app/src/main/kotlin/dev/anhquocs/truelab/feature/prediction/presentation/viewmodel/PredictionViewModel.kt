@@ -18,7 +18,6 @@ import dev.anhquocs.truelab.core.domain.prediction.usecase.PredictMatchOutcomeUs
 import dev.anhquocs.truelab.core.domain.team.repository.TeamRepository
 import dev.anhquocs.truelab.core.ui.utils.UiText
 import dev.anhquocs.truelab.feature.prediction.presentation.model.PredictionUiState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,8 +31,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -57,6 +59,7 @@ class PredictionViewModel @Inject constructor(
         ?: savedStateHandle.get<Long>("matchId")
 
     private val _selectedMatchId = MutableStateFlow<Long?>(navMatchId)
+    private val currentMatches = MutableStateFlow<List<Match>>(emptyList())
     val selectedMatchId: StateFlow<Long?> = _selectedMatchId.asStateFlow()
 
     private val _selectedDate = MutableStateFlow(LocalDate.now().toString())
@@ -137,6 +140,7 @@ class PredictionViewModel @Inject constructor(
     }
 
     val availableMatches: StateFlow<List<Match>> = matchesFlow
+        .onEach { currentMatches.value = it }
         .catch { emit(emptyList()) }
         .stateIn(
             scope = viewModelScope,
@@ -160,7 +164,7 @@ class PredictionViewModel @Inject constructor(
         initialValue = true
     )
 
-    val uiState: StateFlow<PredictionUiState> = combine(
+    private val selectionState: StateFlow<PredictionUiState> = combine(
         matchesFlow,
         _selectedMatchId,
         _selectedDate
@@ -171,79 +175,11 @@ class PredictionViewModel @Inject constructor(
             flowOf(PredictionUiState.Empty(UiText.StringResource(R.string.prediction_empty_no_matches)))
         } else {
             val selectedMatch = autoSelectMatch(matches, userMatchId, selectedDate)
-
-            // Trigger on-demand odds hydration for selected match in background
-            viewModelScope.launch(Dispatchers.IO) {
-                oddsRepository.fetchAndCacheOddsForMatch(selectedMatch.id)
-            }
-
-            val homeTeamId = selectedMatch.homeTeam.id
-            val awayTeamId = selectedMatch.awayTeam.id
-
-            combine(
-                teamRepository.getTeamDetail(homeTeamId),
-                teamRepository.getTeamDetail(awayTeamId),
-                matchRepository.getAllMatches(),
-                oddsRepository.getMatchOdds(selectedMatch.id)
-            ) { homeTeamDetail, awayTeamDetail, allMatches, matchOdds ->
-                val targetTime = selectedMatch.startTimeDate
-
-                // 1. Calculate dynamic chronological Elo up to target match time (Zero Temporal Leakage)
-                val dynamicEloMap = calculateDynamicEloUseCase(allMatches, targetTime)
-                val homeElo = dynamicEloMap[homeTeamId] ?: homeTeamDetail?.eloRating ?: 1500.0
-                val awayElo = dynamicEloMap[awayTeamId] ?: awayTeamDetail?.eloRating ?: 1500.0
-
-                // 2. Strict Pre-Match Filter for Historical, Recent Form & H2H (strictly before target match)
-                val homeHistory = allMatches
-                    .filter { it.isEnded && it.id != selectedMatch.id && (it.homeTeam.id == homeTeamId || it.awayTeam.id == homeTeamId) && (targetTime.isBlank() || it.startTimeDate < targetTime) }
-                    .sortedByDescending { it.startTimeDate }
-
-                val awayHistory = allMatches
-                    .filter { it.isEnded && it.id != selectedMatch.id && (it.homeTeam.id == awayTeamId || it.awayTeam.id == awayTeamId) && (targetTime.isBlank() || it.startTimeDate < targetTime) }
-                    .sortedByDescending { it.startTimeDate }
-
-                val h2hMatches = allMatches
-                    .filter { it.isEnded && it.id != selectedMatch.id && ((it.homeTeam.id == homeTeamId && it.awayTeam.id == awayTeamId) || (it.homeTeam.id == awayTeamId && it.awayTeam.id == homeTeamId)) && (targetTime.isBlank() || it.startTimeDate < targetTime) }
-                    .sortedByDescending { it.startTimeDate }
-
-                // 3. Select valid Pre-Match European 1X2 Odds
-                val preMatchOdds = PreMatchOddsSelector.selectPreMatchEuropeanOdds(
-                    oddsList = matchOdds.oddsList,
-                    kickoffTime = selectedMatch.startTimeDate
-                )
-
-                val context = MatchPredictionContext(
-                    matchId = selectedMatch.id,
-                    homeTeamId = homeTeamId,
-                    awayTeamId = awayTeamId,
-                    matchStartTimeDate = selectedMatch.startTimeDate,
-                    homeElo = homeElo,
-                    awayElo = awayElo,
-                    homeRecentMatches = homeHistory,
-                    awayRecentMatches = awayHistory,
-                    h2hMatches = h2hMatches,
-                    latestOdds = preMatchOdds
-                )
-
-                val result = predictMatchOutcomeUseCase(context)
-
-                val homeWinPct = (result.homeWinProb * 100).roundToInt()
-                val drawPct = (result.drawProb * 100).roundToInt()
-                val awayWinPct = (result.awayWinProb * 100).roundToInt()
-                val confPct = (result.confidenceScore * 100).roundToInt()
-
-                PredictionUiState.Success(
-                    selectedMatch = selectedMatch,
-                    availableMatches = matches,
-                    predictionResult = result,
-                    homeElo = homeElo,
-                    awayElo = awayElo,
-                    homeWinPercent = homeWinPct,
-                    drawPercent = drawPct,
-                    awayWinPercent = awayWinPct,
-                    confidencePercent = confPct
-                )
-            }
+            flowOf(PredictionUiState.Selected(selectedMatch, matches))
+        }
+    }.onEach { state ->
+        if (state is PredictionUiState.Selected) {
+            currentMatches.value = state.availableMatches
         }
     }.catch { e ->
         emit(
@@ -261,6 +197,33 @@ class PredictionViewModel @Inject constructor(
         initialValue = PredictionUiState.Loading
     )
 
+    private val _predictionState = MutableStateFlow<PredictionUiState?>(null)
+
+    val uiState: StateFlow<PredictionUiState> = combine(
+        selectionState,
+        _predictionState
+    ) { selection, prediction ->
+        val selectedId = when (selection) {
+            is PredictionUiState.Selected -> selection.selectedMatch.id
+            is PredictionUiState.Predicting -> selection.selectedMatch.id
+            is PredictionUiState.Success -> selection.selectedMatch.id
+            else -> null
+        }
+        if (prediction != null && (selectedId == prediction.selectedMatchId() || prediction is PredictionUiState.Predicting || prediction is PredictionUiState.Success)) {
+            prediction
+        } else {
+            selection
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = PredictionUiState.Loading
+    )
+
+    private var predictionJob: Job? = null
+    private var historicalSnapshot: List<Match>? = null
+    private val historicalContextCache = mutableMapOf<Long, HistoricalContext>()
+
     private fun autoSelectMatch(matches: List<Match>, userMatchId: Long?, selectedDate: String?): Match {
         if (userMatchId != null) {
             val userMatch = matches.find { it.id == userMatchId }
@@ -273,16 +236,157 @@ class PredictionViewModel @Inject constructor(
     }
 
     fun onSelectMatch(matchId: Long) {
+        predictionJob?.cancel()
+        _predictionState.value = null
         _selectedMatchId.value = matchId
     }
 
+    fun predictSelectedMatch() {
+        val requestedMatchId = _selectedMatchId.value
+        predictionJob?.cancel()
+        predictionJob = viewModelScope.launch {
+            val matches = currentMatches.value
+            if (matches.isEmpty()) return@launch
+            val selectedMatch = requestedMatchId?.let { id -> matches.find { it.id == id } }
+                ?: autoSelectMatch(matches, null, _selectedDate.value)
+            runPrediction(selectedMatch, matches)
+        }
+    }
+
+    fun predictMatch(match: Match) {
+        predictionJob?.cancel()
+        _selectedMatchId.value = match.id
+        val matches = (currentMatches.value + match).distinctBy { it.id }
+        currentMatches.value = matches
+        predictionJob = viewModelScope.launch {
+            runPrediction(match, matches)
+        }
+    }
+
+    private suspend fun runPrediction(selectedMatch: Match, matches: List<Match>) {
+        _predictionState.value = PredictionUiState.Predicting(
+            selectedMatch = selectedMatch,
+            availableMatches = matches
+        )
+        try {
+            oddsRepository.fetchAndCacheOddsForMatch(selectedMatch.id)
+            val prediction = calculatePrediction(selectedMatch)
+            if (_selectedMatchId.value != null && _selectedMatchId.value != selectedMatch.id) {
+                return
+            }
+            _predictionState.value = prediction.copy(availableMatches = matches)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            if (_selectedMatchId.value == selectedMatch.id) {
+                _predictionState.value = PredictionUiState.Error(
+                    message = if (e.message.isNullOrBlank()) {
+                        UiText.StringResource(R.string.prediction_error_default)
+                    } else {
+                        UiText.DynamicString(e.message!!)
+                    },
+                    selectedMatchId = selectedMatch.id
+                )
+            }
+        }
+    }
+
+    private suspend fun calculatePrediction(selectedMatch: Match): PredictionUiState.Success {
+        val snapshot = historicalSnapshot ?: matchRepository.getAllMatches().first().also {
+            historicalSnapshot = it
+        }
+        val historicalContext = historicalContextCache.getOrPut(selectedMatch.id) {
+            buildHistoricalContext(selectedMatch, snapshot)
+        }
+        val matchOdds = oddsRepository.getMatchOdds(selectedMatch.id).first()
+        val preMatchOdds = PreMatchOddsSelector.selectPreMatchEuropeanOdds(
+            oddsList = matchOdds.oddsList,
+            kickoffTime = selectedMatch.startTimeDate
+        )
+        val result = predictMatchOutcomeUseCase(
+            MatchPredictionContext(
+                matchId = selectedMatch.id,
+                homeTeamId = selectedMatch.homeTeam.id,
+                awayTeamId = selectedMatch.awayTeam.id,
+                matchStartTimeDate = selectedMatch.startTimeDate,
+                homeElo = historicalContext.homeElo,
+                awayElo = historicalContext.awayElo,
+                homeRecentMatches = historicalContext.homeHistory,
+                awayRecentMatches = historicalContext.awayHistory,
+                h2hMatches = historicalContext.h2hMatches,
+                latestOdds = preMatchOdds
+            )
+        )
+        return PredictionUiState.Success(
+            selectedMatch = selectedMatch,
+            availableMatches = availableMatches.value,
+            predictionResult = result,
+            homeElo = historicalContext.homeElo,
+            awayElo = historicalContext.awayElo,
+            homeWinPercent = (result.homeWinProb * 100).roundToInt(),
+            drawPercent = (result.drawProb * 100).roundToInt(),
+            awayWinPercent = (result.awayWinProb * 100).roundToInt(),
+            confidencePercent = (result.confidenceScore * 100).roundToInt()
+        )
+    }
+
+    private suspend fun buildHistoricalContext(
+        selectedMatch: Match,
+        allMatches: List<Match>
+    ): HistoricalContext {
+        val homeTeamId = selectedMatch.homeTeam.id
+        val awayTeamId = selectedMatch.awayTeam.id
+        val targetTime = selectedMatch.startTimeDate
+        val endedMatches = allMatches
+            .filter { it.isEnded && it.homeScore != null && it.awayScore != null }
+            .sortedWith(compareBy({ it.startTimeDate }, { it.id }))
+        val dynamicEloMap = calculateDynamicEloUseCase(endedMatches, targetTime)
+        val homeDetail = teamRepository.getTeamDetail(homeTeamId).first()
+        val awayDetail = teamRepository.getTeamDetail(awayTeamId).first()
+        val beforeTarget: (Match) -> Boolean = {
+            targetTime.isBlank() || it.startTimeDate < targetTime
+        }
+        return HistoricalContext(
+            homeElo = dynamicEloMap[homeTeamId] ?: homeDetail?.eloRating ?: 1500.0,
+            awayElo = dynamicEloMap[awayTeamId] ?: awayDetail?.eloRating ?: 1500.0,
+            homeHistory = endedMatches.filter {
+                it.id != selectedMatch.id &&
+                    (it.homeTeam.id == homeTeamId || it.awayTeam.id == homeTeamId) &&
+                    beforeTarget(it)
+            }.sortedByDescending { it.startTimeDate },
+            awayHistory = endedMatches.filter {
+                it.id != selectedMatch.id &&
+                    (it.homeTeam.id == awayTeamId || it.awayTeam.id == awayTeamId) &&
+                    beforeTarget(it)
+            }.sortedByDescending { it.startTimeDate },
+            h2hMatches = endedMatches.filter {
+                it.id != selectedMatch.id &&
+                    ((it.homeTeam.id == homeTeamId && it.awayTeam.id == awayTeamId) ||
+                        (it.homeTeam.id == awayTeamId && it.awayTeam.id == homeTeamId)) &&
+                    beforeTarget(it)
+            }.sortedByDescending { it.startTimeDate }
+        )
+    }
+
+    private data class HistoricalContext(
+        val homeElo: Double,
+        val awayElo: Double,
+        val homeHistory: List<Match>,
+        val awayHistory: List<Match>,
+        val h2hMatches: List<Match>
+    )
+
     fun onDateSelected(date: String) {
+        predictionJob?.cancel()
+        _predictionState.value = null
         _selectedDate.value = date
         _selectedMatchId.value = null
     }
 
     fun onPreviousDay() {
         try {
+            predictionJob?.cancel()
+            _predictionState.value = null
             val current = LocalDate.parse(_selectedDate.value)
             _selectedDate.value = current.minusDays(1).toString()
             _selectedMatchId.value = null
@@ -291,6 +395,8 @@ class PredictionViewModel @Inject constructor(
 
     fun onNextDay() {
         try {
+            predictionJob?.cancel()
+            _predictionState.value = null
             val current = LocalDate.parse(_selectedDate.value)
             _selectedDate.value = current.plusDays(1).toString()
             _selectedMatchId.value = null
@@ -298,16 +404,22 @@ class PredictionViewModel @Inject constructor(
     }
 
     fun onToday() {
+        predictionJob?.cancel()
+        _predictionState.value = null
         _selectedDate.value = LocalDate.now().toString()
         _selectedMatchId.value = null
     }
 
     fun onLeagueSelected(leagueId: Int?) {
+        predictionJob?.cancel()
+        _predictionState.value = null
         _selectedLeagueId.value = leagueId
         _selectedMatchId.value = null
     }
 
     fun onStatusFilterSelected(filter: PredictionStatusFilter) {
+        predictionJob?.cancel()
+        _predictionState.value = null
         _selectedStatusFilter.value = filter
         _selectedMatchId.value = null
     }
@@ -317,6 +429,8 @@ class PredictionViewModel @Inject constructor(
     }
 
     fun onResetFilters() {
+        predictionJob?.cancel()
+        _predictionState.value = null
         _selectedDate.value = LocalDate.now().toString()
         _selectedLeagueId.value = null
         _selectedStatusFilter.value = PredictionStatusFilter.LIVE_AND_UPCOMING
@@ -333,6 +447,9 @@ class PredictionViewModel @Inject constructor(
             _isRefreshing.value = true
             try {
                 val result = matchRepository.refreshMatchesForDate(_selectedDate.value)
+                if (result.isSuccess) {
+                    invalidateHistoricalCache()
+                }
                 if (result.isFailure) {
                     _refreshErrorEvent.emit(UiText.StringResource(R.string.prediction_refresh_failed))
                 }
@@ -357,6 +474,7 @@ class PredictionViewModel @Inject constructor(
             _isSyncing.value = true
             try {
                 matchRepository.refreshMatchesForDate(date)
+                invalidateHistoricalCache()
             } catch (_: kotlinx.coroutines.CancellationException) {
                 // Ignore cancellation
             } catch (_: Exception) {
@@ -367,12 +485,25 @@ class PredictionViewModel @Inject constructor(
         }
     }
 
+    private fun invalidateHistoricalCache() {
+        historicalSnapshot = null
+        historicalContextCache.clear()
+    }
+
     private data class FilterParams(
         val date: String,
         val leagueId: Int?,
         val statusFilter: PredictionStatusFilter,
         val query: String
     )
+
+    private fun PredictionUiState.selectedMatchId(): Long? = when (this) {
+        is PredictionUiState.Selected -> selectedMatch.id
+        is PredictionUiState.Predicting -> selectedMatch.id
+        is PredictionUiState.Success -> selectedMatch.id
+        is PredictionUiState.Error -> selectedMatchId
+        else -> null
+    }
 
     companion object {
         fun sortMatchesForDisplay(

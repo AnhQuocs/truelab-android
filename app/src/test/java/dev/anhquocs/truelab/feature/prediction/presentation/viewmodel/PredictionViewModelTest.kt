@@ -134,22 +134,18 @@ class PredictionViewModelTest {
     }
 
     @Test
-    fun `initial state is Loading and auto selects LIVE match`() = runTest {
+    fun `initial state selects LIVE match without running prediction`() = runTest {
         val collectJob = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertTrue("Expected Success state but was $state", state is PredictionUiState.Success)
-        val success = state as PredictionUiState.Success
+        assertTrue("Expected Selected state but was $state", state is PredictionUiState.Selected)
+        val success = state as PredictionUiState.Selected
 
         assertEquals(101L, success.selectedMatch.id)
         assertEquals("65", success.selectedMatch.minutes)
         assertEquals(MatchStatus.IN_PROGRESS, success.selectedMatch.status)
-        assertEquals(1980.0, success.homeElo)
-        assertEquals(1945.0, success.awayElo)
-
-        val totalPct = success.homeWinPercent + success.drawPercent + success.awayWinPercent
-        assertTrue(totalPct in 99..101)
+        assertTrue(fakeOddsRepository.fetchedMatchIds.isEmpty())
         collectJob.cancel()
     }
 
@@ -183,7 +179,7 @@ class PredictionViewModelTest {
         advanceUntilIdle()
 
         assertEquals(PredictionStatusFilter.UPCOMING, viewModel.selectedStatusFilter.value)
-        val success = viewModel.uiState.value as PredictionUiState.Success
+        val success = viewModel.uiState.value as PredictionUiState.Selected
         assertEquals(102L, success.selectedMatch.id)
 
         collectJob.cancel()
@@ -272,8 +268,8 @@ class PredictionViewModelTest {
         assertEquals(false, viewModel.isRefreshing.value)
         assertNotNull(emittedError)
         val state = viewModel.uiState.value
-        assertTrue("Data should be preserved on refresh failure", state is PredictionUiState.Success)
-        assertEquals(101L, (state as PredictionUiState.Success).selectedMatch.id)
+        assertTrue("Data should be preserved on refresh failure", state is PredictionUiState.Selected)
+        assertEquals(101L, (state as PredictionUiState.Selected).selectedMatch.id)
 
         errorJob.cancel()
         collectJob.cancel()
@@ -307,7 +303,7 @@ class PredictionViewModelTest {
         val collectJob = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
-        val initialState = viewModel.uiState.value as PredictionUiState.Success
+        val initialState = viewModel.uiState.value as PredictionUiState.Selected
         assertEquals(101L, initialState.selectedMatch.id)
         assertEquals("65", initialState.selectedMatch.minutes)
         assertEquals(1, initialState.selectedMatch.homeScore)
@@ -321,7 +317,7 @@ class PredictionViewModelTest {
         fakeMatchRepository.setMatches(listOf(updatedMatch1, match2))
         advanceUntilIdle()
 
-        val updatedState = viewModel.uiState.value as PredictionUiState.Success
+        val updatedState = viewModel.uiState.value as PredictionUiState.Selected
         assertEquals("75", updatedState.selectedMatch.minutes)
         assertEquals(2, updatedState.selectedMatch.homeScore)
         assertEquals(0, updatedState.selectedMatch.awayScore)
@@ -353,7 +349,7 @@ class PredictionViewModelTest {
         viewModel.onSearchQueryChanged("Liverpool")
         advanceUntilIdle()
 
-        val stateLiverpool = viewModel.uiState.value as PredictionUiState.Success
+        val stateLiverpool = viewModel.uiState.value as PredictionUiState.Selected
         assertEquals(1, stateLiverpool.availableMatches.size)
         assertEquals(102L, stateLiverpool.availableMatches[0].id)
 
@@ -370,7 +366,7 @@ class PredictionViewModelTest {
         viewModel.onSearchQueryChanged("fifa")
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value as PredictionUiState.Success
+        val state = viewModel.uiState.value as PredictionUiState.Selected
         assertEquals(1, state.availableMatches.size)
         assertEquals(103L, state.availableMatches[0].id)
         assertEquals("Vietnam", state.availableMatches[0].homeTeam.name)
@@ -386,7 +382,7 @@ class PredictionViewModelTest {
         viewModel.onStatusFilterSelected(PredictionStatusFilter.FINISHED)
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value as PredictionUiState.Success
+        val state = viewModel.uiState.value as PredictionUiState.Selected
         assertEquals(1, state.availableMatches.size)
         assertEquals(103L, state.availableMatches[0].id)
         assertEquals(MatchStatus.ENDED, state.availableMatches[0].status)
@@ -404,7 +400,7 @@ class PredictionViewModelTest {
         viewModel.onSearchQueryChanged("vietnam")
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value as PredictionUiState.Success
+        val state = viewModel.uiState.value as PredictionUiState.Selected
         assertEquals(1, state.availableMatches.size)
         assertEquals(103L, state.availableMatches[0].id)
 
@@ -422,7 +418,11 @@ class PredictionViewModelTest {
         val collectJob = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value as PredictionUiState.Success
+        viewModel.predictSelectedMatch()
+        advanceUntilIdle()
+        val stateValue = viewModel.uiState.value
+        assertTrue("Unexpected prediction state: $stateValue", stateValue is PredictionUiState.Success)
+        val state = stateValue as PredictionUiState.Success
         val evidence = state.predictionResult.evidence
         assertNotNull(evidence)
         assertEquals("1980.0", evidence!!.elo.details["homeElo"])
@@ -604,7 +604,7 @@ class PredictionViewModelTest {
     }
 
     @Test
-    fun `on-demand odds hydration is triggered when match is selected`() = runTest {
+    fun `on-demand odds hydration waits for explicit Predict`() = runTest {
         viewModel = PredictionViewModel(
             savedStateHandle = SavedStateHandle(),
             matchRepository = fakeMatchRepository,
@@ -617,14 +617,30 @@ class PredictionViewModelTest {
         val job = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
-        // autoSelectMatch picks match1 (101L)
-        assertTrue(fakeOddsRepository.fetchedMatchIds.contains(101L))
+        assertTrue(fakeOddsRepository.fetchedMatchIds.isEmpty())
 
         // When selecting match2 (102L)
         viewModel.onSelectMatch(102L)
         advanceUntilIdle()
 
+        assertTrue(fakeOddsRepository.fetchedMatchIds.isEmpty())
+        viewModel.predictSelectedMatch()
+        advanceUntilIdle()
         assertTrue(fakeOddsRepository.fetchedMatchIds.contains(102L))
+        job.cancel()
+    }
+
+    @Test
+    fun `repeated predictions reuse historical snapshot instead of rereading all matches`() = runTest {
+        val job = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        viewModel.predictSelectedMatch()
+        advanceUntilIdle()
+        viewModel.predictSelectedMatch()
+        advanceUntilIdle()
+
+        assertEquals(1, fakeMatchRepository.allMatchesReadCount)
         job.cancel()
     }
 
@@ -642,8 +658,10 @@ class PredictionViewModelTest {
         val job = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
+        viewModel.predictSelectedMatch()
+        advanceUntilIdle()
         val state = viewModel.uiState.value
-        assertTrue(state is PredictionUiState.Success)
+        assertTrue("Unexpected prediction state: $state", state is PredictionUiState.Success)
         val success = state as PredictionUiState.Success
 
         val oddsEvidence = success.predictionResult.evidence?.signals?.find { it.name == "Odds" }
@@ -678,8 +696,10 @@ class PredictionViewModelTest {
         val job = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
+        viewModel.predictSelectedMatch()
+        advanceUntilIdle()
         val state = viewModel.uiState.value
-        assertTrue(state is PredictionUiState.Success)
+        assertTrue("Unexpected prediction state: $state", state is PredictionUiState.Success)
         val success = state as PredictionUiState.Success
 
         // Scoring must strictly match the EU implied probability
@@ -853,6 +873,7 @@ class PredictionViewModelTest {
         var onRefreshCallback: ((String) -> Unit)? = null
         var syncDelayMs: Long = 0L
         var refreshResult: Result<Unit> = Result.success(Unit)
+        var allMatchesReadCount: Int = 0
 
         fun setMatches(matches: List<Match>) {
             matchesFlow.value = matches
@@ -908,7 +929,10 @@ class PredictionViewModelTest {
         override fun getRecentMatchesForTeam(teamId: Int, limit: Int): Flow<List<Match>> = flow { emit(emptyList()) }
         override fun getMatchesByLeagueAndSeason(leagueId: Int, season: String): Flow<List<Match>> = flow { emit(emptyList()) }
         override fun getH2HMatches(teamAId: Int, teamBId: Int): Flow<List<Match>> = flow { emit(emptyList()) }
-        override fun getAllMatches(): Flow<List<Match>> = flow { emit(matchesFlow.value) }
+        override fun getAllMatches(): Flow<List<Match>> = flow {
+            allMatchesReadCount++
+            emit(matchesFlow.value)
+        }
         override fun getPredictableMatches(limit: Int): Flow<List<Match>> = flow { emit(matchesFlow.value.take(limit)) }
         override fun searchMatches(query: String, limit: Int): Flow<List<Match>> = flow {
             matchesFlow.collect { matches ->
@@ -917,6 +941,14 @@ class PredictionViewModelTest {
                 }.take(limit))
             }
         }
+        override fun getMatchesPaged(
+            query: String?,
+            leagueId: Int?,
+            statusFilter: String,
+            sortBy: String,
+            limit: Int,
+            offset: Int
+        ): Flow<List<Match>> = flow { emit(matchesFlow.value.drop(offset).take(limit)) }
     }
 
     private class FakeTeamRepository : TeamRepository {

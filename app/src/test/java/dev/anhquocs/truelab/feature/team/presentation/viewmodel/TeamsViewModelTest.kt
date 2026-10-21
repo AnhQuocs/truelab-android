@@ -563,6 +563,18 @@ class TeamsViewModelTest {
             limit: Int
         ): Flow<List<Match>> = flow { emit(emptyList()) }
 
+        override fun getMatchesPaged(
+            query: String?,
+            leagueId: Int?,
+            statusFilter: String,
+            sortBy: String,
+            limit: Int,
+            offset: Int
+        ): Flow<List<Match>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database connection failed")
+            emit(emptyList())
+        }
+
         override suspend fun refreshMatchesForDate(date: String): Result<Unit> = Result.success(Unit)
     }
 }

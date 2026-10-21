@@ -7,16 +7,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
-import coil.compose.SubcomposeAsyncImage
+import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 
 /**
  * Reusable Team Logo component utilizing Coil Image Loading.
- * Minimalist design: renders direct team crest without bulky containers.
+ * High-performance: uses AsyncImage without subcomposition overhead for smooth 60/120fps scrolling.
  */
 @Composable
 fun TeamLogo(
@@ -25,8 +26,9 @@ fun TeamLogo(
     modifier: Modifier = Modifier,
     size: Dp = Dimen.SizeMD
 ) {
+    val fallbackPainter = rememberVectorPainter(Icons.Default.SportsSoccer)
     if (!logoUrl.isNullOrBlank()) {
-        SubcomposeAsyncImage(
+        AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(logoUrl)
                 .crossfade(true)
@@ -34,26 +36,12 @@ fun TeamLogo(
             contentDescription = teamName,
             contentScale = ContentScale.Fit,
             modifier = modifier.size(size),
-            loading = {
-                Icon(
-                    imageVector = Icons.Default.SportsSoccer,
-                    contentDescription = teamName,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    modifier = Modifier.size(size)
-                )
-            },
-            error = {
-                Icon(
-                    imageVector = Icons.Default.SportsSoccer,
-                    contentDescription = teamName,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    modifier = Modifier.size(size)
-                )
-            }
+            placeholder = fallbackPainter,
+            error = fallbackPainter
         )
     } else {
         Icon(
-            imageVector = Icons.Default.SportsSoccer,
+            painter = fallbackPainter,
             contentDescription = teamName,
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
             modifier = modifier.size(size)
@@ -63,7 +51,7 @@ fun TeamLogo(
 
 /**
  * Reusable Competition/League Logo component.
- * Minimalist design: displays logo image directly without container background or frame.
+ * High-performance: displays logo image directly via AsyncImage without frame or subcomposition.
  */
 @Composable
 fun CompetitionLogo(
@@ -72,8 +60,9 @@ fun CompetitionLogo(
     modifier: Modifier = Modifier,
     size: Dp = Dimen.SizeSM
 ) {
+    val fallbackPainter = rememberVectorPainter(Icons.Default.SportsSoccer)
     if (!logoUrl.isNullOrBlank()) {
-        SubcomposeAsyncImage(
+        AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(logoUrl)
                 .crossfade(true)
@@ -81,26 +70,12 @@ fun CompetitionLogo(
             contentDescription = leagueName,
             contentScale = ContentScale.Fit,
             modifier = modifier.size(size),
-            loading = {
-                Icon(
-                    imageVector = Icons.Default.SportsSoccer,
-                    contentDescription = leagueName,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(size)
-                )
-            },
-            error = {
-                Icon(
-                    imageVector = Icons.Default.SportsSoccer,
-                    contentDescription = leagueName,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(size)
-                )
-            }
+            placeholder = fallbackPainter,
+            error = fallbackPainter
         )
     } else {
         Icon(
-            imageVector = Icons.Default.SportsSoccer,
+            painter = fallbackPainter,
             contentDescription = leagueName,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = modifier.size(size)

@@ -18,7 +18,7 @@ enum class SixthSignalMode {
  *
  * @property formWeight Trọng số tín hiệu Phong độ (mặc định 0.25 - 25%).
  * @property eloWeight Trọng số tín hiệu Elo Rating (mặc định 0.20 - 20%).
- * @property oddsWeight Trọng số tín hiệu Odds Nhà cái (mặc định 0.20 - 20%).
+ * @property oddsWeight Trọng số tín hiệu Odds Nhà cung cấp (mặc định 0.20 - 20%).
  * @property goalsWeight Trọng số tín hiệu Hiệu suất bàn thắng (mặc định 0.15 - 15%).
  * @property h2hWeight Trọng số tín hiệu Lịch sử đối đầu (mặc định 0.10 - 10%).
  * @property restAdvantageWeight Trọng số tín hiệu Ưu thế ngày nghỉ (mặc định 0.10 - 10%).

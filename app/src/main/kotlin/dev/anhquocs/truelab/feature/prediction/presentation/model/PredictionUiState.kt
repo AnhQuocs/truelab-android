@@ -9,7 +9,20 @@ sealed interface PredictionUiState {
 
     data class Empty(val message: UiText) : PredictionUiState
 
-    data class Error(val message: UiText) : PredictionUiState
+    data class Error(
+        val message: UiText,
+        val selectedMatchId: Long? = null
+    ) : PredictionUiState
+
+    data class Selected(
+        val selectedMatch: Match,
+        val availableMatches: List<Match>
+    ) : PredictionUiState
+
+    data class Predicting(
+        val selectedMatch: Match,
+        val availableMatches: List<Match>
+    ) : PredictionUiState
 
     data class Success(
         val selectedMatch: Match,

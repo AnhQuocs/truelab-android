@@ -1,6 +1,7 @@
 package dev.anhquocs.truelab.feature.match.presentation.viewmodel.fakes
 
 import dev.anhquocs.truelab.core.domain.match.model.Match
+import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
 import dev.anhquocs.truelab.core.domain.match.repository.MatchRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -83,6 +84,38 @@ class FakeMatchRepository : MatchRepository {
         emit(if (limit > 0) list.take(limit) else list)
     }
 
+
+    override fun getMatchesPaged(
+        query: String?,
+        leagueId: Int?,
+        statusFilter: String,
+        sortBy: String,
+        limit: Int,
+        offset: Int
+    ): Flow<List<Match>> = flow {
+        errorToThrow?.let { throw it }
+        matchesFlow.collect { all ->
+            val filtered = all.filter { match ->
+                val leagueMatch = leagueId == null || match.leagueId == leagueId
+                val statusMatch = when (statusFilter) {
+                    "ENDED" -> match.isEnded
+                    "SCHEDULED" -> match.status == MatchStatus.SCHEDULED || !match.isEnded
+                    else -> true
+                }
+                val queryMatch = query.isNullOrBlank() ||
+                    match.homeTeam.name.contains(query, ignoreCase = true) ||
+                    match.awayTeam.name.contains(query, ignoreCase = true) ||
+                    (match.leagueName?.contains(query, ignoreCase = true) == true)
+                leagueMatch && statusMatch && queryMatch
+            }
+            val sorted = when (sortBy) {
+                "TOTAL_GOALS_DESC" -> filtered.sortedByDescending { it.totalGoals ?: 0 }
+                "ID_ASC" -> filtered.sortedBy { it.id }
+                else -> filtered.sortedByDescending { it.startTimeDate }
+            }
+            emit(sorted.drop(offset).take(limit))
+        }
+    }
 
     override suspend fun refreshMatchesForDate(date: String): Result<Unit> = Result.success(Unit)
 }

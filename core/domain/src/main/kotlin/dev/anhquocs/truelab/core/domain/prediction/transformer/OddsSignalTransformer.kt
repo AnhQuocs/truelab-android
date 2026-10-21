@@ -5,7 +5,7 @@ import dev.anhquocs.truelab.core.domain.odds.model.OddsRecordItem
 import dev.anhquocs.truelab.core.domain.prediction.model.PredictionWeightConfig
 
 /**
- * Chuyển đổi dữ liệu tỷ lệ cược nhà cái thành [Signal3Way].
+ * Chuyển đổi dữ liệu tỷ lệ cược nhà cung cấp thành [Signal3Way].
  */
 object OddsSignalTransformer {
 

@@ -8,17 +8,13 @@ import dev.anhquocs.truelab.core.domain.odds.model.MatchOdds
 import dev.anhquocs.truelab.core.domain.odds.model.OddsRecordItem
 import dev.anhquocs.truelab.core.domain.odds.repository.OddsRepository
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.util.concurrent.ConcurrentHashMap
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,7 +24,6 @@ class OddsRepositoryImpl @Inject constructor(
     private val oddsApi: OddsApi
 ) : OddsRepository {
 
-    private val inFlightFetches = ConcurrentHashMap<Long, Deferred<Result<Unit>>>()
     private val fetchMutex = Mutex()
 
     override fun getMatchOdds(matchId: Long): Flow<MatchOdds> {
@@ -57,8 +52,7 @@ class OddsRepositoryImpl @Inject constructor(
             .associate { it.matchId to it.toDomain() }
     }
 
-    override suspend fun fetchAndCacheOddsForMatch(matchId: Long): Result<Unit> = coroutineScope {
-        // 1. Kiểm tra cache cục bộ trong Room để tránh gọi API dư thừa
+    override suspend fun fetchAndCacheOddsForMatch(matchId: Long): Result<Unit> = withContext(Dispatchers.IO) {
         val existingRecords = oddsDao.getOddsListForMatch(matchId)
         val hasValidPreMatchOdds = existingRecords.any { entity ->
             val type = entity.oddsType.lowercase().trim()
@@ -69,33 +63,28 @@ class OddsRepositoryImpl @Inject constructor(
         }
 
         if (hasValidPreMatchOdds) {
-            return@coroutineScope Result.success(Unit)
+            return@withContext Result.success(Unit)
         }
 
-        // 2. Concurrency Deduplication: nếu đã có request đang chạy cho matchId, tái sử dụng Deferred
-        val deferred = fetchMutex.withLock {
-            inFlightFetches.getOrPut(matchId) {
-                async(Dispatchers.IO) {
-                    try {
-                        val response = oddsApi.getOdds(matchId)
-                        val records = response.data ?: emptyList()
+        fetchMutex.withLock {
+            val recheck = oddsDao.getOddsListForMatch(matchId)
+            if (recheck.isNotEmpty()) {
+                return@withContext Result.success(Unit)
+            }
+            try {
+                val response = oddsApi.getOdds(matchId)
+                val records = response.data ?: emptyList()
 
-                        if (records.isNotEmpty()) {
-                            val entities = records.map { it.toEntity(matchId) }
-                            oddsDao.insertOdds(entities)
-                        }
-                        Result.success(Unit)
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        Result.failure(e)
-                    } finally {
-                        inFlightFetches.remove(matchId)
-                    }
+                if (records.isNotEmpty()) {
+                    val entities = records.map { it.toEntity(matchId) }
+                    oddsDao.insertOdds(entities)
                 }
+                Result.success(Unit)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Result.failure(e)
             }
         }
-
-        deferred.await()
     }
 }

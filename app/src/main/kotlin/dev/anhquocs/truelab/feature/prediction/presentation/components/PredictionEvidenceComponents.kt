@@ -199,7 +199,7 @@ fun PredictionEvidenceSection(
                     Text(text = "2 · $ao", style = MaterialTheme.typography.s14.bold(), color = MaterialTheme.colorScheme.secondary)
                 }
                 Text(
-                    text = "Nhà cái: $bm",
+                    text = "Nhà cung cấp: $bm",
                     style = MaterialTheme.typography.s12,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

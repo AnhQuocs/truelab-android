@@ -674,5 +674,14 @@ private class FakeH2HMatchRepository : MatchRepository {
         limit: Int
     ): Flow<List<Match>> = flowOf(emptyList())
 
+    override fun getMatchesPaged(
+        query: String?,
+        leagueId: Int?,
+        statusFilter: String,
+        sortBy: String,
+        limit: Int,
+        offset: Int
+    ): Flow<List<Match>> = flowOf(emptyList())
+
     override suspend fun refreshMatchesForDate(date: String): Result<Unit> = Result.success(Unit)
 }

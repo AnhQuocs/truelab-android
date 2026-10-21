@@ -27,7 +27,9 @@ sealed interface MatchesUiState {
         val selectedStatusFilter: MatchStatusFilter,
         val leagues: List<League> = emptyList(),
         val selectedLeagueId: Int? = null,
-        val selectedSeason: String? = null
+        val selectedSeason: String? = null,
+        val isLoadingMore: Boolean = false,
+        val canLoadMore: Boolean = true
     ) : MatchesUiState
 
     data class Empty(

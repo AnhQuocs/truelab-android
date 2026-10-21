@@ -105,7 +105,13 @@ fun PredictionScreen(
         }
     }
 
-    val currentSelectedId = (uiState as? PredictionUiState.Success)?.selectedMatch?.id ?: selectedMatchId
+    val currentState = uiState
+    val currentSelectedId = when (currentState) {
+        is PredictionUiState.Selected -> currentState.selectedMatch.id
+        is PredictionUiState.Predicting -> currentState.selectedMatch.id
+        is PredictionUiState.Success -> currentState.selectedMatch.id
+        else -> selectedMatchId
+    }
     val leagueNameMap = remember(leagues) { leagues.associate { it.id to it.name } }
     val unclassifiedText = stringResource(R.string.competition_unclassified)
 
@@ -232,6 +238,7 @@ fun PredictionScreen(
                                 },
                                 onPredictClick = {
                                     viewModel.onSelectMatch(match.id)
+                                    viewModel.predictSelectedMatch()
                                     showPredictionSheet = true
                                 }
                             )

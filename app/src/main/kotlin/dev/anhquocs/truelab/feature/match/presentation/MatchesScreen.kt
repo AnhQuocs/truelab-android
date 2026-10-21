@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Info
@@ -19,7 +20,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -46,6 +50,9 @@ import dev.anhquocs.truelab.feature.match.presentation.model.MatchDetailUiState
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchStatusFilter
 import dev.anhquocs.truelab.feature.match.presentation.model.MatchesUiState
 import dev.anhquocs.truelab.feature.match.presentation.viewmodel.MatchesViewModel
+import dev.anhquocs.truelab.feature.prediction.presentation.components.PredictionBottomSheet
+import dev.anhquocs.truelab.feature.prediction.presentation.model.PredictionUiState
+import dev.anhquocs.truelab.feature.prediction.presentation.viewmodel.PredictionViewModel
 import dev.anhquocs.truelab.navigation.TrueLabMainLayout
 
 private val TOP_BAR_HEIGHT = 75.dp
@@ -57,8 +64,10 @@ fun MatchesScreen(
     onMatchClick: (String) -> Unit = {},
     onNavigateToPrediction: (Long) -> Unit = {}
 ) {
+    val predictionViewModel: PredictionViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val matchDetailState by viewModel.matchDetailState.collectAsStateWithLifecycle()
+    val predictionState by predictionViewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val currentSort by viewModel.sortCriteria.collectAsStateWithLifecycle()
     val currentFilter by viewModel.statusFilter.collectAsStateWithLifecycle()
@@ -77,12 +86,29 @@ fun MatchesScreen(
         MatchSortCriteria.ID_ASC to stringResource(R.string.matches_sort_id)
     )
 
+    val lazyListState = rememberLazyListState()
+
+    val shouldLoadMore = remember {
+        derivedStateOf {
+            val lastVisible = lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()
+            val totalItems = lazyListState.layoutInfo.totalItemsCount
+            lastVisible != null && totalItems > 0 && lastVisible.index >= totalItems - 3
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore.value) {
+        if (shouldLoadMore.value) {
+            viewModel.loadNextPage()
+        }
+    }
+
     TrueLabMainLayout(
         modifier = modifier,
         headerHeight = TOP_BAR_HEIGHT,
         header = { MatchesHeader() }
     ) { contentModifier ->
         LazyColumn(
+            state = lazyListState,
             modifier = contentModifier
                 .fillMaxSize()
                 .padding(horizontal = Dimen.PaddingM),
@@ -183,6 +209,22 @@ fun MatchesScreen(
                             }
                         )
                     }
+
+                    if (state.isLoadingMore) {
+                        item(key = "loading_more_indicator") {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = Dimen.PaddingM),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(Dimen.SizeL)
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -191,10 +233,31 @@ fun MatchesScreen(
     if (matchDetailState !is MatchDetailUiState.Idle) {
         MatchDetailBottomSheet(
             state = matchDetailState,
+            isPredicting = predictionState is PredictionUiState.Predicting,
             onDismiss = { viewModel.onDismissMatchDetail() },
             onPredictClick = { matchId ->
+                val match = (matchDetailState as? MatchDetailUiState.Success)?.match
+                if (match != null && match.id == matchId) {
+                    predictionViewModel.predictMatch(match)
+                }
+            }
+        )
+    }
+
+    if (predictionState is PredictionUiState.Success) {
+        val successState = predictionState as PredictionUiState.Success
+        LaunchedEffect(successState.selectedMatch.id) {
+            viewModel.onDismissMatchDetail()
+        }
+        PredictionBottomSheet(
+            selectedMatch = successState.selectedMatch,
+            predictionResult = successState.predictionResult,
+            leagueName = successState.selectedMatch.leagueName,
+            leagueLogo = successState.selectedMatch.leagueLogo,
+            selectedDate = successState.selectedMatch.startTimeDate.take(10),
+            onDismissRequest = {
+                predictionViewModel.onSelectMatch(successState.selectedMatch.id)
                 viewModel.onDismissMatchDetail()
-                onNavigateToPrediction(matchId)
             }
         )
     }

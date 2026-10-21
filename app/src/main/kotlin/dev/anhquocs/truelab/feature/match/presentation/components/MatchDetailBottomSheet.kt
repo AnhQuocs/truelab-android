@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.match.model.Match
 import dev.anhquocs.truelab.core.domain.match.model.MatchStatus
+import dev.anhquocs.truelab.core.ui.components.TeamLogo
 import dev.anhquocs.truelab.core.ui.theme.ButtonHeightMedium
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
@@ -68,6 +69,7 @@ import dev.anhquocs.truelab.feature.match.presentation.model.MatchDetailUiState
 @Composable
 fun MatchDetailBottomSheet(
     state: MatchDetailUiState,
+    isPredicting: Boolean = false,
     onDismiss: () -> Unit,
     onPredictClick: (Long) -> Unit,
     modifier: Modifier = Modifier
@@ -173,7 +175,8 @@ fun MatchDetailBottomSheet(
                 is MatchDetailUiState.Success -> {
                     MatchDetailContent(
                         match = state.match,
-                        onPredictClick = { onPredictClick(state.match.id) }
+                        onPredictClick = { onPredictClick(state.match.id) },
+                        isPredicting = isPredicting
                     )
                 }
 
@@ -186,7 +189,8 @@ fun MatchDetailBottomSheet(
 @Composable
 private fun MatchDetailContent(
     match: Match,
-    onPredictClick: () -> Unit
+    onPredictClick: () -> Unit,
+    isPredicting: Boolean
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -212,20 +216,11 @@ private fun MatchDetailContent(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(Dimen.SizeAvatar)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SportsSoccer,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(Dimen.SizeM)
-                        )
-                    }
+                    TeamLogo(
+                        logoUrl = match.homeTeam.logo,
+                        teamName = match.homeTeam.name,
+                        size = Dimen.SizeAvatar
+                    )
                     Spacer(modifier = Modifier.height(SpacingXS))
                     Text(
                         text = match.homeTeam.name,
@@ -241,16 +236,16 @@ private fun MatchDetailContent(
                     modifier = Modifier.padding(horizontal = SpacingS),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (match.isEnded || match.status == MatchStatus.IN_PROGRESS || match.homeScore != null) {
+                    if (match.status == MatchStatus.SCHEDULED || (!match.isEnded && match.status != MatchStatus.IN_PROGRESS)) {
                         Text(
-                            text = "${match.homeScore ?: 0} - ${match.awayScore ?: 0}",
-                            style = MaterialTheme.typography.s24.bold(),
+                            text = stringResource(R.string.matches_versus),
+                            style = MaterialTheme.typography.s20.bold(),
                             color = MaterialTheme.colorScheme.primary
                         )
                     } else {
                         Text(
-                            text = "VS",
-                            style = MaterialTheme.typography.s20.bold(),
+                            text = "${match.homeScore ?: 0} - ${match.awayScore ?: 0}",
+                            style = MaterialTheme.typography.s24.bold(),
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -273,20 +268,11 @@ private fun MatchDetailContent(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(Dimen.SizeAvatar)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.secondaryContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SportsSoccer,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.size(Dimen.SizeM)
-                        )
-                    }
+                    TeamLogo(
+                        logoUrl = match.awayTeam.logo,
+                        teamName = match.awayTeam.name,
+                        size = Dimen.SizeAvatar
+                    )
                     Spacer(modifier = Modifier.height(SpacingXS))
                     Text(
                         text = match.awayTeam.name,
@@ -349,6 +335,7 @@ private fun MatchDetailContent(
         // CTA: Predict Match
         Button(
             onClick = onPredictClick,
+            enabled = !isPredicting,
             shape = RoundedCornerShape(RadiusLarge),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -358,14 +345,26 @@ private fun MatchDetailContent(
                 .fillMaxWidth()
                 .height(ButtonHeightMedium)
         ) {
-            Icon(
-                imageVector = Icons.Default.AutoGraph,
-                contentDescription = null,
-                modifier = Modifier.size(Dimen.SizeS)
-            )
+            if (isPredicting) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(Dimen.SizeS),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = Dimen.PaddingXXS
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.AutoGraph,
+                    contentDescription = null,
+                    modifier = Modifier.size(Dimen.SizeS)
+                )
+            }
             Spacer(modifier = Modifier.width(SpacingS))
             Text(
-                text = stringResource(R.string.match_detail_cta_predict),
+                text = if (isPredicting) {
+                    stringResource(R.string.prediction_loading)
+                } else {
+                    stringResource(R.string.match_detail_cta_predict)
+                },
                 style = MaterialTheme.typography.s14.bold()
             )
         }

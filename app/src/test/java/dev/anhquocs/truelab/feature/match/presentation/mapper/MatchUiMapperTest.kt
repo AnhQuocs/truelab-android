@@ -118,11 +118,11 @@ class MatchUiMapperTest {
     }
 
     @Test
-    fun `toUiRecord sets null placeholders for uncalculated odds and eloDiff`() {
+    fun `toUiRecord sets null placeholders for uncalculated odds and eloDiff when elo is zero`() {
         val match = Match(
             id = 107L,
-            homeTeam = homeTeam,
-            awayTeam = awayTeam,
+            homeTeam = homeTeam.copy(eloRating = 0.0),
+            awayTeam = awayTeam.copy(eloRating = 0.0),
             homeScore = 1,
             awayScore = 0,
             startTimeDate = "2026-09-25T15:00:00Z",
@@ -136,5 +136,22 @@ class MatchUiMapperTest {
         org.junit.Assert.assertNull(record.avgAwayOdds)
         org.junit.Assert.assertNull(record.eloDiff)
         assertEquals("—", record.predictedProb)
+    }
+
+    @Test
+    fun `toUiRecord calculates eloDiff when ratings are present`() {
+        val match = Match(
+            id = 108L,
+            homeTeam = homeTeam.copy(eloRating = 1620.0),
+            awayTeam = awayTeam.copy(eloRating = 1580.0),
+            homeScore = 2,
+            awayScore = 1,
+            startTimeDate = "2026-09-25T15:00:00Z",
+            status = MatchStatus.ENDED
+        )
+
+        val record = match.toUiRecord()
+
+        assertEquals(40, record.eloDiff)
     }
 }
