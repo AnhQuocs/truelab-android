@@ -93,6 +93,29 @@ class MatchRepositoryImplTest {
                 dateMatch && leagueMatch && statusMatch && searchMatch
             }.let { if (limit > 0) it.take(limit) else it }
         )
+
+        override fun getMatchesFilteredPaged(
+            query: String?,
+            leagueId: Int?,
+            statusFilter: String,
+            sortBy: String,
+            limit: Int,
+            offset: Int
+        ): Flow<List<MatchWithTeams>> = flowOf(
+            matches.filter { item ->
+                val leagueMatch = leagueId == null || item.match.leagueId == leagueId
+                val statusMatch = when (statusFilter) {
+                    "ENDED" -> item.match.status in listOf("8", "ended", "determined", "finished", "ft", "aet", "pen")
+                    "SCHEDULED" -> item.match.status in listOf("0", "scheduled", "fixture", "pending", "not_started", "ns", "live", "1")
+                    else -> true
+                }
+                val queryMatch = query.isNullOrBlank() ||
+                    item.homeTeam.name.contains(query, ignoreCase = true) ||
+                    item.awayTeam.name.contains(query, ignoreCase = true) ||
+                    (item.league?.name?.contains(query, ignoreCase = true) == true)
+                leagueMatch && statusMatch && queryMatch
+            }.drop(offset).take(limit)
+        )
     }
 
     @Test

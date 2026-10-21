@@ -22,6 +22,26 @@ class MatchRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getMatchesPaged(
+        query: String?,
+        leagueId: Int?,
+        statusFilter: String,
+        sortBy: String,
+        limit: Int,
+        offset: Int
+    ): Flow<List<Match>> {
+        return matchDao.getMatchesFilteredPaged(
+            query = query,
+            leagueId = leagueId,
+            statusFilter = statusFilter,
+            sortBy = sortBy,
+            limit = limit,
+            offset = offset
+        ).map { list ->
+            list.map { it.toDomain() }
+        }
+    }
+
     override fun getMatchDetail(matchId: Long): Flow<Match?> {
         return matchDao.getMatchById(matchId).map { it?.toDomain() }
     }

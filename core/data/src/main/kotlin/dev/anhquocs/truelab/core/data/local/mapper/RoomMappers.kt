@@ -150,8 +150,8 @@ object RoomMappers {
 
     fun MatchWithTeams.toDomain() = Match(
         id = match.id,
-        homeTeam = TeamSummary(id = homeTeam.id, name = homeTeam.name, logo = homeTeam.logo),
-        awayTeam = TeamSummary(id = awayTeam.id, name = awayTeam.name, logo = awayTeam.logo),
+        homeTeam = TeamSummary(id = homeTeam.id, name = homeTeam.name, logo = homeTeam.logo, eloRating = homeTeam.eloRating),
+        awayTeam = TeamSummary(id = awayTeam.id, name = awayTeam.name, logo = awayTeam.logo, eloRating = awayTeam.eloRating),
         homeScore = match.homeScore,
         awayScore = match.awayScore,
         isPenalty = match.isPenalty,

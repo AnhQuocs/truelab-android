@@ -28,7 +28,8 @@ data class Match(
 data class TeamSummary(
     val id: Int,
     val name: String,
-    val logo: String? = null
+    val logo: String? = null,
+    val eloRating: Double = 1500.0
 )
 
 enum class MatchStatus {

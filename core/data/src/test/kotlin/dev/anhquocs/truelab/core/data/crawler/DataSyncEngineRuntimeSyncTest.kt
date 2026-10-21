@@ -98,6 +98,15 @@ class DataSyncEngineRuntimeSyncTest {
             searchQuery: String?,
             limit: Int
         ): Flow<List<MatchWithTeams>> = flowOf(emptyList())
+
+        override fun getMatchesFilteredPaged(
+            query: String?,
+            leagueId: Int?,
+            statusFilter: String,
+            sortBy: String,
+            limit: Int,
+            offset: Int
+        ): Flow<List<MatchWithTeams>> = flowOf(emptyList())
     }
 
     private class FakeLeagueDao : LeagueDao {

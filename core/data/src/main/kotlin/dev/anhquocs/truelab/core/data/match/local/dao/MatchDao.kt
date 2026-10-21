@@ -31,6 +31,42 @@ interface MatchDao {
     fun getMatchesPaged(limit: Int, offset: Int): Flow<List<MatchWithTeams>>
 
     @Transaction
+    @Query("""
+        SELECT m.* FROM matches m
+        WHERE (:leagueId IS NULL OR m.leagueId = :leagueId)
+          AND (
+              (:statusFilter = 'ALL')
+              OR (:statusFilter = 'ENDED' AND m.status IN ('8', 'ended', 'determined', 'finished', 'ft', 'aet', 'pen'))
+              OR (:statusFilter = 'SCHEDULED' AND m.status IN ('0', 'scheduled', 'fixture', 'pending', 'not_started', 'ns', 'live', '1'))
+          )
+          AND (:query IS NULL OR :query = '' OR (
+              EXISTS (
+                  SELECT 1 FROM teams t 
+                  WHERE (t.id = m.homeTeamId OR t.id = m.awayTeamId) 
+                    AND t.name LIKE '%' || :query || '%'
+              )
+              OR EXISTS (
+                  SELECT 1 FROM leagues l
+                  WHERE l.id = m.leagueId
+                    AND l.name LIKE '%' || :query || '%'
+              )
+          ))
+        ORDER BY 
+          CASE WHEN :sortBy = 'START_TIME_DESC' THEN m.startTimeDate END DESC,
+          CASE WHEN :sortBy = 'TOTAL_GOALS_DESC' THEN (COALESCE(m.homeScore, 0) + COALESCE(m.awayScore, 0)) END DESC,
+          CASE WHEN :sortBy = 'ID_ASC' THEN m.id END ASC
+        LIMIT :limit OFFSET :offset
+    """)
+    fun getMatchesFilteredPaged(
+        query: String?,
+        leagueId: Int?,
+        statusFilter: String,
+        sortBy: String,
+        limit: Int,
+        offset: Int
+    ): Flow<List<MatchWithTeams>>
+
+    @Transaction
     @Query("SELECT * FROM matches WHERE startTimeDate LIKE :date || '%' ORDER BY startTimeDate DESC")
     fun getMatchesByDate(date: String): Flow<List<MatchWithTeams>>
 

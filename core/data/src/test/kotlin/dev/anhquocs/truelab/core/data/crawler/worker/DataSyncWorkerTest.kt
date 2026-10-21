@@ -106,6 +106,14 @@ class DataSyncWorkerTest {
             searchQuery: String?,
             limit: Int
         ) = throw NotImplementedError()
+        override fun getMatchesFilteredPaged(
+            query: String?,
+            leagueId: Int?,
+            statusFilter: String,
+            sortBy: String,
+            limit: Int,
+            offset: Int
+        ) = throw NotImplementedError()
     }
 
     private class WorkerTestMatchApi : MatchApi {

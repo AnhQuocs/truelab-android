@@ -23,5 +23,15 @@ interface MatchRepository {
         searchQuery: String? = null,
         limit: Int = 50
     ): Flow<List<Match>>
+
+    fun getMatchesPaged(
+        query: String? = null,
+        leagueId: Int? = null,
+        statusFilter: String = "ALL",
+        sortBy: String = "START_TIME_DESC",
+        limit: Int = 20,
+        offset: Int = 0
+    ): Flow<List<Match>>
+
     suspend fun refreshMatchesForDate(date: String): Result<Unit>
 }
