@@ -8,188 +8,163 @@ import dev.anhquocs.truelab.core.domain.benchmark.generator.SyntheticDatasetGene
 import dev.anhquocs.truelab.core.domain.benchmark.model.BenchmarkMeasurement
 import dev.anhquocs.truelab.core.domain.benchmark.model.ComparisonBenchmarkResult
 import dev.anhquocs.truelab.core.domain.benchmark.model.ComprehensiveBenchmarkSuiteResult
+import dev.anhquocs.truelab.core.domain.match.model.Match
 
-/**
- * UseCase thuần túy (Pure Kotlin/JVM) thực thi bộ đo lường hiệu năng thuật toán (Benchmark Suite).
- *
- * Quy trình xử lý:
- * 1. Warm-up JVM (chạy thử các thuật toán nhiều lần lặp để JIT Compiler tối ưu hóa mã byte).
- * 2. Đo lường hiệu năng Search (Linear Search vs Binary Search) trên các kích thước N = 1K, 10K, 50K.
- * 3. Đo lường hiệu năng Sort (Quick Sort vs Merge Sort) trên các kích thước N = 1K, 10K, 50K.
- * 4. Tính toán thời gian trung bình (executionTimeMs) bằng System.nanoTime() và hệ số tăng tốc (speedupFactor).
- */
 class RunAlgorithmBenchmarkUseCase(
     private val linearSearch: LinearSearch<Int, Int> = LinearSearch(),
     private val binarySearch: BinarySearch<Int, Int> = BinarySearch(),
     private val quickSort: QuickSort<Int> = QuickSort(),
     private val mergeSort: MergeSort<Int> = MergeSort()
 ) {
-
-    /**
-     * Thực thi toàn bộ bộ đo lường hiệu năng.
-     *
-     * @param datasetSizes Danh sách các kích thước dữ liệu cần đo lường (mặc định [1000, 10000, 50000]).
-     * @param iterationsPerSize Số lần lặp đo lường trên mỗi kích thước để tính trung bình (mặc định 5).
-     * @param warmupIterations Số lần lặp khởi động JVM trước khi đo lường (mặc định 100).
-     * @param seed Hạt giống ngẫu nhiên tạo dataset (mặc định [SyntheticDatasetGenerator.DEFAULT_SEED]).
-     * @return [ComprehensiveBenchmarkSuiteResult] chứa toàn bộ kết quả đo lường và so sánh.
-     */
     operator fun invoke(
         datasetSizes: List<Int> = listOf(1_000, 10_000, 50_000),
         iterationsPerSize: Int = 5,
         warmupIterations: Int = 100,
-        seed: Long = SyntheticDatasetGenerator.DEFAULT_SEED
+        seed: Long = SyntheticDatasetGenerator.DEFAULT_SEED,
+        matches: List<Match>? = null,
+        searchQuery: String = "",
+        searchLimit: Int = 5
     ): ComprehensiveBenchmarkSuiteResult {
-        // 1. Warm-up JVM để ổn định JIT compiler
-        performJvmWarmup(warmupIterations, seed)
-
-        val searchBenchmarks = mutableListOf<ComparisonBenchmarkResult>()
-        val sortBenchmarks = mutableListOf<ComparisonBenchmarkResult>()
-
-        val validIterations = iterationsPerSize.coerceAtLeast(1)
-
-        var blackhole = 0
-
-        // 2. Chạy Search Benchmarks
-        for (size in datasetSizes) {
-            val sortedDataset = SyntheticDatasetGenerator.generateSortedIntList(size, seed)
-            val target = if (sortedDataset.isNotEmpty()) sortedDataset[sortedDataset.size / 2] else 0
-
-            // Đo Linear Search
-            var linearTotalNanos = 0L
-            repeat(validIterations) {
-                val start = System.nanoTime()
-                val idx = linearSearch.search(sortedDataset, target) { it }
-                val end = System.nanoTime()
-                blackhole += idx
-                linearTotalNanos += (end - start)
-            }
-            val linearTimeMs = (linearTotalNanos.toDouble() / validIterations) / 1_000_000.0
-
-            val linearMeasurement = BenchmarkMeasurement(
-                algorithmName = "Linear Search",
-                algorithmType = "SEARCH",
-                datasetSize = size,
-                executionTimeMs = linearTimeMs,
-                iterationsRun = validIterations
-            )
-
-            // Đo Binary Search
-            var binaryTotalNanos = 0L
-            repeat(validIterations) {
-                val start = System.nanoTime()
-                val idx = binarySearch.search(sortedDataset, target) { it }
-                val end = System.nanoTime()
-                blackhole += idx
-                binaryTotalNanos += (end - start)
-            }
-            val binaryTimeMs = (binaryTotalNanos.toDouble() / validIterations) / 1_000_000.0
-
-            val binaryMeasurement = BenchmarkMeasurement(
-                algorithmName = "Binary Search",
-                algorithmType = "SEARCH",
-                datasetSize = size,
-                executionTimeMs = binaryTimeMs,
-                iterationsRun = validIterations
-            )
-
-            searchBenchmarks.add(createComparison(linearMeasurement, binaryMeasurement))
+        return if (matches != null) {
+            runRealMatchBenchmark(matches, datasetSizes, iterationsPerSize, warmupIterations, searchQuery, searchLimit)
+        } else {
+            runSyntheticBenchmark(datasetSizes, iterationsPerSize, warmupIterations, seed)
         }
-
-        // 3. Chạy Sort Benchmarks
-        for (size in datasetSizes) {
-            val randomDataset = SyntheticDatasetGenerator.generateRandomIntList(size, seed)
-            val comparator = naturalOrder<Int>()
-
-            // Đo Quick Sort
-            var quickTotalNanos = 0L
-            repeat(validIterations) {
-                val start = System.nanoTime()
-                val sorted = quickSort.sort(randomDataset, comparator)
-                val end = System.nanoTime()
-                blackhole += sorted.size
-                quickTotalNanos += (end - start)
-            }
-            val quickTimeMs = (quickTotalNanos.toDouble() / validIterations) / 1_000_000.0
-
-            val quickMeasurement = BenchmarkMeasurement(
-                algorithmName = "Quick Sort",
-                algorithmType = "SORT",
-                datasetSize = size,
-                executionTimeMs = quickTimeMs,
-                iterationsRun = validIterations
-            )
-
-            // Đo Merge Sort
-            var mergeTotalNanos = 0L
-            repeat(validIterations) {
-                val start = System.nanoTime()
-                val sorted = mergeSort.sort(randomDataset, comparator)
-                val end = System.nanoTime()
-                blackhole += sorted.size
-                mergeTotalNanos += (end - start)
-            }
-            val mergeTimeMs = (mergeTotalNanos.toDouble() / validIterations) / 1_000_000.0
-
-            val mergeMeasurement = BenchmarkMeasurement(
-                algorithmName = "Merge Sort",
-                algorithmType = "SORT",
-                datasetSize = size,
-                executionTimeMs = mergeTimeMs,
-                iterationsRun = validIterations
-            )
-
-            sortBenchmarks.add(createComparison(quickMeasurement, mergeMeasurement))
-        }
-
-        return ComprehensiveBenchmarkSuiteResult(
-            searchBenchmarks = searchBenchmarks,
-            sortBenchmarks = sortBenchmarks,
-            timestamp = System.currentTimeMillis()
-        )
     }
+
+    private fun runSyntheticBenchmark(
+        datasetSizes: List<Int>,
+        iterationsPerSize: Int,
+        warmupIterations: Int,
+        seed: Long
+    ): ComprehensiveBenchmarkSuiteResult {
+        performJvmWarmup(warmupIterations, seed)
+        val iterations = iterationsPerSize.coerceAtLeast(1)
+        val searchResults = datasetSizes.map { size ->
+            val dataset = SyntheticDatasetGenerator.generateSortedIntList(size, seed)
+            val target = dataset.getOrElse(dataset.size / 2) { 0 }
+            val linear = measure(iterations) { linearSearch.search(dataset, target) { it } }
+            val binary = measure(iterations) { binarySearch.search(dataset, target) { it } }
+            compare(
+                BenchmarkMeasurement("Linear Search", "SEARCH", size, linear, iterations),
+                BenchmarkMeasurement("Binary Search", "SEARCH", size, binary, iterations)
+            )
+        }
+        val sortResults = datasetSizes.map { size ->
+            val dataset = SyntheticDatasetGenerator.generateRandomIntList(size, seed)
+            val comparator = naturalOrder<Int>()
+            val quick = measure(iterations) { quickSort.sort(dataset, comparator) }
+            val merge = measure(iterations) { mergeSort.sort(dataset, comparator) }
+            compare(
+                BenchmarkMeasurement("Quick Sort", "SORT", size, quick, iterations),
+                BenchmarkMeasurement("Merge Sort", "SORT", size, merge, iterations)
+            )
+        }
+        return ComprehensiveBenchmarkSuiteResult(searchResults, sortResults, System.currentTimeMillis())
+    }
+
+    private fun runRealMatchBenchmark(
+        matches: List<Match>,
+        datasetSizes: List<Int>,
+        iterationsPerSize: Int,
+        warmupIterations: Int,
+        searchQuery: String,
+        searchLimit: Int
+    ): ComprehensiveBenchmarkSuiteResult {
+        performJvmWarmup(warmupIterations, SyntheticDatasetGenerator.DEFAULT_SEED)
+        val iterations = iterationsPerSize.coerceAtLeast(1)
+        val sourceMatches = matches.sortedBy { it.id }
+        val query = searchQuery.trim().lowercase()
+        val searchResults = datasetSizes.map { requestedSize ->
+            val dataset = sourceMatches.take(requestedSize.coerceAtMost(sourceMatches.size))
+            val preparationStart = System.nanoTime()
+            val teamNames = dataset
+                .flatMap { listOf(it.homeTeam.name, it.awayTeam.name) }
+                .distinctBy { it.trim().lowercase() }
+                .sortedBy { it.trim().lowercase() }
+            val preparationMs = elapsedMs(preparationStart)
+            val matchedItems = dataset.count {
+                it.homeTeam.name.trim().equals(searchQuery.trim(), ignoreCase = true) ||
+                    it.awayTeam.name.trim().equals(searchQuery.trim(), ignoreCase = true)
+            }.coerceAtMost(searchLimit.coerceAtLeast(0))
+            val linear = measure(iterations) {
+                LinearSearch<String, String>().search(teamNames, query) { it.trim().lowercase() }
+            }
+            val binary = measure(iterations) {
+                BinarySearch<String, String>().search(teamNames, query) { it.trim().lowercase() }
+            }
+            compare(
+                BenchmarkMeasurement("Linear Search", "SEARCH", dataset.size, linear, iterations, matchedItems, preparationMs),
+                BenchmarkMeasurement("Binary Search", "SEARCH", dataset.size, binary, iterations, matchedItems, preparationMs)
+            )
+        }
+        val sortResults = datasetSizes.map { requestedSize ->
+            val dataset = sourceMatches.take(requestedSize.coerceAtMost(sourceMatches.size))
+            val preparationStart = System.nanoTime()
+            val sortInput = dataset.toList()
+            val preparationMs = elapsedMs(preparationStart)
+            val comparator = matchComparator()
+            val quick = measure(iterations) { quickSortForMatches(sortInput, comparator) }
+            val merge = measure(iterations) { mergeSortForMatches(sortInput, comparator) }
+            compare(
+                BenchmarkMeasurement("Quick Sort", "SORT", dataset.size, quick, iterations, preparationTimeMs = preparationMs),
+                BenchmarkMeasurement("Merge Sort", "SORT", dataset.size, merge, iterations, preparationTimeMs = preparationMs)
+            )
+        }
+        return ComprehensiveBenchmarkSuiteResult(searchResults, sortResults, System.currentTimeMillis())
+    }
+
+    private fun quickSortForMatches(matches: List<Match>, comparator: Comparator<Match>): List<Match> {
+        @Suppress("UNCHECKED_CAST")
+        return QuickSort<Match>().sort(matches, comparator)
+    }
+
+    private fun mergeSortForMatches(matches: List<Match>, comparator: Comparator<Match>): List<Match> {
+        @Suppress("UNCHECKED_CAST")
+        return MergeSort<Match>().sort(matches, comparator)
+    }
+
+    private fun <T> measure(iterations: Int, block: () -> T): Double {
+        var total = 0L
+        repeat(iterations) {
+            val start = System.nanoTime()
+            block()
+            total += System.nanoTime() - start
+        }
+        return total.toDouble() / iterations / 1_000_000.0
+    }
+
+    private fun elapsedMs(start: Long): Double =
+        (System.nanoTime() - start).toDouble() / 1_000_000.0
+
+    private fun compare(a: BenchmarkMeasurement, b: BenchmarkMeasurement): ComparisonBenchmarkResult {
+        val faster = when {
+            a.executionTimeMs < b.executionTimeMs -> a.algorithmName
+            b.executionTimeMs < a.executionTimeMs -> b.algorithmName
+            else -> "Equal"
+        }
+        val speedup = when {
+            a.executionTimeMs <= 0.0 || b.executionTimeMs <= 0.0 -> 1.0
+            a.executionTimeMs < b.executionTimeMs -> b.executionTimeMs / a.executionTimeMs
+            else -> a.executionTimeMs / b.executionTimeMs
+        }
+        return ComparisonBenchmarkResult(a, b, speedup, faster)
+    }
+
+    private fun matchComparator(): Comparator<Match> = compareBy(
+        { it.homeTeam.name.trim().lowercase() },
+        { it.awayTeam.name.trim().lowercase() },
+        { it.startTimeDate },
+        { it.id }
+    )
 
     private fun performJvmWarmup(iterations: Int, seed: Long) {
         if (iterations <= 0) return
-        val warmupDataset = SyntheticDatasetGenerator.generateSortedIntList(200, seed)
-        val target = if (warmupDataset.isNotEmpty()) warmupDataset[warmupDataset.size / 2] else 0
-        val randomWarmup = SyntheticDatasetGenerator.generateRandomIntList(200, seed)
-        val comparator = naturalOrder<Int>()
-
-        var warmupSink = 0
+        val dataset = SyntheticDatasetGenerator.generateSortedIntList(200, seed)
+        val target = dataset[dataset.size / 2]
         repeat(iterations) {
-            warmupSink += linearSearch.search(warmupDataset, target) { it }
-            warmupSink += binarySearch.search(warmupDataset, target) { it }
-            warmupSink += quickSort.sort(randomWarmup, comparator).size
-            warmupSink += mergeSort.sort(randomWarmup, comparator).size
+            linearSearch.search(dataset, target) { it }
+            binarySearch.search(dataset, target) { it }
         }
-    }
-
-    private fun createComparison(
-        measurementA: BenchmarkMeasurement,
-        measurementB: BenchmarkMeasurement
-    ): ComparisonBenchmarkResult {
-        val timeA = measurementA.executionTimeMs
-        val timeB = measurementB.executionTimeMs
-
-        val faster = when {
-            timeA < timeB -> measurementA.algorithmName
-            timeB < timeA -> measurementB.algorithmName
-            else -> "Equal"
-        }
-
-        val speedupFactor = when {
-            timeA <= 0.0 || timeB <= 0.0 -> 1.0
-            timeA < timeB -> timeB / timeA
-            timeB < timeA -> timeA / timeB
-            else -> 1.0
-        }
-
-        return ComparisonBenchmarkResult(
-            algorithmA = measurementA,
-            algorithmB = measurementB,
-            speedupFactor = speedupFactor,
-            fasterAlgorithm = faster
-        )
     }
 }

@@ -3,6 +3,7 @@ package dev.anhquocs.truelab.feature.benchmark.presentation.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,7 +22,7 @@ import dev.anhquocs.truelab.core.ui.utils.s14
 /**
  * Component lựa chọn kích thước tập dữ liệu đo lường hiệu năng.
  *
- * @param sizes Danh sách các kích thước (mặc định 1K, 10K, 50K).
+ * @param sizes Danh sách các kích thước matches.
  * @param selectedSize Kích thước đang được chọn.
  * @param enabled Có cho phép tương tác hay không (ví dụ: vô hiệu hóa khi đang chạy đo lường).
  * @param onSelectSize Callback khi người dùng chọn một kích thước mới.
@@ -41,7 +42,10 @@ fun DatasetSizeSelector(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(SpacingXS))
-        Row(horizontalArrangement = Arrangement.spacedBy(SpacingS)) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(SpacingS),
+            verticalArrangement = Arrangement.spacedBy(SpacingS)
+        ) {
             sizes.forEach { size ->
                 FilterChip(
                     selected = selectedSize == size,
@@ -49,7 +53,7 @@ fun DatasetSizeSelector(
                     enabled = enabled,
                     label = {
                         Text(
-                            text = "%,d items".format(size),
+                            text = stringResource(R.string.benchmark_matches_size, size),
                             style = MaterialTheme.typography.s14
                         )
                     }

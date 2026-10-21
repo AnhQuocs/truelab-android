@@ -14,29 +14,45 @@ import dev.anhquocs.truelab.core.ui.utils.UiText
  */
 sealed interface BenchmarkUiState {
     val selectedDatasetSize: Int
+    val searchQuery: String
+    val searchLimit: Int
+    val availableMatches: Int
 
     data class Idle(
-        override val selectedDatasetSize: Int = DEFAULT_DATASET_SIZE
+        override val selectedDatasetSize: Int = DEFAULT_DATASET_SIZE,
+        override val searchQuery: String = "",
+        override val searchLimit: Int = DEFAULT_SEARCH_LIMIT,
+        override val availableMatches: Int = 0
     ) : BenchmarkUiState
 
     data class Running(
-        override val selectedDatasetSize: Int
+        override val selectedDatasetSize: Int,
+        override val searchQuery: String,
+        override val searchLimit: Int,
+        override val availableMatches: Int
     ) : BenchmarkUiState
 
     data class Success(
         override val selectedDatasetSize: Int,
         val searchResult: ComparisonBenchmarkResult,
         val sortResult: ComparisonBenchmarkResult,
-        val timestamp: Long
+        val timestamp: Long,
+        override val searchQuery: String,
+        override val searchLimit: Int,
+        override val availableMatches: Int
     ) : BenchmarkUiState
 
     data class Error(
         override val selectedDatasetSize: Int,
-        val message: UiText
+        val message: UiText,
+        override val searchQuery: String,
+        override val searchLimit: Int,
+        override val availableMatches: Int
     ) : BenchmarkUiState
 
     companion object {
         const val DEFAULT_DATASET_SIZE = 10_000
-        val AVAILABLE_SIZES = listOf(1_000, 10_000, 50_000)
+        const val DEFAULT_SEARCH_LIMIT = 5
+        val AVAILABLE_SIZES = listOf(10_000, 30_000, 50_000, 75_000)
     }
 }

@@ -14,7 +14,9 @@ data class BenchmarkMeasurement(
     val algorithmType: String,
     val datasetSize: Int,
     val executionTimeMs: Double,
-    val iterationsRun: Int
+    val iterationsRun: Int,
+    val matchedItems: Int? = null,
+    val preparationTimeMs: Double? = null
 )
 
 /**
