@@ -24,7 +24,8 @@ sealed interface AnalyticsUiState {
         val avgHomeOdds: Double? = null,
         val avgDrawOdds: Double? = null,
         val avgAwayOdds: Double? = null,
-        val oddsSpread: Double? = null
+        val oddsSpread: Double? = null,
+        val isOddsLoading: Boolean = false
     ) : AnalyticsUiState
 
     data class Empty(val message: UiText) : AnalyticsUiState

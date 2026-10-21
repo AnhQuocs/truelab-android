@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import dev.anhquocs.truelab.R
 import dev.anhquocs.truelab.core.domain.team.model.TeamPerformanceStatistics
 import dev.anhquocs.truelab.core.ui.theme.Dimen
@@ -32,6 +33,8 @@ import dev.anhquocs.truelab.core.ui.theme.RadiusPill
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.s10
 import dev.anhquocs.truelab.core.ui.utils.s14
+import dev.anhquocs.truelab.core.ui.components.TeamLogo
+import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s18
 import dev.anhquocs.truelab.core.ui.utils.semiBold
 import java.util.Locale
@@ -39,6 +42,8 @@ import java.util.Locale
 @Composable
 fun DescriptiveStatsCard(
     teamStats: TeamPerformanceStatistics?,
+    teamName: String? = null,
+    teamLogo: String? = null,
     modifier: Modifier = Modifier
 ) {
     val stats = teamStats?.totalGoalsStats
@@ -85,23 +90,47 @@ fun DescriptiveStatsCard(
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(
-                    modifier = Modifier.weight(1f).padding(end = Dimen.PaddingS),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXSPlus)
+                Column(
+                    modifier = Modifier.weight(1f).padding(end = Dimen.PaddingS)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.AutoGraph,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(Dimen.SizeS)
-                    )
-                    Text(
-                        text = "1. " + stringResource(R.string.analytics_descriptive_stats),
-                        style = MaterialTheme.typography.s14.semiBold(),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 2
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXSPlus)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AutoGraph,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(Dimen.SizeS)
+                        )
+                        Text(
+                            text = "1. " + stringResource(R.string.analytics_descriptive_stats),
+                            style = MaterialTheme.typography.s14.semiBold(),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1
+                        )
+                    }
+
+                    if (!teamName.isNullOrBlank()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Dimen.PaddingXS),
+                            modifier = Modifier.padding(top = Dimen.PaddingXXS)
+                        ) {
+                            TeamLogo(
+                                logoUrl = teamLogo,
+                                teamName = teamName,
+                                size = 18.dp
+                            )
+                            Text(
+                                text = teamName,
+                                style = MaterialTheme.typography.s12,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 }
 
                 Box(

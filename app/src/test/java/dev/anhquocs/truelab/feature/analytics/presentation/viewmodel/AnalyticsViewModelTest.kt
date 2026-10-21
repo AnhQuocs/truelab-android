@@ -317,6 +317,160 @@ class AnalyticsViewModelTest {
         collectJob.cancel()
     }
 
+    @Test
+    fun `teamSearchResults emits default teams when query is blank and searches teams dynamically`() = runTest {
+        val collectJob = launch { viewModel.teamSearchResults.collect {} }
+        advanceUntilIdle()
+
+        // Default query is blank -> emits all available teams
+        assertEquals(2, viewModel.teamSearchResults.value.size)
+
+        // Type query "Arsenal"
+        viewModel.onTeamSearchQueryChanged("Arsenal")
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.teamSearchResults.value.size)
+        assertEquals("Arsenal", viewModel.teamSearchResults.value.first().name)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `matchSearchResults emits default matches when query is blank and searches matches dynamically`() = runTest {
+        val collectJob = launch { viewModel.matchSearchResults.collect {} }
+        advanceUntilIdle()
+
+        // Default query is blank -> emits matches
+        assertEquals(2, viewModel.matchSearchResults.value.size)
+
+        // Type query "Chelsea"
+        viewModel.onMatchSearchQueryChanged("Chelsea")
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.matchSearchResults.value.size)
+        assertEquals(102L, viewModel.matchSearchResults.value.first().id)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `when team is selected, matchSearchResults strictly restricts to matches involving that team`() = runTest {
+        val collectJob = launch { viewModel.matchSearchResults.collect {} }
+        advanceUntilIdle()
+
+        // Default team is Man City (id=1): both match1 and match2 involve Man City
+        assertEquals(2, viewModel.matchSearchResults.value.size)
+
+        // Select Arsenal (id=2)
+        viewModel.onTeamSelected(2)
+        advanceUntilIdle()
+
+        // Should ONLY have match1 (involving Arsenal). match2 (Man City vs Chelsea) must be excluded!
+        assertEquals(1, viewModel.matchSearchResults.value.size)
+        assertEquals(101L, viewModel.matchSearchResults.value.first().id)
+        assertTrue(viewModel.matchSearchResults.value.none { it.id == 102L })
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `selecting match triggers on-demand odds fetch from repository`() = runTest {
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        // Default match is match1 (id = 101L) -> should have triggered fetch for 101L
+        assertTrue(fakeOddsRepository.fetchedMatchIds.contains(101L))
+
+        // Select match2 (id = 102L)
+        viewModel.onMatchSelected(102L)
+        advanceUntilIdle()
+
+        assertTrue(fakeOddsRepository.fetchedMatchIds.contains(102L))
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `selecting team from search outside default selection resolves TeamDetail and recalculates stats`() = runTest {
+        val liverpool = TeamDetail(id = 999, name = "Liverpool", leagueName = "Premier League", eloRating = 1920.0)
+        fakeTeamRepository.setTeams(listOf(manCity, arsenal, liverpool))
+
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        viewModel.onTeamSelected(999)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as AnalyticsUiState.Success
+        assertEquals("Liverpool", state.selectedTeam?.name)
+        assertEquals(999, state.selectedTeam?.id)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `selecting team automatically links to its recent match if available`() = runTest {
+        // match1 has homeTeam=1 (Man City) and awayTeam=2 (Arsenal)
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        viewModel.onTeamSelected(2) // Select Arsenal
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as AnalyticsUiState.Success
+        assertEquals(2, state.selectedTeam?.id)
+        assertEquals("Arsenal", state.selectedTeam?.name)
+        // Automatically linked to match 101L which Arsenal plays in
+        assertEquals(101L, state.selectedMatch?.id)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `selecting match updates selected team to home team when current team is unrelated`() = runTest {
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        // Set current team to Arsenal (id=2)
+        viewModel.onTeamSelected(2)
+        advanceUntilIdle()
+        assertEquals(2, (viewModel.uiState.value as AnalyticsUiState.Success).selectedTeam?.id)
+
+        // Select match2 (Man City [1] vs Chelsea [3]) - Arsenal is NOT in match2
+        viewModel.onMatchSelected(102L)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as AnalyticsUiState.Success
+        assertEquals(102L, state.selectedMatch?.id)
+        // Auto-linked to home team of match2 (Man City, id=1)
+        assertEquals(1, state.selectedTeam?.id)
+        assertEquals("Manchester City", state.selectedTeam?.name)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `selecting match retains current team when current team is away team of the selected match`() = runTest {
+        val collectJob = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        // Set current team to Arsenal (id=2)
+        viewModel.onTeamSelected(2)
+        advanceUntilIdle()
+
+        // Select match1 (Man City [1] vs Arsenal [2]) - Arsenal is awayTeam
+        viewModel.onMatchSelected(101L)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as AnalyticsUiState.Success
+        assertEquals(101L, state.selectedMatch?.id)
+        // Should retain Arsenal (id=2) because it is already participating in match1
+        assertEquals(2, state.selectedTeam?.id)
+        assertEquals("Arsenal", state.selectedTeam?.name)
+
+        collectJob.cancel()
+    }
+
     // --- Fake Repositories & Helpers ---
 
     private fun createOddsItem(
@@ -458,6 +612,18 @@ class AnalyticsViewModelTest {
             limit: Int
         ): Flow<List<Match>> = flow { emit(emptyList()) }
 
+        override fun getMatchesPaged(
+            query: String?,
+            leagueId: Int?,
+            statusFilter: String,
+            sortBy: String,
+            limit: Int,
+            offset: Int
+        ): Flow<List<Match>> = flow {
+            if (shouldThrowError) throw RuntimeException("Database connection failed")
+            emit(emptyList())
+        }
+
         override suspend fun refreshMatchesForDate(date: String): Result<Unit> = Result.success(Unit)
     }
 
@@ -484,8 +650,14 @@ class AnalyticsViewModelTest {
             emit(historyMap[matchId] ?: emptyList())
         }
 
+        val fetchedMatchIds = mutableListOf<Long>()
+
         override suspend fun getLatestEuropeanOddsMap(): Map<Long, OddsRecordItem> = emptyMap()
 
-        override suspend fun fetchAndCacheOddsForMatch(matchId: Long): Result<Unit> = Result.success(Unit)
+        override suspend fun fetchAndCacheOddsForMatch(matchId: Long): Result<Unit> {
+            if (shouldThrowError) throw RuntimeException("Network error")
+            fetchedMatchIds.add(matchId)
+            return Result.success(Unit)
+        }
     }
 }

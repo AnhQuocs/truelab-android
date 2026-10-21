@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
@@ -21,13 +19,14 @@ import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,8 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.anhquocs.truelab.R
-import dev.anhquocs.truelab.core.domain.match.model.Match
-import dev.anhquocs.truelab.core.domain.team.model.TeamDetail
 import dev.anhquocs.truelab.core.ui.theme.Dimen
 import dev.anhquocs.truelab.core.ui.theme.RadiusLarge
 import dev.anhquocs.truelab.core.ui.theme.RadiusPill
@@ -48,11 +45,12 @@ import dev.anhquocs.truelab.core.ui.theme.SpacingS
 import dev.anhquocs.truelab.core.ui.theme.SpacingXS
 import dev.anhquocs.truelab.core.ui.utils.bold
 import dev.anhquocs.truelab.core.ui.utils.s10
-import dev.anhquocs.truelab.core.ui.utils.s12
-import dev.anhquocs.truelab.core.ui.utils.s13
 import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.s16
 import dev.anhquocs.truelab.core.ui.utils.s20
+import dev.anhquocs.truelab.feature.analytics.presentation.components.AnalyticsMatchPickerBottomSheet
+import dev.anhquocs.truelab.feature.analytics.presentation.components.AnalyticsSelectorSection
+import dev.anhquocs.truelab.feature.analytics.presentation.components.AnalyticsTeamPickerBottomSheet
 import dev.anhquocs.truelab.feature.analytics.presentation.components.DescriptiveStatsCard
 import dev.anhquocs.truelab.feature.analytics.presentation.components.MultiProviderOddsCard
 import dev.anhquocs.truelab.feature.analytics.presentation.components.OddsTrendCard
@@ -128,6 +126,9 @@ fun AnalyticsScreen(
             }
 
             is AnalyticsUiState.Success -> {
+                var showTeamPicker by remember { mutableStateOf(false) }
+                var showMatchPicker by remember { mutableStateOf(false) }
+
                 LazyColumn(
                     modifier = contentModifier.fillMaxSize(),
                     contentPadding = PaddingValues(
@@ -138,30 +139,22 @@ fun AnalyticsScreen(
                     ),
                     verticalArrangement = Arrangement.spacedBy(Dimen.PaddingM)
                 ) {
-                    if (state.availableTeams.isNotEmpty()) {
-                        item {
-                            TeamSelectorSection(
-                                teams = state.availableTeams,
-                                selectedTeam = state.selectedTeam,
-                                onTeamSelected = { viewModel.onTeamSelected(it.id) }
-                            )
-                        }
-                    }
-
-                    if (state.availableMatches.isNotEmpty()) {
-                        item {
-                            MatchSelectorSection(
-                                matches = state.availableMatches,
-                                selectedMatch = state.selectedMatch,
-                                onMatchSelected = { viewModel.onMatchSelected(it.id) }
-                            )
-                        }
+                    // Unified Context Selector Card
+                    item {
+                        AnalyticsSelectorSection(
+                            selectedTeam = state.selectedTeam,
+                            selectedMatch = state.selectedMatch,
+                            onOpenTeamPicker = { showTeamPicker = true },
+                            onOpenMatchPicker = { showMatchPicker = true }
+                        )
                     }
 
                     // Module 1: Descriptive Statistics
                     item {
                         DescriptiveStatsCard(
-                            teamStats = state.teamStats
+                            teamStats = state.teamStats,
+                            teamName = state.selectedTeam?.name,
+                            teamLogo = state.selectedTeam?.logo
                         )
                     }
 
@@ -177,7 +170,8 @@ fun AnalyticsScreen(
                             avgHomeOdds = state.avgHomeOdds,
                             avgDrawOdds = state.avgDrawOdds,
                             avgAwayOdds = state.avgAwayOdds,
-                            oddsSpread = state.oddsSpread
+                            oddsSpread = state.oddsSpread,
+                            isOddsLoading = state.isOddsLoading
                         )
                     }
 
@@ -192,89 +186,42 @@ fun AnalyticsScreen(
                         )
                     }
                 }
-            }
-        }
-    }
-}
 
-@Composable
-private fun TeamSelectorSection(
-    teams: List<TeamDetail>,
-    selectedTeam: TeamDetail?,
-    onTeamSelected: (TeamDetail) -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.analytics_select_team),
-            style = MaterialTheme.typography.s13.bold(),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = SpacingXS)
-        )
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(SpacingS)
-        ) {
-            items(
-                items = teams,
-                key = { it.id }
-            ) { team ->
-                val isSelected = team.id == selectedTeam?.id
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { onTeamSelected(team) },
-                    label = {
-                        Text(
-                            text = team.name,
-                            style = MaterialTheme.typography.s12
-                        )
-                    },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                )
-            }
-        }
-    }
-}
+                val teamSearchResults by viewModel.teamSearchResults.collectAsStateWithLifecycle()
+                val teamSearchQuery by viewModel.teamSearchQuery.collectAsStateWithLifecycle()
+                val matchSearchResults by viewModel.matchSearchResults.collectAsStateWithLifecycle()
+                val matchSearchQuery by viewModel.matchSearchQuery.collectAsStateWithLifecycle()
 
-@Composable
-private fun MatchSelectorSection(
-    matches: List<Match>,
-    selectedMatch: Match?,
-    onMatchSelected: (Match) -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.analytics_select_match),
-            style = MaterialTheme.typography.s13.bold(),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = SpacingXS)
-        )
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(SpacingS)
-        ) {
-            items(
-                items = matches,
-                key = { it.id }
-            ) { match ->
-                val isSelected = match.id == selectedMatch?.id
-                val label = "${match.homeTeam.name} vs ${match.awayTeam.name}"
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { onMatchSelected(match) },
-                    label = {
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.s12
-                        )
-                    },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                // Searchable Team Picker BottomSheet
+                if (showTeamPicker) {
+                    AnalyticsTeamPickerBottomSheet(
+                        teams = teamSearchResults,
+                        searchQuery = teamSearchQuery,
+                        onSearchQueryChange = viewModel::onTeamSearchQueryChanged,
+                        selectedTeam = state.selectedTeam,
+                        onSelectTeam = { viewModel.onTeamSelected(it.id) },
+                        onDismissRequest = {
+                            showTeamPicker = false
+                            viewModel.onTeamSearchQueryChanged("")
+                        }
                     )
-                )
+                }
+
+                // Searchable Match Picker BottomSheet
+                if (showMatchPicker) {
+                    AnalyticsMatchPickerBottomSheet(
+                        matches = matchSearchResults,
+                        targetTeamName = state.selectedTeam?.name,
+                        searchQuery = matchSearchQuery,
+                        onSearchQueryChange = viewModel::onMatchSearchQueryChanged,
+                        selectedMatch = state.selectedMatch,
+                        onSelectMatch = { viewModel.onMatchSelected(it.id) },
+                        onDismissRequest = {
+                            showMatchPicker = false
+                            viewModel.onMatchSearchQueryChanged("")
+                        }
+                    )
+                }
             }
         }
     }
