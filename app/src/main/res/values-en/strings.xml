@@ -31,15 +31,22 @@
     <string name="home_tool_prediction_desc">Analyze and predict match outcomes</string>
     <string name="home_tool_benchmark_title">Benchmark</string>
     <string name="home_tool_benchmark_desc">Compare algorithm performance</string>
-    <string name="home_algo_progress_title">Algorithm Development</string>
-    <string name="home_algo_search_sort">Search &amp; Sort</string>
-    <string name="home_algo_stats">Statistics &amp; Trend</string>
-    <string name="home_algo_eval">Evaluation</string>
-    <string name="home_algo_predict">Prediction</string>
+    <string name="home_algo_progress_title">Algorithm Development (%1$d algorithms)</string>
+    <string name="home_algo_search">Search</string>
+    <string name="home_algo_sort">Sort</string>
+    <string name="home_algo_statistics">Descriptive Statistics</string>
+    <string name="home_algo_form">Form Analysis</string>
+    <string name="home_algo_home_away">Home/Away Splits</string>
+    <string name="home_algo_h2h">Head-to-Head (H2H)</string>
+    <string name="home_algo_rating">Elo Rating</string>
+    <string name="home_algo_odds_trend">Odds Trend</string>
+    <string name="home_algo_prediction">Weighted Prediction</string>
 
     <!-- Matches Dataset Explorer Screen -->
     <string name="matches_title">Match Dataset Explorer</string>
-    <string name="matches_subtitle">380 Records • Multi-provider Odds • Extracted Features</string>
+    <string name="matches_subtitle">Historical &amp; Live Fixtures • Multi-provider Odds • Extracted Features</string>
+    <string name="matches_goals_count">%d Goals</string>
+    <string name="matches_versus">VS</string>
     <string name="matches_search_hint">Search Team, Match ID (#M-xxx) or League...</string>
     <string name="matches_filter_all">All</string>
     <string name="matches_filter_all_leagues">All Leagues</string>
@@ -115,6 +122,7 @@
     <string name="analytics_subtitle">Comprehensive Stats • Multi-Provider Odds • Trend</string>
     <string name="analytics_select_team">Select Team:</string>
     <string name="analytics_select_match">Select Match:</string>
+    <string name="analytics_matches_of_team">Matches of %1$s</string>
     <string name="analytics_descriptive_stats">Comprehensive Descriptive Statistics</string>
     <string name="analytics_mean_goals">Mean Goals</string>
     <string name="analytics_median_goals">Median Goals</string>
@@ -132,6 +140,7 @@
     <string name="analytics_empty_no_data">No match or team data available for analytics.</string>
     <string name="analytics_error_default">An error occurred while loading analytics data.</string>
     <string name="analytics_no_odds">No odds data recorded for this match.</string>
+    <string name="analytics_loading_odds">Fetching live odds from providers…</string>
     <string name="analytics_no_stats">No finished matches available for this team.</string>
     <string name="analytics_matches_count">N = %1$d matches</string>
     <string name="analytics_target_home">Home Win</string>
@@ -143,6 +152,16 @@
     <string name="analytics_odds_shift">Opening: %1$s ➔ Current: %2$s</string>
     <string name="analytics_provider_header">Provider</string>
     <string name="analytics_provider_count">%1$d Providers</string>
+    <string name="analytics_change_selection">Change</string>
+    <string name="analytics_search_team_hint">Search team name...</string>
+    <string name="analytics_search_match_hint">Search match or team...</string>
+    <string name="analytics_no_teams_found">No teams found matching your search.</string>
+    <string name="analytics_no_matches_found">No matches found matching your search.</string>
+    <string name="analytics_show_all_providers">Show all (%1$d bookmakers)</string>
+    <string name="analytics_show_less_providers">Show less</string>
+    <string name="analytics_top_providers">Top Bookmakers</string>
+    <string name="analytics_target_team_title">Target Team for EDA</string>
+    <string name="analytics_target_match_title">Target Match for Odds Matrix</string>
 
     <!-- Prediction Screen -->
     <string name="prediction_title">Match Outcome Prediction</string>
@@ -160,6 +179,7 @@
     <string name="prediction_algorithm_badge">Engine: %1$s</string>
     <string name="prediction_empty_no_matches">No match data available for prediction.</string>
     <string name="prediction_error_default">An error occurred during prediction calculation.</string>
+    <string name="prediction_loading">Loading odds and prediction...</string>
     <string name="prediction_outcome_home">Home Win</string>
     <string name="prediction_outcome_draw">Draw</string>
     <string name="prediction_outcome_away">Away Win</string>
@@ -236,7 +256,8 @@
     <string name="benchmark_search_title">Searching (Linear vs Binary)</string>
     <string name="benchmark_sort_title">Sorting (Quick vs Merge)</string>
     <string name="benchmark_run_btn">Run Benchmark Suite</string>
-    <string name="benchmark_dataset_size">Dataset Size: %1$d items</string>
+    <string name="benchmark_dataset_size">Dataset size: %1$d matches</string>
+    <string name="benchmark_matches_size">%1$d matches</string>
     <string name="benchmark_exec_time">Execution Time: %1$.3f ms</string>
     <string name="benchmark_speedup_format">%1$s is %2$.1fx faster</string>
     <string name="benchmark_equal_speed">Execution speeds are equal</string>
@@ -244,6 +265,14 @@
     <string name="benchmark_idle_hint">Press the button below to start benchmarking algorithm performance.</string>
     <string name="benchmark_error_default">An error occurred while running the benchmark.</string>
     <string name="benchmark_last_run">Last benchmark run: %1$s</string>
+    <string name="benchmark_search_query_label">Team name</string>
+    <string name="benchmark_search_query_hint">e.g. Arsenal</string>
+    <string name="benchmark_search_limit_label">Maximum matching matches</string>
+    <string name="benchmark_decrease_limit">Decrease match limit</string>
+    <string name="benchmark_increase_limit">Increase match limit</string>
+    <string name="benchmark_available_matches">Loaded matches: %1$d</string>
+    <string name="benchmark_search_result_summary">Query “%1$s”: %2$d matching matches (maximum %3$d)</string>
+    <string name="benchmark_sort_key_description">Sort key: home team name → away team name → start time → match ID</string>
 
     <!-- Setting Screen -->
     <string name="setting_title">Settings</string>

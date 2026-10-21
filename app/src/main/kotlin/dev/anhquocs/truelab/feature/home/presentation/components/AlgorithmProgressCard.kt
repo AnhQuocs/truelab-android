@@ -28,6 +28,8 @@ import dev.anhquocs.truelab.core.ui.utils.s12
 import dev.anhquocs.truelab.core.ui.utils.s14
 import dev.anhquocs.truelab.core.ui.utils.semiBold
 
+private const val ALGORITHM_COUNT = 9
+
 @Composable
 fun AlgorithmProgressCard(
     modifier: Modifier = Modifier
@@ -47,32 +49,58 @@ fun AlgorithmProgressCard(
             verticalArrangement = Arrangement.spacedBy(Dimen.PaddingM)
         ) {
             Text(
-                text = stringResource(R.string.home_algo_progress_title),
+                text = stringResource(R.string.home_algo_progress_title, ALGORITHM_COUNT),
                 style = MaterialTheme.typography.s14.semiBold(),
                 color = MaterialTheme.colorScheme.onSurface
             )
 
             ProgressItem(
-                label = stringResource(R.string.home_algo_search_sort),
+                label = stringResource(R.string.home_algo_search),
                 progress = 1.0f
             )
 
             ProgressItem(
-                label = stringResource(R.string.home_algo_stats),
-                progress = 0.8f
+                label = stringResource(R.string.home_algo_sort),
+                progress = 1.0f
             )
 
             ProgressItem(
-                label = stringResource(R.string.home_algo_eval),
-                progress = 0.5f
+                label = stringResource(R.string.home_algo_statistics),
+                progress = 1.0f
             )
 
             ProgressItem(
-                label = stringResource(R.string.home_algo_predict),
-                progress = 0.1f
+                label = stringResource(R.string.home_algo_form),
+                progress = 1.0f
+            )
+
+            ProgressItem(
+                label = stringResource(R.string.home_algo_home_away),
+                progress = 1.0f
+            )
+
+            ProgressItem(
+                label = stringResource(R.string.home_algo_h2h),
+                progress = 1.0f
+            )
+
+            ProgressItem(
+                label = stringResource(R.string.home_algo_rating),
+                progress = 1.0f
+            )
+
+            ProgressItem(
+                label = stringResource(R.string.home_algo_odds_trend),
+                progress = 1.0f
+            )
+
+            ProgressItem(
+                label = stringResource(R.string.home_algo_prediction),
+                progress = 1.0f
             )
         }
     }
+
 }
 
 @Composable

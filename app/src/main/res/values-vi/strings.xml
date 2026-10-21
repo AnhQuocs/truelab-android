@@ -31,15 +31,22 @@
     <string name="home_tool_prediction_desc">Phân tích và dự đoán kết quả trận đấu</string>
     <string name="home_tool_benchmark_title">Benchmark</string>
     <string name="home_tool_benchmark_desc">So sánh hiệu năng các thuật toán</string>
-    <string name="home_algo_progress_title">Tiến độ Thuật toán</string>
-    <string name="home_algo_search_sort">Tìm kiếm &amp; Sắp xếp</string>
-    <string name="home_algo_stats">Thống kê &amp; Xu hướng</string>
-    <string name="home_algo_eval">Đánh giá</string>
-    <string name="home_algo_predict">Dự đoán</string>
+    <string name="home_algo_progress_title">Tiến độ phát triển (%1$d thuật toán)</string>
+    <string name="home_algo_search">Tìm kiếm</string>
+    <string name="home_algo_sort">Sắp xếp</string>
+    <string name="home_algo_statistics">Thống kê mô tả</string>
+    <string name="home_algo_form">Phân tích phong độ</string>
+    <string name="home_algo_home_away">Hiệu suất sân nhà/khách</string>
+    <string name="home_algo_h2h">Đối đầu trực tiếp (H2H)</string>
+    <string name="home_algo_rating">Xếp hạng Elo</string>
+    <string name="home_algo_odds_trend">Xu hướng Odds</string>
+    <string name="home_algo_prediction">Dự đoán Weighted Scoring</string>
 
     <!-- Matches Dataset Explorer Screen -->
     <string name="matches_title">Tập dữ liệu Trận đấu</string>
-    <string name="matches_subtitle">380 Mẫu dữ liệu • Odds Đa nguồn • Đặc trưng Thuật toán</string>
+    <string name="matches_subtitle">Dữ liệu Lịch sử &amp; Trận đấu Mới • Odds Đa nguồn • Thuật toán</string>
+    <string name="matches_goals_count">%d Bàn</string>
+    <string name="matches_versus">VS</string>
     <string name="matches_search_hint">Tìm Đội bóng, Mã trận (#M-xxx) hoặc Giải đấu…</string>
     <string name="matches_filter_all">Tất cả</string>
     <string name="matches_filter_all_leagues">Tất cả giải đấu</string>
@@ -115,6 +122,7 @@
     <string name="analytics_subtitle">Thống kê mô tả toàn diện • So sánh kèo • Xu hướng</string>
     <string name="analytics_select_team">Chọn đội bóng:</string>
     <string name="analytics_select_match">Chọn trận đấu:</string>
+    <string name="analytics_matches_of_team">Các trận đấu của %1$s</string>
     <string name="analytics_descriptive_stats">Thống kê Mô tả Toàn diện</string>
     <string name="analytics_mean_goals">Số bàn/trận (Mean)</string>
     <string name="analytics_median_goals">Trung vị (Median)</string>
@@ -132,6 +140,7 @@
     <string name="analytics_empty_no_data">Không có dữ liệu trận đấu hoặc đội bóng để phân tích.</string>
     <string name="analytics_error_default">Đã xảy ra lỗi khi tải dữ liệu phân tích thống kê.</string>
     <string name="analytics_no_odds">Chưa có dữ liệu tỷ lệ kèo cho trận đấu này.</string>
+    <string name="analytics_loading_odds">Đang tải tỷ lệ cược từ các nhà cung cấp…</string>
     <string name="analytics_no_stats">Chưa có trận đấu nào hoàn thành cho đội bóng này.</string>
     <string name="analytics_matches_count">N = %1$d trận</string>
     <string name="analytics_target_home">Chủ nhà thắng</string>
@@ -143,6 +152,16 @@
     <string name="analytics_odds_shift">Mở kèo: %1$s ➔ Hiện tại: %2$s</string>
     <string name="analytics_provider_header">Nhà cung cấp</string>
     <string name="analytics_provider_count">%1$d Nhà cung cấp</string>
+    <string name="analytics_change_selection">Thay đổi</string>
+    <string name="analytics_search_team_hint">Tìm kiếm tên đội bóng...</string>
+    <string name="analytics_search_match_hint">Tìm kiếm trận đấu hoặc đội...</string>
+    <string name="analytics_no_teams_found">Không tìm thấy đội bóng phù hợp.</string>
+    <string name="analytics_no_matches_found">Không tìm thấy trận đấu phù hợp.</string>
+    <string name="analytics_show_all_providers">Xem tất cả (%1$d nhà cung cấp)</string>
+    <string name="analytics_show_less_providers">Thu gọn</string>
+    <string name="analytics_top_providers">Nhà cung cấp tiêu biểu</string>
+    <string name="analytics_target_team_title">Đội bóng mục tiêu (Thống kê EDA)</string>
+    <string name="analytics_target_match_title">Trận đấu mục tiêu (Ma trận Kèo)</string>
 
     <!-- Prediction Screen -->
     <string name="prediction_title">Dự đoán Kết quả Trận đấu</string>
@@ -160,6 +179,7 @@
     <string name="prediction_algorithm_badge">Mô hình: %1$s</string>
     <string name="prediction_empty_no_matches">Chưa có dữ liệu trận đấu để thực hiện dự đoán.</string>
     <string name="prediction_error_default">Đã xảy ra lỗi khi tính toán dự đoán kết quả.</string>
+    <string name="prediction_loading">Đang tải odds và tính dự đoán...</string>
     <string name="prediction_outcome_home">Chủ nhà Thắng</string>
     <string name="prediction_outcome_draw">Hòa</string>
     <string name="prediction_outcome_away">Đội khách Thắng</string>
@@ -236,7 +256,8 @@
     <string name="benchmark_search_title">Tìm kiếm (Tuyến tính vs Nhị phân)</string>
     <string name="benchmark_sort_title">Sắp xếp (QuickSort vs MergeSort)</string>
     <string name="benchmark_run_btn">Chạy Bộ đo Hiệu năng</string>
-    <string name="benchmark_dataset_size">Kích thước tập dữ liệu: %1$d mục</string>
+    <string name="benchmark_dataset_size">Kích thước tập dữ liệu: %1$d trận</string>
+    <string name="benchmark_matches_size">%1$d trận</string>
     <string name="benchmark_exec_time">Thời gian thực thi: %1$.3f ms</string>
     <string name="benchmark_speedup_format">%1$s nhanh hơn %2$.1fx</string>
     <string name="benchmark_equal_speed">Tốc độ thực thi tương đương</string>
@@ -244,6 +265,14 @@
     <string name="benchmark_idle_hint">Nhấn nút bên dưới để bắt đầu đo lường hiệu năng thuật toán.</string>
     <string name="benchmark_error_default">Đã xảy ra lỗi trong quá trình đo lường hiệu năng.</string>
     <string name="benchmark_last_run">Lần đo gần nhất: %1$s</string>
+    <string name="benchmark_search_query_label">Tên đội bóng</string>
+    <string name="benchmark_search_query_hint">Ví dụ: Arsenal</string>
+    <string name="benchmark_search_limit_label">Số trận khớp tối đa</string>
+    <string name="benchmark_decrease_limit">Giảm số trận</string>
+    <string name="benchmark_increase_limit">Tăng số trận</string>
+    <string name="benchmark_available_matches">Đã tải: %1$d trận</string>
+    <string name="benchmark_search_result_summary">Từ khóa “%1$s”: %2$d trận khớp (tối đa %3$d)</string>
+    <string name="benchmark_sort_key_description">Khóa sắp xếp: tên đội nhà → tên đội khách → thời gian trận → mã trận</string>
 
     <!-- Setting Screen -->
     <string name="setting_title">Cài đặt</string>

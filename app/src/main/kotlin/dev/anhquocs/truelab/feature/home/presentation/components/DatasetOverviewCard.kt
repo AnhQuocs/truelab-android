@@ -94,7 +94,7 @@ fun DatasetOverviewCard(
                 )
                 StatMetricItem(
                     label = stringResource(R.string.home_stat_algorithms),
-                    value = "11",
+                    value = "9",
                     modifier = Modifier.weight(1f)
                 )
             }
