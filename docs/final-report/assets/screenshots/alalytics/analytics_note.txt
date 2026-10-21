@@ -1,0 +1,4 @@
+All files type: .jpg
+
+- analytics_screen_1, analytics_screen_2 & analytics_screen_3: màn hình chính AnalytisScreen, hiển thị bao gồm đội bóng được chọn, trận đấu mục tiêu, thông kê, mô tả, ma trận kèo và volatility
+- analytics_searchteam: bottom sheet cho phép người dùng tìm kiếm đội bóng, sau khi tìm một đội mục Trận đấu mục tiêu sẽ tự match theo cặp trận có đội bóng mục tiêu

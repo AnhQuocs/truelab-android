@@ -1,0 +1,10 @@
+All files type: .jpg
+
+- home_screen_1 & home_screen_2: màn hình chính HomeScreen
+- predict_screen: màn hình PredictScreen khi người dùng bấm vào từ HomeScreen
+- predict_screen_ftmatches: danh sách các trận FT trong ngày được chọn
+- predict_screen_prediction_1 & predict_screen_prediction_2: kết quả dự đoán của cặp trận được chọn
+- predict_screen_select_competition: bottom sheet cho phép người dùng nhập và tìm kiếm các trận trong ngày được chọn theo giải đấu
+- benchmark_result_1 & benchmark_result_2: kết quả benmark thuật toán dựa trên query và số trận khớp tối đa mà người dùng nhập
+- backtest_process: quá trình nạp dữ liệu odds và xử lý các trận FT trong ngày
+- backtest_result_1 & backtest_result_2: kết quả backtest các trận FT theo ngày được chọn

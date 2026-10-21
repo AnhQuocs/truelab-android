@@ -1,0 +1,5 @@
+All files type: .jpg
+
+- matches_screen: màn hình chính MatchesScreen, có thể tìm kiếm, filter theo giải đấu, status, và thuật toán
+- match_detail_bottomsheet: bottom sheet tóm tắt trận
+- match_prediction: kết quá dự đoán cặp trận
