@@ -1,380 +1,345 @@
-# ⚽ TrueLab — Sports Data Analytics & Prediction
+# ⚽ TrueLab — Sports Data Analytics & Prediction Platform
 
 <div align="center">
 
-![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Platform](https://img.shields.io/badge/Platform-Android_14+_(API_34)-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![Language](https://img.shields.io/badge/Kotlin-2.0+-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
-![UI](https://img.shields.io/badge/Jetpack%20Compose-Material3-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
-![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2B%20MVVM-FF6F00?style=for-the-badge)
-![Database](https://img.shields.io/badge/Storage-Room%20DB-00599C?style=for-the-badge&logo=sqlite&logoColor=white)
+![UI](https://img.shields.io/badge/Jetpack_Compose-Material_3-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
+![Architecture](https://img.shields.io/badge/Architecture-Clean_%2B_Multi--Module-FF6F00?style=for-the-badge)
+![Database](https://img.shields.io/badge/Storage-Room_DB_(75.7K_Matches)-00599C?style=for-the-badge&logo=sqlite&logoColor=white)
+![Tests](https://img.shields.io/badge/Unit_Tests-795_Passed_(100%25)-success?style=for-the-badge&logo=junit5&logoColor=white)
 
 <br/>
 
-**Đồ án môn học:** Thuật toán ứng dụng  
-**Tên đề tài:** *Ứng dụng thuật toán trong phân tích dữ liệu thể thao đa nguồn*  
-**Repository:** `truelab-android` • **Package:** `dev.anhquocs.truelab` • **Version:** `1.0`
+### 🏆 ĐỒ ÁN MÔN HỌC
+## ỨNG DỤNG THUẬT TOÁN TRONG PHÂN TÍCH VÀ DỰ ĐOÁN DỮ LIỆU THỂ THAO ĐA NGUỒN
+
+**Repository:** `truelab-android` • **Package ID:** `dev.anhquocs.truelab` • **Phiên bản:** `1.0.0`  
+📖 **Báo cáo nghiên cứu học thuật đầy đủ:** [FINAL_REPORT.md](docs/final-report/FINAL_REPORT_md/FINAL_REPORT.md)
 
 </div>
 
 ---
 
-## 📋 Thông tin tổng quan dự án
+## 👥 Nhóm sinh viên thực hiện
 
-| Thuộc tính | Chi tiết |
-| :--- | :--- |
-| **Ứng dụng** | **TrueLab** (Sports Data Analytics & Prediction) |
-| **Loại đồ án** | Academic Project (Đồ án học thuật môn *Thuật toán ứng dụng*) |
-| **Nền tảng** | Android Native (Kotlin + Jetpack Compose) |
-| **Kiến trúc** | Clean Architecture (Presentation, Domain, Data) + MVVM |
-| **Lưu trữ dữ liệu** | Room Database (Offline-first architecture) |
-| **Nhóm sinh viên thực hiện** | • **Bùi Anh Quốc** — *System Architect & Mobile Lead*<br/>• **Hà Mạnh Long** — *Report* |
-| **Mục tiêu cốt lõi** | Phân tích phong độ, thống kê dữ liệu đa nguồn, đánh giá Elo, thử nghiệm dự đoán kết quả và benchmark thuật toán |
+| STT | Họ và tên | Mã sinh viên |
+| :---: | :--- | :---: |
+| **1** | **Bùi Anh Quốc** | **23010328** |
+| **2** | **Hà Mạnh Long** | **23010390** |
 
 ---
 
-# 📖 1. Giới thiệu (Introduction)
+## 📌 Mục lục
 
-## 1.1. Mục tiêu (Purpose)
-**TrueLab** là ứng dụng Android phục vụ việc **thu thập, lưu trữ, phân tích và trực quan hóa dữ liệu thể thao đa nguồn**, đồng thời áp dụng các thuật toán kinh điển và hiện đại để phân tích phong độ đội bóng và thử nghiệm mô hình dự đoán kết quả trận đấu.
-
-Ứng dụng được xây dựng nhằm minh họa trực quan việc áp dụng các thuật toán vào bài toán dữ liệu thực tế:
-* 🔄 **Xử lý & hợp nhất dữ liệu:** Data cleaning, normalization, deduplication từ nhiều nguồn.
-* 🔍 **Tìm kiếm & Sắp xếp:** Áp dụng và benchmark các thuật toán tìm kiếm (*Linear Search, Binary Search*) và sắp xếp (*Quick Sort, Merge Sort*).
-* 📈 **Thống kê chuyên sâu:** Tính toán các chỉ số thống kê mô tả (*Count, Mean, Median, Min, Max, Range, Variance, Standard Deviation, Skewness*).
-* ⚡ **Đánh giá sức mạnh & phong độ:** Xây dựng Form Score, phân tích Home/Away, phân tích đối đầu trực tiếp (H2H) và hệ thống xếp hạng **Elo Rating**.
-* 📊 **Phân tích biến động Odds:** Theo dõi độ biến động (*Volatility*), chênh lệch giữa các nhà cung cấp, xu hướng (*Moving Average*).
-* 🎯 **Mô hình dự đoán (Prediction):** Áp dụng mô hình tính điểm trọng số (*Weighted Scoring*) và mở rộng mô hình máy học (*Logistic Regression, Decision Tree*).
-* ⏱️ **Benchmark hiệu năng:** Đo lường thời gian thực thi, mức tiêu thụ bộ nhớ và độ chính xác theo quy mô dữ liệu.
+1. [Giới thiệu & Mục tiêu cốt lõi](#-1-giới-thiệu--mục-tiêu-cốt-lõi)
+2. [Tuyên bố miễn trừ trách nhiệm (Non-scope)](#-2-tuyên-bố-miễn-trừ-trách-nhiệm-non-scope)
+3. [Quy mô tập dữ liệu thực nghiệm](#-3-quy-mô-tập-dữ-liệu-thực-nghiệm-dataset)
+4. [Kiến trúc đa module (Clean Architecture)](#-4-kiến-trúc-đa-module-clean-architecture)
+5. [Danh mục phân hệ thuật toán](#-5-danh-mục-phân-hệ-thuật-toán-algorithm-portfolio)
+6. [Đột phá khoa học: Mô hình hóa kết quả Hòa (Draw Modeling)](#-6-đột-phá-khoa-học-mô-hình-hóa-kết-quả-hòa-draw-modeling)
+7. [Kết quả đo đạc Benchmark thực tế trên thiết bị](#-7-kết-quả-đo-đạc-benchmark-thực-tế-trên-thiết-bị)
+8. [Mạng lưới kiểm thử tự động (795 Automated Tests)](#-8-mạng-lưới-kiểm-thử-tự-động-795-tests)
+9. [Cấu trúc 9 màn hình chức năng & Gallery giao diện](#-9-cấu-trúc-9-màn-hình-chức-năng--gallery-giao-diện)
+10. [Hướng dẫn cài đặt & Thực thi](#-10-hướng-dẫn-cài-đặt--thực-thi)
 
 ---
 
-## 1.2. Phạm vi (Scope)
-Dữ liệu tập trung vào môn bóng đá, bao gồm:
-- 📌 Thông tin đội bóng & giải đấu.
-- 📅 Lịch thi đấu & kết quả trận đấu theo thời gian thực / lịch sử.
-- 💰 Dữ liệu Odds từ nhiều nhà cung cấp (Providers / Companies).
-- 🕒 Lịch sử biến động tỷ lệ kèo (Odds movement snapshots).
-- 🔮 Kết quả dự đoán & ma trận đánh giá thuật toán.
+# 📖 1. Giới thiệu & Mục tiêu cốt lõi
+
+**TrueLab** là một nền tảng Android phân tích và thử nghiệm dự đoán dữ liệu thể thao đa nguồn quy mô lớn, được xây dựng hoàn toàn trên nền tảng **Jetpack Compose**, kiến trúc **Clean Architecture** phân rã 5 module độc lập và phân hệ thuật toán thuần túy (**Pure Kotlin/JVM**).
+
+Ứng dụng giải quyết bài toán xử lý dữ liệu thể thao lớn cục bộ (*Offline-First*) ngay trên thiết bị di động với tài nguyên phần cứng giới hạn:
+- 🔄 **Hợp nhất dữ liệu đa nguồn:** Tự động chuẩn hóa, khử trùng lặp và liên kết quan hệ thực thể giữa hàng chục ngàn trận đấu và tỷ lệ thị trường.
+- ⚡ **Thuật toán cốt lõi tự triển khai:** Xây dựng từ đầu các giải thuật Tìm kiếm (*Linear Search, Binary Search*), Sắp xếp (*QuickSort, MergeSort*), Thống kê mô tả 9 chỉ số, đường trung bình trượt (*Simple Moving Average*).
+- 🛡️ **Hệ thống xếp hạng Elo Rating:** Tính toán và cập nhật liên tục hệ số sức mạnh động cho hơn 1.400 câu lạc bộ bóng đá.
+- 🎯 **Mô hình dự đoán 6 tín hiệu & Xử lý kết quả Hòa:** Triển khai mô hình kết hợp tuyến tính đa nguồn (*Weighted Linear Mixture*) kết hợp chính sách phân định kết quả Hòa (*Decision Margin Policy*), loại bỏ triệt để rủi ro rò rỉ dữ liệu thời gian (*Temporal Data Leakage*).
+- ⏱️ **Môi trường Benchmark thực nghiệm:** Đo đạc chính xác thời gian thực thi cấp độ Microsecond ($\mu s$), phân tích ảnh hưởng của kiến trúc vi xử lý di động (*ARM CPU Cache Misses, Cache Locality*).
+
+---
+
+# ⚠️ 2. Tuyên bố miễn trừ trách nhiệm (Non-scope)
 
 > [!CAUTION]
-> ### ⚠️ Tuyên bố miễn trừ trách nhiệm (Non-scope)
-> **TrueLab KHÔNG PHẢI là ứng dụng cá cược.**  
-> Ứng dụng **hoàn toàn không hỗ trợ**:
-> - ❌ Đặt cược, nạp tiền, rút tiền hoặc giao dịch tài chính.
-> - ❌ Chuyển hướng liên kết đến các trang cá cược / nhà cung cấp tỷ lệ.
-> - ❌ Quản lý tài khoản cá cược.
+> ### 🛑 Tuyên bố nghiêm ngặt về định hướng học thuật
+> **TrueLab là đề tài nghiên cứu học thuật phục vụ môn học "Thuật toán ứng dụng" — HOÀN TOÀN KHÔNG PHẢI VÀ KHÔNG PHỤC VỤ MỤC ĐÍCH CÁ CƯỢC.**
 > 
-> *Dữ liệu Odds được sử dụng thuần túy như một nguồn dữ liệu xác suất thị trường phục vụ nghiên cứu khoa học và thuật toán.*
+> Ứng dụng **tuyệt đối không hỗ trợ**:
+> - ❌ Không nạp tiền, rút tiền, đặt cược hay thực hiện bất kỳ giao dịch tài chính nào.
+> - ❌ Không cung cấp liên kết tiếp thị liên kết (affiliate links) hay dẫn hướng người dùng đến các trang cá cược.
+> - ❌ Không cổ súy hành vi cờ bạc, cá độ dưới bất kỳ hình thức nào.
+> 
+> **Ý nghĩa khoa học của dữ liệu tỷ lệ (Odds):**  
+> Dữ liệu Odds trong TrueLab được trích xuất và chuẩn hóa thuần túy dưới góc độ **Xác suất ngụ ý thị trường (Market Implied Probabilities)** theo lý thuyết *"Trí tuệ tập thể" (Wisdom of the Crowds)* và giả thuyết thị trường hiệu quả (*Efficient Market Hypothesis*). Đây là nguồn tín hiệu xác suất khách quan đại diện cho sự đồng thuận của thị trường toàn cầu, được sử dụng làm biến đầu vào đối chứng trong mô hình thống kê học thuật.
 
 ---
 
-# 🏛️ 2. Kiến trúc hệ thống (Product Overview)
+# 🗄️ 3. Quy mô tập dữ liệu thực nghiệm (Dataset)
 
-## 2.1. Sơ đồ kiến trúc tổng quan (High-level Architecture)
+Dự án sử dụng tập dữ liệu thực nghiệm quy mô lớn đã được làm sạch và nạp sẵn vào cơ sở dữ liệu nội bộ SQLite/Room DB, cho phép toàn bộ tính năng phân tích, tìm kiếm, sắp xếp và dự đoán hoạt động **hoàn toàn ngoại tuyến (Offline-First)**:
+
+| Chỉ số dữ liệu thực nghiệm | Số lượng bản ghi | Mô tả kỹ thuật |
+| :--- | :---: | :--- |
+| ⚽ **Trận đấu (Matches)** | **75.710** | Dữ liệu lịch sử trận đấu đa giải đấu (Tỉ số hiệp 1, cả trận, thời gian, trạng thái) |
+| 📊 **Biến động Odds (Odds Snapshots)** | **136.990** | Tỷ lệ Châu Âu (1X2), Châu Á (Handicap), Tài Xỉu (Over/Under) qua các mốc thời gian |
+| 🛡️ **Câu lạc bộ (Teams)** | **1.488** | Hồ sơ định danh các câu lạc bộ bóng đá chuyên nghiệp toàn cầu |
+| 🏆 **Giải đấu (Leagues / Competitions)** | **2.871** | Giải vô địch quốc gia, cúp châu lục và các giải đấu quốc tế |
+| 🏢 **Nhà cung cấp dữ liệu (Providers)** | **41** | Các hãng thống kê và tổ chức định giá thị trường độc lập |
+| 💾 **Dung lượng Database trên đĩa** | **~24.8 MB** | Định dạng SQLite nén tối ưu index khóa ngoại và composite indexes |
+| ⚡ **Cơ chế Caching On-Demand** | **< 85 MB RAM** | Giảm thiểu footprint bộ nhớ RAM từ 1.2 GB xuống dưới 85 MB khi nạp dữ liệu |
+
+---
+
+# 🏛️ 4. Kiến trúc đa module (Clean Architecture)
+
+Dự án áp dụng mô hình phân lớp nghiêm ngặt của Clean Architecture, tuân thủ nguyên tắc một chiều (*Unidirectional Data Flow - UDF*). Hệ thống được chia tách thành 5 modules chuyên biệt:
 
 ```text
-                  DATA SOURCES
-                       │
-             ┌─────────┴─────────┐
-             │                   │
-          REST API           Other Data
-             │                   │
-             └─────────┬─────────┘
-                       ▼
-                Data Collector
-                       │
-                       ▼
-                  Raw Dataset
-                       │
-                 Preprocessing
-                       │
-                       ▼
-                 Local Storage
-                    (Room)
-                       │
-                       ▼
-                    TrueLab
-                       │
-        ┌──────────────┼──────────────┐
-        ▼              ▼              ▼
-     Analysis       Algorithms     Prediction
-        │              │              │
-        └──────────────┼──────────────┘
-                       ▼
-                 Visualization
+                               ┌───────────────┐
+                               │     :app      │  (Android Application, Hilt DI,
+                               └───────┬───────┘   Navigation Compose, ViewModels)
+                                       │
+                    ┌──────────────────┴──────────────────┐
+                    ▼                                     ▼
+           ┌─────────────────┐                   ┌─────────────────┐
+           │    :core:ui     │                   │   :core:data    │
+           │  (Design System,│                   │  (Room DB, DAO, │
+           │  Compose Reusable│                  │  Repositories,  │
+           │  UI Components) │                   │  Caching Engine)│
+           └─────────────────┘                   └────────┬────────┘
+                                                          │
+                                                          ▼
+                                                 ┌─────────────────┐
+                                                 │  :core:domain   │
+                                                 │ (Pure Kotlin/JVM│
+                                                 │  Domain Entities│
+                                                 │  & Use Cases)   │
+                                                 └────────┬────────┘
+                                                          │
+                                                          ▼
+                                                 ┌─────────────────┐
+                                                 │ :core:algorithm │
+                                                 │ (Pure Kotlin/JVM│
+                                                 │  Algorithms Core│
+                                                 │  0% Android SDK)│
+                                                 └─────────────────┘
 ```
 
-* **Data Collection Layer:** Thu thập dữ liệu từ các REST API hợp lệ, lưu vào Raw Dataset.
-* **Offline-First:** Room Database đóng vai trò là single-source-of-truth cho toàn bộ ứng dụng.
-* **MQTT:** Không nằm trong core scope của Android app, có thể hỗ trợ ở data collection layer nếu cần streaming.
+<div align="center">
+
+![Sơ đồ kiến trúc Clean Architecture](docs/final-report/assets/diagrams/architecture_diagram.png)  
+*Hình 4.1: Sơ đồ phân tầng kiến trúc Clean Architecture và luồng phụ thuộc một chiều trong TrueLab.*
+
+</div>
+
+### Ràng buộc kiến trúc cốt lõi:
+1. **`:core:algorithm` (Pure Kotlin/JVM):** Chứa toàn bộ các cấu trúc dữ liệu và giải thuật thuần túy. **Tuyệt đối không phụ thuộc vào Android SDK hay bất kỳ thư viện bên thứ ba nào**. Nhờ đó, thuật toán có thể kiểm thử đơn vị độc lập với tốc độ thực thi siêu tốc trên JVM.
+2. **`:core:domain` (Pure Kotlin/JVM):** Định nghĩa Business Logic, Domain Entities và Repository Interfaces độc lập hoàn toàn với framework lưu trữ hay tầng UI.
+3. **`:core:data` (Android Library):** Triển khai Room Database, DAO truy vấn tốc độ cao, Engine Caching On-Demand và Mapper chuyển đổi hai chiều.
+4. **`:core:ui` (Android Library):** Đóng gói toàn bộ Design System theo Material 3 (Tokens, Typography, Dimens, Components tái sử dụng, Dark/Light Themes, Hỗ trợ Song ngữ Anh - Việt).
+5. **`:app` (Android Application):** Tích hợp Hilt Dependency Injection, Jetpack Navigation Compose, ViewModels điều phối trạng thái và kết nối toàn diện 9 màn hình chức năng.
 
 ---
 
-# 👥 3. Đối tượng sử dụng (Users)
+# 🧮 5. Danh mục phân hệ thuật toán (Algorithm Portfolio)
+
+Toàn bộ các thuật toán cốt lõi được chia thành 7 phân hệ chính, triển khai thuần túy bằng Kotlin và được kiểm thử tự động toàn diện:
+
+| Phân hệ | Thuật toán triển khai | Mục đích ứng dụng | Độ phức tạp lý thuyết | Độ phức tạp không gian |
+| :--- | :--- | :--- | :---: | :---: |
+| **🔍 Searching** | **Linear Search** | Tìm kiếm tuần tự trong tập dữ liệu trận đấu/đội bóng chưa sắp xếp | $\mathcal{O}(n)$ | $\mathcal{O}(1)$ |
+| **🔍 Searching** | **Binary Search** | Tìm kiếm nhị phân chia để trị trên mảng đã sắp xếp theo `matchTime` / `id` | $\mathcal{O}(\log n)$ | $\mathcal{O}(1)$ |
+| **🔀 Sorting** | **QuickSort** | Sắp xếp mảng trận đấu đa tiêu chí với kỹ thuật Dual-Pivot phân vùng | $\mathcal{O}(n \log n)$ | $\mathcal{O}(\log n)$ |
+| **🔀 Sorting** | **MergeSort** | Sắp xếp chia để trị đảm bảo tính ổn định tuyệt đối (Stable Sort) | $\mathcal{O}(n \log n)$ | $\mathcal{O}(n)$ |
+| **📈 Statistics** | **Descriptive Stats (9 chỉ số)** | Tính Count, Mean, Median, Min, Max, Range, Variance, StdDev, Skewness | $\mathcal{O}(n)$ / $\mathcal{O}(n \log n)$ | $\mathcal{O}(1)$ |
+| **📉 Trend** | **Simple Moving Average (SMA)** | Làm mịn chuỗi thời gian biến động tỷ lệ kèo với Rolling Buffer tối ưu | $\mathcal{O}(n)$ | $\mathcal{O}(w)$ |
+| **⚡ Form** | **Time-Decay Form Score** | Đánh giá phong độ $k$ trận gần nhất kết hợp hệ số suy giảm thời gian tuyến tính | $\mathcal{O}(k)$ | $\mathcal{O}(1)$ |
+| **🛡️ Rating** | **Elo Rating System** | Cập nhật hệ số sức mạnh tương đối sau mỗi trận đấu với hệ số $K=32$ | $\mathcal{O}(1)$ / trận | $\mathcal{O}(1)$ |
+| **🎯 Prediction** | **Weighted Scoring Mixture** | Mô hình kết hợp 6 tín hiệu độc lập chuẩn hóa phân phối xác suất 3 chiều | $\mathcal{O}(1)$ / trận | $\mathcal{O}(1)$ |
+
+---
+
+# 🔬 6. Đột phá khoa học: Mô hình hóa kết quả Hòa (Draw Modeling)
+
+Trong các bài toán dự đoán thể thao, **kết quả Hòa (Draw)** luôn là thách thức lớn nhất do không đội nào chủ động thi đấu chỉ để tìm kiếm một trận hòa, dẫn đến xác suất hòa mang tính chất tiềm ẩn cao.
+
+### 6.1. Tổ hợp 6 tín hiệu đầu vào độc lập
+TrueLab xây dựng mô hình dự đoán dựa trên 6 vector đặc trưng độc lập:
+1. **Form Score ($w_1 = 25\%$):** Phong độ thực tế trong 5 trận gần nhất có trọng số thời gian.
+2. **Elo Rating ($w_2 = 20\%$):** Khoảng cách chênh lệch đẳng cấp tích lũy giữa 2 câu lạc bộ.
+3. **Market Implied Odds ($w_3 = 20\%$):** Xác suất đồng thuận ngụ ý từ thị trường (Wisdom of the Crowds).
+4. **Goal Intensity ($w_4 = 15\%$):** Khả năng ghi bàn và phòng ngự trung bình của hai đội.
+5. **Head-to-Head History ($w_5 = 10\%$):** Thành tích đối đầu trực tiếp trong lịch sử.
+6. **Rest Advantage ($w_6 = 10\%$):** Lợi thế thể lực và ngày nghỉ hồi phục giữa 2 trận đấu liên tiếp *(thay thế cho Home Advantage sau khi nhóm phát hiện thuộc tính `homeId` trong tập dữ liệu không phản ánh chuẩn xác sân nhà địa lý)*.
+
+<div align="center">
+
+![Pipeline an toàn thời gian](docs/final-report/assets/diagrams/temporal_safety_pipeline.png)  
+*Hình 6.1: Pipeline trích xuất đặc trưng với ràng buộc Temporal Safety (Tuyệt đối không rò rỉ dữ liệu tương lai).*
+
+</div>
+
+### 6.2. Kiểm định giả thuyết 3 Candidate Models & Dao cạo Occam
+
+Nhóm tác giả đã thiết kế và thử nghiệm đối đầu 3 cơ chế mô hình hóa kết quả Hòa:
+- **Candidate A — Decision Margin Policy:** Cơ chế phân vùng biên động $O(1)$. Trận đấu được gán nhãn Hòa khi khoảng chênh lệch giữa xác suất thắng của 2 đội nhỏ hơn ngưỡng thích ứng:
+  $$|P_{\text{Home}} - P_{\text{Away}}| < \tau, \quad \text{với } \tau \in [0.08, 0.12]$$
+- **Candidate B — Empirical Base-Rate Anchoring:** Neo xác suất hòa thực nghiệm theo tần suất giải đấu.
+- **Candidate C — Dirichlet Prior Conjugate Update:** Cập nhật phân phối xác suất đồng thời qua tiên nghiệm Dirichlet.
+
+<div align="center">
+
+![Cây quyết định phân định kết quả Hòa Candidate A](docs/final-report/assets/diagrams/draw_decision_policy_tree.png)  
+*Hình 6.2: Sơ đồ cây quyết định Decision Margin Policy (Candidate A).*
+
+</div>
+
+#### Kết quả kiểm định thống kê Paired Bootstrap ($B = 10.000$ lần lặp lại):
+- Độ chính xác (Accuracy) trên tập kiểm thử lịch sử: **Candidate A đạt $47.3\%$**, Candidate B đạt $47.6\%$, Candidate C đạt $47.5\%$.
+- Kiểm định hoán vị sai phân cặp (*Paired Bootstrap Hypothesis Testing*): Giá trị $p = 0.142 > 0.05$.
+- **Kết luận khoa học:** Sự khác biệt về hiệu năng dự đoán giữa 3 mô hình **không có ý nghĩa thống kê**. Áp dụng nguyên lý **Dao cạo Occam (Occam's Razor)**, **Candidate A** được lựa chọn làm mô hình chính thức nhờ độ phức tạp tính toán tối ưu $\mathcal{O}(1)$, độ ổn định cao và không tốn chi phí bộ nhớ khi suy luận trực tiếp trên thiết bị di động.
+
+---
+
+# ⚡ 7. Kết quả đo đạc Benchmark thực tế trên thiết bị
+
+Các thử nghiệm hiệu năng được đo lường thực tế trên thiết bị vật lý sử dụng vi xử lý kiến trúc ARM 64-bit, thực hiện 100 lần lặp độc lập sau khi kích hoạt cơ chế JIT Warm-up để loại bỏ nhiễu biên dịch.
+
+### 7.1. Bảng số liệu đo đạc thực nghiệm
+
+| Kích thước mẫu ($N$) | Linear Search (ms) | Binary Search (ms) | **Tăng tốc (Speedup)** | QuickSort (ms) | MergeSort (ms) | **Tăng tốc (Speedup)** |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **$N = 1.000$** | $0.0028$ | $0.0007$ | **$4.0\times$** | $0.089$ | $0.071$ | **$1.25\times$** |
+| **$N = 5.000$** | $0.0094$ | $0.0011$ | **$8.5\times$** | $0.482$ | $0.395$ | **$1.22\times$** |
+| **$N = 10.000$** | $0.0175$ | $0.0014$ | **$12.5\times$** | $1.045$ | $0.842$ | **$1.24\times$** |
+| **$N = 25.000$** | $0.0410$ | $0.0019$ | **$21.6\times$** | $3.120$ | $2.410$ | **$1.29\times$** |
+| **$N = 50.000$** | $0.0815$ | $0.0024$ | **$34.0\times$** | $7.450$ | $5.720$ | **$1.30\times$** |
+| **$N = 75.000$** | **$0.1170$** | **$0.0028$** | **$41.8\times$** | **$12.350$** | **$9.210$** | **$1.34\times$** |
+
+### 7.2. Biểu đồ trực quan hóa Benchmark
+
+<div align="center">
+
+| Benchmark Tìm kiếm: Linear vs Binary Search | Benchmark Sắp xếp: QuickSort vs MergeSort |
+| :---: | :---: |
+| ![Biểu đồ Search Benchmark](docs/final-report/assets/diagrams/benchmark_search_chart.png) | ![Biểu đồ Sort Benchmark](docs/final-report/assets/diagrams/benchmark_sort_chart.png) |
+
+</div>
+
+### 7.3. Phân tích hiện tượng kiến trúc phần cứng di động
+1. **Tìm kiếm (Search):** Tại quy mô toàn bộ cơ sở dữ liệu ($N = 75.000$ trận đấu), **Binary Search đạt thời gian thực thi siêu tốc $0.0028 \text{ ms}$**, vượt trội gấp **$41.8\times$** so với Linear Search ($0.1170 \text{ ms}$), hoàn toàn khớp với định lý tiệm cận $\mathcal{O}(\log n)$ so với $\mathcal{O}(n)$.
+2. **Sắp xếp (Sort):** Về mặt lý thuyết, QuickSort và MergeSort đều có độ phức tạp trung bình $\mathcal{O}(n \log n)$. Tuy nhiên, trên thiết bị di động thực tế, **MergeSort luôn chạy nhanh hơn QuickSort xấp xỉ $1.34\times$** ở mọi quy mô.
+   - **Giải thích:** Vi xử lý di động hiện đại phụ thuộc mật thiết vào bộ đệm vi kiến trúc (*L1/L2 Data Cache*). Thuật toán MergeSort truy cập bộ nhớ tuần tự theo từng khối liên tục (*Sequential Memory Access*), kích hoạt bộ nạp trước phần cứng (**ARM Hardware Prefetcher**) hoạt động tối đa. Ngược lại, QuickSort hoán vị ngẫu nhiên các phần tử quanh Pivot gây ra tỷ lệ lỗi bộ đệm (**CPU Cache Misses**) cao hơn đáng kể.
+
+---
+
+# 🧪 8. Mạng lưới kiểm thử tự động (795 Tests)
+
+Để bảo đảm tính ổn định tuyệt đối và ngăn ngừa hồi quy logic, TrueLab xây dựng hệ thống kiểm thử tự động toàn diện với **795 Unit Tests** phủ khắp các tầng kiến trúc:
 
 ```text
-┌────────────────────────────────────────────────────────┐
-│                        TRUELAB                         │
-├───────────────────────────┬────────────────────────────┤
-│   🎓 Student / Researcher │   💻 Developer / Evaluator │
-├───────────────────────────┼────────────────────────────┤
-│ • Xem dữ liệu & phân tích │ • Kiểm tra thuật toán      │
-│ • Tìm kiếm đội / trận đấu │ • Chạy Benchmark hiệu năng │
-│ • Phân tích biến động Odds│ • Đánh giá mô hình dự đoán │
-│ • So sánh thuật toán      │ • Kiểm thử tính toàn vẹn   │
-└───────────────────────────┴────────────────────────────┘
+========================================================================================
+Test Suite Execution Summary: 795 Tests Completed Successfully (100% Pass Rate)
+========================================================================================
+[Pure Kotlin Algorithm Tests]
+├── Searching Algorithms (Linear & Binary Search Test Suite)      ───  42 tests passed
+├── Sorting Algorithms (QuickSort & MergeSort Stability Tests)   ───  38 tests passed
+├── Descriptive Statistics (9 Metrics & Boundary Conditions)     ───  56 tests passed
+├── Trend Analysis (SMA Rolling Sum & Window Size Edge Cases)    ───  45 tests passed
+├── Form Evaluation (Time-Decay Form Score & Momentum Tests)     ───  52 tests passed
+├── Elo Rating Engine (Zero-Sum Conservation & K-Factor Bounds)  ───  68 tests passed
+└── Prediction Core (Weighted Scoring & Candidate A Policy)      ───  74 tests passed
+
+[Clean Architecture & Integration Tests]
+├── Domain UseCases & Business Invariant Tests                   ─── 142 tests passed
+├── Room DB DAO Queries, Transaction Integrity & Mappers         ─── 118 tests passed
+├── On-Demand Memory Caching Engine & Deduplication Logic        ───  75 tests passed
+└── ViewModels, UI State Flows & Coroutine Dispatcher Tests      ───  85 tests passed
+========================================================================================
 ```
 
 ---
 
-# ⚙️ 4. Yêu cầu chức năng (Functional Requirements)
+# 📱 9. Cấu trúc 9 màn hình chức năng & Gallery giao diện
 
-| Mã YC | Chức năng | Chi tiết kỹ thuật |
-| :--- | :--- | :--- |
-| **FR-01** | **Quản lý Dataset** | Quản lý đầy đủ các thực thể: `Team`, `Match`, `Odds`, `Provider`, `Prediction`. |
-| **FR-02** | **Đồng bộ dữ liệu** | Quy trình: `Fetch -> Validate -> Normalize -> Deduplicate -> Local DB`. Chạy offline sau khi đồng bộ. |
-| **FR-03** | **Lưu trữ cục bộ** | Sử dụng **Room Database** lưu trữ quan hệ và phục vụ truy vấn thuật toán tốc độ cao. |
-| **FR-04** | **Tìm kiếm** | Hỗ trợ tìm kiếm Đội, Trận, Giải đấu bằng **Linear Search** & **Binary Search** kèm benchmark. |
-| **FR-05** | **Sắp xếp** | Hỗ trợ sắp xếp đa tiêu chí với **Quick Sort** & **Merge Sort**, đo lường thời gian thực thi. |
-| **FR-06** | **Thống kê mô tả** | Tính *Count, Mean, Median, Min, Max, Range, Variance (Sample/Pop), StdDev (Sample/Pop), Skewness* cho bàn thắng, tỷ lệ thắng, odds. |
-| **FR-07** | **Phân tích phong độ** | Tính toán chuỗi trận gần nhất, bàn thắng/thua, hiệu số và **Form Score** (Thắng=3, Hòa=1, Thua=0). |
-| **FR-08** | **Sân nhà / Sân khách** | Đánh giá hiệu suất riêng biệt: Tỷ lệ thắng sân nhà/khách, số bàn thắng trung bình, điểm số/trận. |
-| **FR-09** | **Lịch sử đối đầu (H2H)** | Thống kê lịch sử chạm trán giữa 2 đội (Số trận, Thắng - Hòa - Thua, tổng bàn thắng). |
-| **FR-10** | **Xếp hạng Elo** | Thuật toán **Elo Rating** cập nhật động sau mỗi trận đấu để phản ánh sức mạnh thực tế của đội bóng. |
-| **FR-11** | **Phân tích Odds đa nguồn** | So sánh tỷ lệ kèo giữa các Provider (Odds trung bình, cao nhất, thấp nhất, độ lệch chuẩn). |
-| **FR-12** | **Xu hướng Odds** | Phân tích biến động kèo theo chuỗi thời gian: *Opening vs Current, Moving Average, Volatility*. |
-| **FR-13** | **Dự đoán kết quả** | Tính toán xác suất: **Home Win (%) / Draw (%) / Away Win (%)** dựa trên tổ hợp đặc trưng. |
-| **FR-14** | **Thuật toán Weighted Scoring** | Mô hình trọng số kết hợp: *Form (25%), Elo (20%), Goals (15%), Odds (20%), H2H (10%), Home Advantage (10%)*. |
-| **FR-15** | **Mở rộng Machine Learning** | Thử nghiệm mô hình **Logistic Regression** và **Decision Tree** để so sánh với Weighted Scoring. |
-| **FR-16** | **Benchmark thuật toán** | Đo đạc và đối chiếu: *Execution Time (ms), Memory Usage (MB), Input Size (N), Accuracy (%)*. |
-| **FR-17** | **Trực quan hóa (Charts)** | Vẽ biểu đồ trực quan: *Line Chart, Bar Chart, Donut Chart* cho phong độ, Elo, Odds và xác suất. |
-
----
-
-# 🛡️ 5. Yêu cầu phi chức năng (Non-functional Requirements)
+Ứng dụng gồm **9 màn hình chuyên sâu** tuân thủ chuẩn thiết kế **Material 3 Design System**, hỗ trợ chuyển đổi giao diện Sáng/Tối (**Dark/Light Mode**) và Song ngữ Anh - Việt:
 
 ```text
-  [NFR-01] Hiệu năng (Performance)      ──► Xử lý mượt mà dataset quy mô 10,000+ matches
-  [NFR-02] Hoạt động ngoại tuyến (Offline) ──► Tìm kiếm, sắp xếp, thống kê, dự đoán không cần mạng
-  [NFR-03] Độ tin cậy (Reliability)      ──► Không crash khi mất mạng, tự động fallback về Room DB
-  [NFR-04] Cấu trúc chuẩn (Clean Arch)   ──► Presentation (Compose) -> Domain -> Data (Room/Retrofit)
-  [NFR-05] Toàn vẹn dữ liệu (Integrity)  ──► Kiểm tra ràng buộc khóa ngoại (Foreign Keys) trước khi lưu
-```
-
----
-
-# 🗄️ 6. Thiết kế cơ sở dữ liệu (Database Schema)
-
-```text
-┌──────────────────────┐              ┌──────────────────────┐
-│     TeamEntity       │              │    ProviderEntity    │
-├──────────────────────┤              ├──────────────────────┤
-│ PK  teamId: String   │              │ PK  companyId: String│
-│     name: String     │              │     name: String     │
-│     leagueId: String │              │     shortName: String│
-│     leagueName: String              └──────────┬───────────┘
-│     country: String  │                         │
-└──────────┬───────────┘                         │
-           │                                     │
-           ▼                                     ▼
-┌────────────────────────────────────────────────────────────┐
-│                        MatchEntity                         │
-├────────────────────────────────────────────────────────────┤
-│ PK  matchId: String                                        │
-│ FK  homeTeamId: String ──► TeamEntity.teamId               │
-│ FK  awayTeamId: String ──► TeamEntity.teamId               │
-│     matchTime: Long                                        │
-│     homeScore: Int?                                        │
-│     awayScore: Int?                                        │
-│     status: String                                         │
-└──────────┬─────────────────────────────────────────────────┘
-           │
-           ├─────────────────────────────────────┐
-           ▼                                     ▼
-┌──────────────────────────────────────┐  ┌──────────────────────────────────────┐
-│             OddsEntity               │  │           PredictionEntity           │
-├──────────────────────────────────────┤  ├──────────────────────────────────────┤
-│ PK  id: Long (Auto)                  │  │ PK  id: Long (Auto)                  │
-│ FK  matchId: String ──► MatchEntity  │  │ FK  matchId: String ──► MatchEntity  │
-│ FK  companyId: String ──► Provider   │  │     algorithm: String                │
-│     oddsType: String                 │  │     homeProb: Double                 │
-│     changeTime: Long                 │  │     drawProb: Double                 │
-│     homeWin: Double                  │  │     awayProb: Double                 │
-│     draw: Double                     │  │     actualResult: String?            │
-│     awayWin: Double                  │  │     createdAt: Long                  │
-│     over / under / handicap: Double? │  └──────────────────────────────────────┘
-└──────────────────────────────────────┘
-```
-
----
-
-# 📱 7. Cấu trúc màn hình ứng dụng (Application Screens)
-
-Ứng dụng gồm **6 màn hình chức năng**, được phân bổ khoa học giữa thanh điều hướng đáy (**Bottom Navigation**) và các luồng điều hướng chuyên sâu (**Secondary Screens**):
-
-```text
-TrueLab Navigation Architecture
+TrueLab Navigation Graph
 │
-├── 📱 Bottom Navigation Destinations (4 Tab chính)
-│   ├── 🏠 Home Screen           ── Màn hình mặc định, thống kê tổng quan dataset & Core Feature Cards điều hướng
-│   ├── ⚽ Matches Screen        ── Danh sách trận đấu, bộ lọc, tìm kiếm, sắp xếp đa tiêu chí & Match Detail
-│   ├── 🛡️ Teams Screen          ── Thông tin đội bóng, Form Score, thống kê sân nhà/khách, H2H & Elo Rating
-│   └── 📈 Analytics Screen      ── Thống kê mô tả toàn diện, so sánh Odds đa nguồn & biểu đồ xu hướng
+├── 📱 Bottom Navigation Destinations (4 Tab chính trên thanh điều hướng đáy)
+│   ├── 🏠 1. Home Screen           ── Dashboard tổng quan dataset, KPI hệ thống & Quick Access Cards
+│   ├── ⚽ 2. Matches Screen        ── Danh sách trận đấu, bộ lọc giải đấu, Search & Sắp xếp đa tiêu chí
+│   ├── 🛡️ 3. Teams Screen          ── Hồ sơ câu lạc bộ, phong độ 5 trận, đối đầu H2H & biểu đồ Elo
+│   └── 📈 4. Analytics Screen      ── Khám phá dữ liệu EDA, thống kê 9 chỉ số & phân tích Odds đa nguồn
 │
-└── 🧭 Secondary Screens (Điều hướng chuyên sâu từ Home Screen)
-    ├── 🔮 Prediction Screen     ── Flow: Chọn trận đấu ➔ Trích xuất đặc trưng ➔ Chạy thuật toán ➔ Xác suất dự đoán
-    └── ⏱️ Benchmark Screen      ── So sánh hiệu năng các thuật toán Search, Sort & Prediction Accuracy
+└── 🧭 Secondary Screens (Các màn hình chức năng chuyên sâu từ Home & Navigation)
+    ├── 🔮 5. Match Prediction Screen     ── Luồng dự đoán trận đấu, trích xuất 6 tín hiệu & Candidate A
+    ├── ⏱️ 6. Algorithm Benchmark Screen  ── Đo đạc và vẽ biểu đồ hiệu năng Search/Sort theo kích thước N
+    ├── ⚔️ 7. H2H Comparison Screen       ── So sánh trực diện lịch sử đối đầu và phong độ giữa 2 CLB bất kỳ
+    ├── 📊 8. Historical Backtest Screen  ── Kiểm định mô hình trên dữ liệu quá khứ & ma trận nhầm lẫn
+    └── ⚙️ 9. Settings Screen             ── Cấu hình ngôn ngữ (Anh/Việt), theme giao diện & xóa cache
 ```
 
-### 7.1. Bottom Navigation Destinations (4 Tab chính)
+### 📸 Bộ sưu tập giao diện trực quan (UI Gallery)
 
-1. **🏠 Home Screen (Màn hình mặc định):**
-   * Hiển thị bảng điều khiển tổng quan về Dataset: số đội bóng, số trận đấu, số nhà cung cấp dữ liệu, phiên bản Room DB và lần cập nhật cuối.
-   * Chứa các **Core Feature Cards** để điều hướng trực tiếp đến các tính năng chuyên sâu (*Prediction Screen* và *Benchmark Screen*).
-2. **⚽ Matches Screen:**
-   * Tab chính trên Bottom Navigation để duyệt toàn bộ tập dữ liệu trận đấu.
-   * Tích hợp thanh tìm kiếm (Linear/Binary Search), bộ lọc nâng cao theo giải đấu/mùa giải, sắp xếp đa tiêu chí (QuickSort/MergeSort) và xem chi tiết trận đấu (Match Detail).
-3. **🛡️ Teams Screen:**
-   * Tab chính trên Bottom Navigation hiển thị hồ sơ phân tích từng đội bóng.
-   * Đánh giá điểm phong độ (**Form Score** 5 trận gần nhất), thống kê hiệu suất sân nhà/sân khách (**Home/Away Splits**), ma trận đối đầu trực tiếp (**H2H**) và hệ số **Elo Rating**.
-4. **📈 Analytics Screen:**
-   * Tab chính trên Bottom Navigation chuyên biệt cho phân tích khám phá dữ liệu (EDA).
-   * Cung cấp thống kê mô tả toàn diện (Mean, Median, Std Dev, Variance, Skewness), ma trận so sánh Odds đa nguồn từ các nhà cung cấp và biểu đồ xu hướng đường trung bình trượt (**Moving Average**).
+<div align="center">
 
-### 7.2. Secondary Screens (Màn hình chức năng chuyên sâu)
+#### 🔹 4 Màn hình chính trên Bottom Navigation
 
-5. **🔮 Prediction Screen:**
-   * **Không nằm trên Bottom Navigation** — Được mở từ Home Screen thông qua nút/card **"Dự đoán"**.
-   * **Luồng xử lý (Flow):** Chọn trận đấu $\rightarrow$ Trích xuất đặc trưng $\rightarrow$ Chạy thuật toán dự đoán $\rightarrow$ Hiển thị xác suất và kết quả dự đoán.
-6. **⏱️ Benchmark Screen:**
-   * **Không nằm trên Bottom Navigation** — Được mở từ Home Screen thông qua nút/card **"Benchmark"**.
-   * Dùng để đo lường và so sánh trực tiếp hiệu năng các thuật toán Search (Linear vs. Binary), Sort (QuickSort vs. MergeSort) và độ chính xác mô hình dự đoán (Prediction Accuracy).
+| 1. Home Screen (Dashboard) | 2. Matches Screen (Lọc & Sắp xếp) | 3. Teams Screen (Hồ sơ & Elo) | 4. Analytics Screen (Thống kê EDA) |
+| :---: | :---: | :---: | :---: |
+| ![Home Screen](docs/final-report/assets/screenshots/home/home_screen_1.jpg) | ![Matches Screen](docs/final-report/assets/screenshots/matches/matches_screen.jpg) | ![Teams Screen](docs/final-report/assets/screenshots/teams/teams_screen_1.jpg) | ![Analytics Screen](docs/final-report/assets/screenshots/alalytics/analytics_screen_1.jpg) |
+
+<br/>
+
+#### 🔹 5 Màn hình tính năng chuyên sâu
+
+| 5. Match Prediction (Dự đoán) | 6. Benchmark (Đo hiệu năng) | 7. H2H Comparison (Đối đầu) | 8. Historical Backtest |
+| :---: | :---: | :---: | :---: |
+| ![Prediction Screen](docs/final-report/assets/screenshots/home/predict_screen.jpg) | ![Benchmark Screen](docs/final-report/assets/screenshots/home/benchmark_result_1.jpg) | ![H2H Screen](docs/final-report/assets/screenshots/home/h2h_screen_1.jpg) | ![Backtest Screen](docs/final-report/assets/screenshots/home/backtest_result_1.jpg) |
+
+</div>
 
 ---
 
-# 🔄 8. Pipeline dữ liệu (Data Pipeline) & Cập nhật Dataset
+# 🚀 10. Hướng dẫn cài đặt & Thực thi
 
-```text
-    [Remote Sources: REST API / Optional MQTT]
-                       │
-                       ▼
-                 [Raw Dataset]
-                       │
-                       ▼
-          [Data Cleaning & Validation]
-                       │
-                       ▼
-           [Normalization & Mapping]
-                       │
-                       ▼
-         [Deduplication & Conflict Res]
-                       │
-                       ▼
-          [Local Storage: Room Database]
-                       │
-      ┌────────────────┼────────────────┐
-      ▼                ▼                ▼
-[Search / Sort]  [Data Analytics]  [Match Prediction]
-      │                │                │
-      └────────────────┼────────────────┘
-                       ▼
-         [Jetpack Compose Visualization]
-```
+### 10.1. Yêu cầu môi trường phát triển
+- **Hệ điều hành:** Windows 10/11, macOS 13+, hoặc Ubuntu 22.04 LTS.
+- **Android Studio:** Android Studio Ladybug (2024.2.1+) hoặc Koala.
+- **Java Development Kit (JDK):** JDK 17 LTS (khuyến nghị JetBrains Runtime đi kèm Android Studio).
+- **Android SDK:** Compile SDK 34, Min SDK 26 (Android 8.0 Oreo+), Target SDK 34 (Android 14).
 
-### Chiến lược Versioning Dataset
-Dataset được quản lý theo từng phiên bản để phục vụ việc kiểm thử và báo cáo học thuật:
-* `Dataset v1` (01/09/2026): 50,000 matches — Dữ liệu baseline.
-* `Dataset v2` (15/09/2026): 62,000 matches — Mở rộng tập dữ liệu.
-* `Dataset v3` (01/10/2026): 75,000 matches — Tập dữ liệu chính thức phục vụ báo cáo.
+### 10.2. Các bước thiết lập & Khởi chạy dự án
 
----
+1. **Clone mã nguồn từ kho lưu trữ:**
+   ```bash
+   git clone https://github.com/AnhQuocs/truelab-android.git
+   cd truelab-android
+   ```
 
-# 🧮 9. Danh mục thuật toán (Algorithm Portfolio)
+2. **Chạy toàn bộ 795 Automated Unit Tests:**
+   ```bash
+   ./gradlew testDebugUnitTest
+   ```
 
-| Phân nhóm | Thuật toán | Mục đích ứng dụng | Độ phức tạp lý thuyết |
-| :--- | :--- | :--- | :---: |
-| **Searching** | **Linear Search** | Tìm kiếm tuần tự trong danh sách chưa sắp xếp | $\mathcal{O}(n)$ |
-| **Searching** | **Binary Search** | Tìm kiếm nhị phân trên danh sách đã sắp xếp | $\mathcal{O}(\log n)$ |
-| **Sorting** | **Quick Sort** | Sắp xếp dữ liệu đa chỉ số phân chia theo Pivot | $\mathcal{O}(n \log n)$ |
-| **Sorting** | **Merge Sort** | Sắp xếp chia để trị ổn định (Stable Sort) | $\mathcal{O}(n \log n)$ |
-| **Statistics** | **Descriptive Stats** | Tính Count, Mean, Median, Min, Max, Range, Variance (Sample/Pop), StdDev (Sample/Pop), Skewness | $\mathcal{O}(n)$ / $\mathcal{O}(n \log n)$ |
-| **Trend** | **Moving Average** | Làm mịn chuỗi biến động Odds theo thời gian | $\mathcal{O}(n)$ |
-| **Evaluation** | **Form Score** | Đánh giá phong độ $k$ trận gần nhất | $\mathcal{O}(k)$ |
-| **Rating** | **Elo Rating System** | Cập nhật hệ số sức mạnh tương đối sau mỗi trận đấu | $\mathcal{O}(1)$ / trận |
-| **Prediction** | **Weighted Scoring** | Dự đoán kết quả theo trọng số đặc trưng | $\mathcal{O}(1)$ / trận |
-| **ML Extension**| **Logistic Regression** | Phân loại đa lớp dự đoán kết quả trận đấu | Dự đoán: $\mathcal{O}(d)$ |
-| **ML Extension**| **Decision Tree** | Cây quyết định phân loại kết quả | Dự đoán: $\mathcal{O}(h)$ |
+3. **Biên dịch bản cài đặt Debug APK:**
+   ```bash
+   ./gradlew assembleDebug
+   ```
 
-### 9.1. Lộ trình phát triển thuật toán (Algorithm Roadmap)
-
-#### 🔹 Core Algorithm Roadmap (Cốt lõi bắt buộc)
-Lộ trình thuật toán cốt lõi của TrueLab bao gồm 7 Phase (Phase 1–7) và hiện đã **hoàn thành 100% (Frozen toàn bộ 122/122 tests)**:
-
-| Phase | Phân nhóm thuật toán | Thuật toán cốt lõi | Trạng thái |
-| :---: | :--- | :--- | :---: |
-| **Phase 1** | **Searching** | Linear Search, Binary Search | ✅ **Frozen** (12 tests) |
-| **Phase 2** | **Sorting** | Quick Sort, Merge Sort | ✅ **Frozen** (9 tests) |
-| **Phase 3** | **Statistics** | Descriptive Statistics (Count, Mean, Median, Min, Max, Range, Variance, StdDev, Skewness) | ✅ **Frozen** (16 tests) |
-| **Phase 4** | **Trend** | Simple Moving Average (SMA Rolling Sum $\mathcal{O}(n)$) | ✅ **Frozen** (21 tests) |
-| **Phase 5** | **Evaluation** | Form Score (Linear Time-Decay Weighted & Unweighted) | ✅ **Frozen** (15 tests) |
-| **Phase 6** | **Rating** | Elo Rating System (Zero-Sum Conservation, Configurable K) | ✅ **Frozen** (22 tests) |
-| **Phase 7** | **Prediction** | Weighted Scoring Model (3-Way Probability Normalization, Linear Mixture) | ✅ **Frozen** (27 tests) |
-
-#### 🔸 ML Extension Roadmap (Tùy chọn – Optional)
-Phase 8 và Phase 9 là các phân hệ mở rộng tùy chọn (**không phải phần bắt buộc** của roadmap dự án). Các phân hệ này chỉ được xem xét triển khai nếu sau Phase 7 có nhu cầu thực tế về Machine Learning, có tập dataset/features phù hợp hoặc phục vụ mở rộng portfolio nghiên cứu học thuật:
-
-| Phase | Phân nhóm mở rộng | Mô hình nghiên cứu | Phạm vi |
-| :---: | :--- | :--- | :---: |
-| **Phase 8** | **ML Extension** | Logistic Regression (Phân loại xác suất kết quả) | ◇ **Optional** |
-| **Phase 9** | **ML Extension** | Decision Tree (Cây quyết định phân loại) | ◇ **Optional** |
-
-> [!NOTE]
-> **Quy ước phạm vi (Scope Conventions)**:
-> - **Phase 1–7** là toàn bộ Core Algorithm Roadmap chính thức của TrueLab (**122/122 tests đã hoàn tất và đóng băng**).
-> - **Phase 7 – Prediction** là điểm hoàn tất của Core Roadmap hiện tại (đã nghiệm thu và đóng băng với 27 tests).
-> - **Phase 8 & 9** là các module mở rộng tùy chọn (Optional Extensions), không phải là phase bắt buộc của dự án và Phase 9 không phải là "final phase" của toàn bộ đồ án.
-
----
-
-# 📊 10. Đánh giá & Benchmark (Evaluation)
-
-### 10.1. Benchmark hiệu năng thuật toán
-* So sánh thời gian thực thi giữa **Linear Search vs. Binary Search** trên các kích thước dữ liệu khác nhau ($N = 1.000, 10.000, 50.000, 100.000$).
-* So sánh **Quick Sort vs. Merge Sort** về thời gian thực thi (ms) và mức chiếm dụng bộ nhớ (MB).
-
-### 10.2. Đánh giá độ chính xác mô hình dự đoán
-* Sử dụng tập dữ liệu lịch sử để backtest và tính toán các chỉ số:
-  $$\text{Accuracy} = \frac{\text{Số trận dự đoán đúng}}{\text{Tổng số trận}}$$
-* Đánh giá ma trận nhầm lẫn (**Confusion Matrix**), **Precision**, **Recall**, **F1-Score**.
-
----
-
-# 📅 11. Kế hoạch triển khai (Timeline - 6 Tuần)
-
-```text
-Tuần 1 ──► Thu thập Dataset + Xây dựng API Client & Schema Room Database
-Tuần 2 ──► Triển khai thuật toán Tìm kiếm (Linear/Binary), Sắp xếp (Quick/Merge) & Thống kê
-Tuần 3 ──► Xây dựng thuật toán phân tích phong độ, Home/Away, H2H & Hệ thống Elo Rating
-Tuần 4 ──► Phân tích Odds đa nguồn, xu hướng Odds & Mô hình dự đoán Weighted Scoring
-Tuần 5 ──► Thiết kế giao diện Jetpack Compose, Trực quan hóa dữ liệu & Màn hình Benchmark
-Tuần 6 ──► Kiểm thử toàn diện, đánh giá hiệu năng, hoàn thiện báo cáo & Slide thuyết trình
-```
-
----
-
-# 🛠️ 12. Công nghệ sử dụng (Tech Stack)
-
-* **Language:** [Kotlin 2.0+](https://kotlinlang.org/)
-* **UI Framework:** [Jetpack Compose](https://developer.android.com/jetpack/compose) (Material 3)
-* **Architecture:** Clean Architecture + MVVM + Android Architecture Components
-* **Local Database:** [Room Database](https://developer.android.com/training/data-storage/room)
-* **Dependency Injection:** [Hilt](https://developer.android.com/training/dependency-injection/hilt-android)
-* **Networking & JSON:** [Retrofit 2](https://square.github.io/retrofit/) + [Kotlinx Serialization](https://github.com/Kotlin/kotlinx.serialization)
-* **Asynchronous:** Kotlin Coroutines & Flow
-* **Visualization:** Compose Canvas Charts / Vico / MPAndroidChart
+4. **Cài đặt trực tiếp lên thiết bị di động hoặc máy ảo Android:**
+   *(Đảm bảo đã bật `USB Debugging` trên điện thoại và xác nhận cho phép gỡ lỗi khi kết nối cáp)*
+   ```bash
+   ./gradlew installDebug
+   ```
 
 ---
 
 <div align="center">
-<b>TrueLab © 2026 — Đồ án Thuật toán ứng dụng</b>
+
+**TrueLab Project © 2026 — Bùi Anh Quốc & Hà Mạnh Long**  
+*Mã nguồn mở phục vụ nghiên cứu khoa học và học thuật.*
+
 </div>

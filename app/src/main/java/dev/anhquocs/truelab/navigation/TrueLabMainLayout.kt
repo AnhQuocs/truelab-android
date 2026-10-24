@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +52,7 @@ fun TrueLabMainLayout(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .displayCutoutPadding()
             .background(MaterialTheme.colorScheme.background)
     ) {

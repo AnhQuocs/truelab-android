@@ -7,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
@@ -36,7 +35,6 @@ class MainActivity : BaseComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        hideStatusBar()
         setContent {
             val currentLanguage by languageViewModel.currentLanguage.collectAsStateWithLifecycle()
             val currentThemeMode by themeViewModel.currentThemeMode.collectAsStateWithLifecycle()
@@ -71,7 +69,9 @@ class MainActivity : BaseComponentActivity() {
                             SystemBarStyle.light(systemBarColorArgb, systemBarColorArgb)
                         },
                     )
-                    hideStatusBar()
+                    WindowCompat.getInsetsController(window, window.decorView).apply {
+                        show(WindowInsetsCompat.Type.statusBars())
+                    }
                 }
 
                 if (isLoading) {
@@ -80,20 +80,6 @@ class MainActivity : BaseComponentActivity() {
                     MainScreen()
                 }
             }
-        }
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            hideStatusBar()
-        }
-    }
-
-    private fun hideStatusBar() {
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            hide(WindowInsetsCompat.Type.statusBars())
-            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 }
